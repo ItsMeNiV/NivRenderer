@@ -2,12 +2,12 @@
 #include "Base.h"
 #include "Entity/Entity.h"
 
-class GameObject : public Entity
+class SceneObject : public Entity
 {
 public:
-	GameObject();
+	SceneObject();
 
-	virtual ~GameObject();
+	virtual ~SceneObject();
 
 private:
 

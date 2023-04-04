@@ -58,6 +58,20 @@ void Window::PrepareFrame()
 	ImGui::NewFrame();
 }
 
+void Window::RenderImGui(Ref<Scene> scene)
+{
+	ImGui::ShowDemoWindow();
+	ImGui::Begin("Scene");
+	int32_t selectedObject = -1;
+	for (auto sceneObject : scene->GetSceneObjects())
+	{
+		displaySceneObject(scene, sceneObject, selectedObject);
+	}
+	*scene->GetSelectedObject() = selectedObject;
+	ImGui::End();
+	ImGui::Render();
+}
+
 void Window::PollEvents()
 {
 	if(m_Window)
@@ -68,6 +82,34 @@ void Window::SwapBuffers()
 {
 	if (m_Window)
 	{
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwSwapBuffers(m_Window);
+	}
+}
+
+void Window::displaySceneObject(Ref<Scene> scene, Ref<SceneObject> sceneObject, int32_t& selectedItem)
+{
+	ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow;
+	if (sceneObject->GetChildEntities().size() > 0)
+	{
+		if (*scene->GetSelectedObject() == sceneObject->GetId())
+			nodeFlags |= ImGuiTreeNodeFlags_Selected;
+		if (ImGui::TreeNodeEx(sceneObject->GetEntityName()->c_str(), nodeFlags))
+		{
+			for (Ref<Entity> entity : sceneObject->GetChildEntities())
+			{
+				displaySceneObject(scene, std::static_pointer_cast<SceneObject>(entity), selectedItem);
+			}
+			ImGui::TreePop();
+		}
+		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+			selectedItem = sceneObject->GetId();
+	}
+	else
+	{
+		nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+		ImGui::TreeNodeEx(sceneObject->GetEntityName()->c_str(), nodeFlags);
+		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+			selectedItem = sceneObject->GetId();
 	}
 }

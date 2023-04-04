@@ -28,8 +28,8 @@ set(SRC_FILES
  "src/Entity/Entity.h"
  "src/Entity/Component.h"
  "src/Entity/Components/TransformComponent.h"
- "src/Entity/Entities/GameObject.h" "src/Entity/Entities/GameObject.cpp"
-)
+ "src/Entity/Entities/SceneObject.h" "src/Entity/Entities/SceneObject.cpp"
+ "src/Application/Scene.h" "src/Application/Scene.cpp")
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp
