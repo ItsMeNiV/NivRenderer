@@ -7,3 +7,6 @@
 [submodule "NivRenderer/vendor/glm"]
 	path = NivRenderer/vendor/glm
 	url = https://github.com/g-truc/glm.git
+[submodule "NivRenderer/vendor/imgui"]
+	path = NivRenderer/vendor/imgui
+	url = https://github.com/ocornut/imgui.git

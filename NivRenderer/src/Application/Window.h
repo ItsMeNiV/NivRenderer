@@ -9,6 +9,7 @@ public:
 
 	void CreateRenderContext();
 	bool ShouldClose();
+	void PrepareFrame();
 	void PollEvents();
 	void SwapBuffers();
 

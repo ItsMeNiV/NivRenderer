@@ -2,6 +2,11 @@
 # project specific logic here.
 #
 
+set(DEAR_IMGUI_PREFIX
+    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui"
+    CACHE STRING "Path to Dear ImGui"
+)
+
 set(INCLUDE_DIRS
 "src"
 "vendor/glfw/include"
@@ -9,6 +14,7 @@ set(INCLUDE_DIRS
 "vendor/glm"
 "vendor/OpenGLStarter"
 "vendor/stb_image"
+"vendor/imgui"
 )
 
 set(SRC_FILES
@@ -22,14 +28,29 @@ set(SRC_FILES
  "src/Entity/Entity.h"
  "src/Entity/Component.h"
  "src/Entity/Components/TransformComponent.h"
- "src/Entity/Entities/GameObject.h" "src/Entity/Entities/GameObject.cpp")
+ "src/Entity/Entities/GameObject.h" "src/Entity/Entities/GameObject.cpp"
+)
+
+list(APPEND SRC_FILES
+    ${DEAR_IMGUI_PREFIX}/imgui.cpp
+    ${DEAR_IMGUI_PREFIX}/misc/cpp/imgui_stdlib.cpp
+    ${DEAR_IMGUI_PREFIX}/imgui_draw.cpp
+    ${DEAR_IMGUI_PREFIX}/imgui_tables.cpp
+    ${DEAR_IMGUI_PREFIX}/imgui_widgets.cpp
+    ${DEAR_IMGUI_PREFIX}/backends/imgui_impl_glfw.cpp
+    ${DEAR_IMGUI_PREFIX}/backends/imgui_impl_opengl3.cpp
+    ${DEAR_IMGUI_PREFIX}/imgui_demo.cpp
+    "vendor/glad/src/glad.c"
+    "vendor/stb_image/stb_image.cpp"
+    "vendor/stb_image/stb_image.h"
+)
 
 #GLFW
 add_subdirectory("vendor/glfw")
 #GLM
 add_subdirectory("vendor/glm")
 
-add_executable (${CMAKE_PROJECT_NAME} ${SRC_FILES} "vendor/glad/src/glad.c" "vendor/stb_image/stb_image.cpp" "vendor/stb_image/stb_image.h")
+add_executable (${CMAKE_PROJECT_NAME} ${SRC_FILES})
 
 include_directories(${INCLUDE_DIRS})
 target_link_libraries(${CMAKE_PROJECT_NAME} glfw)
