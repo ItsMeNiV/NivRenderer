@@ -12,8 +12,17 @@ set(INCLUDE_DIRS
 )
 
 set(SRC_FILES
-"src/NivRenderer.cpp" "src/NivRenderer.h"
-)
+ "src/Base.h"
+ "src/NivRenderer.cpp" "src/NivRenderer.h"
+ "src/Application/Window.h" 
+ "src/Application/Input.h"
+ "src/Application/Window.cpp"
+ "src/Rendering/Renderer.cpp" "src/Rendering/Renderer.h"
+ "src/Entity/ECSRegistry.cpp" "src/Entity/ECSRegistry.h"
+ "src/Entity/Entity.h"
+ "src/Entity/Component.h"
+ "src/Entity/Components/TransformComponent.h"
+ "src/Entity/Entities/GameObject.h" "src/Entity/Entities/GameObject.cpp")
 
 #GLFW
 add_subdirectory("vendor/glfw")

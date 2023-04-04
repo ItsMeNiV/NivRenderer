@@ -1,8 +1,16 @@
-﻿// NivRenderer.h : Include file for standard system include files,
-// or project specific include files.
-
 #pragma once
+#include "Base.h"
+#include "Application/Window.h"
+#include "Rendering/Renderer.h"
 
-#include <iostream>
+class Application
+{
+public:
+	Application();
 
-// TODO: Reference additional headers your program requires here.
+	void Run();
+
+private:
+	Ref<Window> m_Window;
+	Ref<Renderer> m_Renderer;
+};
