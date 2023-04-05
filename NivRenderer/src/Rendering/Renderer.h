@@ -14,4 +14,8 @@ private:
 	Ref<Window> m_ActiveWindow;
 
 	float rColor = 0.0f;
+
+	//TEST
+	Ref<Shader> exampleShader;
+	unsigned int vertexArray;
 };
