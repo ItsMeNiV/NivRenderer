@@ -23,6 +23,7 @@ set(SRC_FILES
  "src/Application/Window/Window.cpp" "src/Application/Window/Window.h" 
  "src/Application/Window/SceneHierarchy.h"
  "src/Application/Window/Properties.h"
+ "src/Application/Window/RenderWindow.h"
  "src/Application/Input.h"
  "src/Rendering/Renderer.cpp" "src/Rendering/Renderer.h"
  "src/Entity/ECSRegistry.cpp" "src/Entity/ECSRegistry.h"
@@ -31,7 +32,7 @@ set(SRC_FILES
  "src/Entity/Components/TransformComponent.h"
  "src/Entity/Entities/SceneObject.h" "src/Entity/Entities/SceneObject.cpp"
  "src/Application/Scene.h" "src/Application/Scene.cpp"
-)
+ "src/Rendering/OpenGL/Framebuffer.h" "src/Rendering/OpenGL/Framebuffer.cpp" "src/Rendering/OpenGL/Texture.h" "src/Rendering/OpenGL/Texture.cpp")
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp

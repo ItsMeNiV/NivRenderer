@@ -13,6 +13,5 @@ public:
 private:
 	Ref<Window> m_ActiveWindow;
 
-
 	float rColor = 0.0f;
 };

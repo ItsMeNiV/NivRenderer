@@ -3,13 +3,15 @@
 #include "Entity/ECSRegistry.h"
 #include "Application/Window/SceneHierarchy.h"
 #include "Application/Window/Properties.h"
+#include "Application/Window/RenderWindow.h"
 
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_glfw.h"
 
 Window::Window(uint32_t width, uint32_t height, const char* title)
-	: m_Width(width), m_Height(height), m_Title(title), m_Window(nullptr), m_SelectedObject(-1)
+	: m_Width(width), m_Height(height), m_Title(title), m_Window(nullptr), m_SelectedObject(-1), m_MainFramebuffer(nullptr)
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -47,6 +49,8 @@ void Window::CreateRenderContext()
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
 	ImGui_ImplOpenGL3_Init("#version 460");
+	ImGui::GetIO().ConfigFlags = ImGuiConfigFlags_DockingEnable;
+	m_MainFramebuffer = CreateScope<Framebuffer>(GetWidth(), GetHeight());
 }
 
 bool Window::ShouldClose()
@@ -65,9 +69,15 @@ void Window::PrepareFrame()
 
 void Window::RenderImGui(Ref<Scene> scene)
 {
-	ImGui::ShowDemoWindow();
+	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::Begin("Renderer", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
+	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+	ImGui::DockSpace(dockspace_id);
 	BuildSceneHierarchy(scene, m_SelectedObject);
 	BuildProperties(m_SelectedObject);
+	BuildRenderWindow(this);
+	ImGui::End();
 	ImGui::Render();
 }
 
@@ -83,5 +93,14 @@ void Window::SwapBuffers()
 	{
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwSwapBuffers(m_Window);
+	}
+}
+
+void Window::UpdateFramebuffer(uint32_t width, uint32_t height)
+{
+	if (m_MainFramebuffer->GetWidth() != width || m_MainFramebuffer->GetHeight() != height)
+	{
+		m_MainFramebuffer = nullptr;
+		m_MainFramebuffer = CreateScope<Framebuffer>(width, height);
 	}
 }

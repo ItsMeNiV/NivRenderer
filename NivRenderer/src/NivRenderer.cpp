@@ -4,6 +4,7 @@
 #include "Entity/Entities/SceneObject.h"
 #include "Entity/Components/TransformComponent.h"
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
 #include "backends/imgui_impl_opengl3.h"
 
