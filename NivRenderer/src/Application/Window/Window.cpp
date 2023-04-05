@@ -1,10 +1,15 @@
 #include "Window.h"
+
+#include "Entity/ECSRegistry.h"
+#include "Application/Window/SceneHierarchy.h"
+#include "Application/Window/Properties.h"
+
 #include "imgui.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_glfw.h"
 
 Window::Window(uint32_t width, uint32_t height, const char* title)
-	: m_Width(width), m_Height(height), m_Title(title), m_Window(nullptr)
+	: m_Width(width), m_Height(height), m_Title(title), m_Window(nullptr), m_SelectedObject(-1)
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -61,14 +66,8 @@ void Window::PrepareFrame()
 void Window::RenderImGui(Ref<Scene> scene)
 {
 	ImGui::ShowDemoWindow();
-	ImGui::Begin("Scene");
-	int32_t selectedObject = -1;
-	for (auto sceneObject : scene->GetSceneObjects())
-	{
-		displaySceneObject(scene, sceneObject, selectedObject);
-	}
-	*scene->GetSelectedObject() = selectedObject;
-	ImGui::End();
+	BuildSceneHierarchy(scene, m_SelectedObject);
+	BuildProperties(m_SelectedObject);
 	ImGui::Render();
 }
 
@@ -84,32 +83,5 @@ void Window::SwapBuffers()
 	{
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwSwapBuffers(m_Window);
-	}
-}
-
-void Window::displaySceneObject(Ref<Scene> scene, Ref<SceneObject> sceneObject, int32_t& selectedItem)
-{
-	ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow;
-	if (sceneObject->GetChildEntities().size() > 0)
-	{
-		if (*scene->GetSelectedObject() == sceneObject->GetId())
-			nodeFlags |= ImGuiTreeNodeFlags_Selected;
-		if (ImGui::TreeNodeEx(sceneObject->GetEntityName()->c_str(), nodeFlags))
-		{
-			for (Ref<Entity> entity : sceneObject->GetChildEntities())
-			{
-				displaySceneObject(scene, std::static_pointer_cast<SceneObject>(entity), selectedItem);
-			}
-			ImGui::TreePop();
-		}
-		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-			selectedItem = sceneObject->GetId();
-	}
-	else
-	{
-		nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-		ImGui::TreeNodeEx(sceneObject->GetEntityName()->c_str(), nodeFlags);
-		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-			selectedItem = sceneObject->GetId();
 	}
 }

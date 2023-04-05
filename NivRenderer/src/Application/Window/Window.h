@@ -21,5 +21,6 @@ private:
 	int m_Width, m_Height;
 	const char* m_Title;
 
-	void displaySceneObject(Ref<Scene> scene, Ref<SceneObject> sceneObject, int32_t& selectedItem);
+	//Scene-Hierarchy
+	int32_t m_SelectedObject;
 };

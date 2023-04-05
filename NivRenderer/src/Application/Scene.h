@@ -8,12 +8,10 @@ public:
     Scene();
     ~Scene();
 
-    void AddSceneObject(Ref<SceneObject> object);
+    uint32_t AddSceneObject(int32_t parentObjectId = -1);
 
-    const std::vector<Ref<SceneObject>>& GetSceneObjects() const { return m_SceneObjects; }
-    int32_t* const GetSelectedObject() { return &m_SelectedObject; }
+    const std::vector<uint32_t>& GetSceneObjectIds() const { return m_SceneObjectIds; }
     
 private:
-    std::vector<Ref<SceneObject>> m_SceneObjects;
-    int32_t m_SelectedObject;
+    std::vector<uint32_t> m_SceneObjectIds;
 };

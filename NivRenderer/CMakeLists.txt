@@ -20,16 +20,18 @@ set(INCLUDE_DIRS
 set(SRC_FILES
  "src/Base.h"
  "src/NivRenderer.cpp" "src/NivRenderer.h"
- "src/Application/Window.h" 
+ "src/Application/Window/Window.cpp" "src/Application/Window/Window.h" 
+ "src/Application/Window/SceneHierarchy.h"
+ "src/Application/Window/Properties.h"
  "src/Application/Input.h"
- "src/Application/Window.cpp"
  "src/Rendering/Renderer.cpp" "src/Rendering/Renderer.h"
  "src/Entity/ECSRegistry.cpp" "src/Entity/ECSRegistry.h"
  "src/Entity/Entity.h"
  "src/Entity/Component.h"
  "src/Entity/Components/TransformComponent.h"
  "src/Entity/Entities/SceneObject.h" "src/Entity/Entities/SceneObject.cpp"
- "src/Application/Scene.h" "src/Application/Scene.cpp")
+ "src/Application/Scene.h" "src/Application/Scene.cpp"
+)
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp

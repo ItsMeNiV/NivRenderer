@@ -16,21 +16,68 @@ public:
 		return instance;
 	}
 
-	void AddEntity(Ref<Entity> entity);
 	void RemoveEntity(uint32_t entityId);
-	void AddComponent(uint32_t entityId, Ref<Component> component);
+	std::vector<Ref<Component>> GetAllComponents(uint32_t entityId);
+
+	template<typename T>
+	void AddComponent(uint32_t entityId)
+	{
+		if (!checkIfEntityExists(entityId))
+		{
+			std::cerr << "Entity with ID " << std::to_string(entityId) << " not found!" << std::endl;
+			return;
+		}
+
+		Ref<T> component = CreateRef<T>();
+
+		m_EntityComponentsMap[entityId].push_back(component);
+	}
+
+	template<typename T>
+	Ref<T> CreateEntity(int32_t entityIdParent = -1)
+	{
+		static_assert(std::is_base_of_v<Entity, T>);
+
+		Ref<T> entity = CreateRef<T>();
+		m_Entities.push_back(entity);
+		m_EntityComponentsMap[entity->GetId()] = std::vector<Ref<Component>>();
+
+		if (entityIdParent != -1)
+		{
+			for (Ref<Entity> parent : m_Entities)
+			{
+				if (parent->GetId() == entityIdParent)
+				{
+					parent->AddChildEntity(entity);
+				}	
+			}
+		}
+			
+		return entity;
+	}
+
+	template<typename T>
+	Ref<T> GetEntity(uint32_t entityId)
+	{
+		for (Ref<Entity> e : m_Entities)
+		{
+			if (e->GetId() == entityId)
+			{
+				Ref<T> returnPtr = std::static_pointer_cast<T>(e);
+				if (returnPtr)
+					return returnPtr;
+				break;
+			}
+		}
+
+		std::cerr << "Entity with ID " << std::to_string(entityId) << " not found!" << std::endl;
+		return nullptr;
+	}
 
 	template<typename T>
 	Ref<T> GetComponent(uint32_t entityId)
 	{
-		bool found = false;
-		for (Ref<Entity> e : m_Entities)
-		{
-			if (e->GetId() == entityId)
-				found = true;
-		}
-
-		if (!found)
+		if (!checkIfEntityExists(entityId))
 		{
 			std::cerr << "Entity with ID " << std::to_string(entityId) << " not found!" << std::endl;
 			return nullptr;
@@ -51,4 +98,6 @@ private:
 
 	std::vector<Ref<Entity>> m_Entities;
 	std::unordered_map<uint32_t, std::vector<Ref<Component>>> m_EntityComponentsMap;
+
+	bool checkIfEntityExists(uint32_t entityId);
 };

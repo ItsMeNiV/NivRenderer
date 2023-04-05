@@ -4,18 +4,22 @@
 #include "Entity/Components/TransformComponent.h"
 
 Scene::Scene()
-    : m_SelectedObject(-1)
 {
 }
 
 Scene::~Scene()
 {
+    for (uint32_t id : m_SceneObjectIds)
+    {
+        ECSRegistry::GetInstance().RemoveEntity(id);
+    }
 }
 
-void Scene::AddSceneObject(Ref<SceneObject> object)
+uint32_t Scene::AddSceneObject(int32_t parentObjectId)
 {
-    m_SceneObjects.push_back(object);
-    Ref<TransformComponent> c1 = CreateRef<TransformComponent>();
-    ECSRegistry::GetInstance().AddEntity(object);
-    ECSRegistry::GetInstance().AddComponent(object->GetId(), c1);
+    Ref<Entity> object = ECSRegistry::GetInstance().CreateEntity<SceneObject>(parentObjectId);
+    if(parentObjectId == -1)
+        m_SceneObjectIds.push_back(object->GetId());
+    ECSRegistry::GetInstance().AddComponent<TransformComponent>(object->GetId());
+    return object->GetId();
 }

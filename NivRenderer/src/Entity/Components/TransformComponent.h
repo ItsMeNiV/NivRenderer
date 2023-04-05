@@ -12,6 +12,17 @@ public:
 	~TransformComponent()
 	{}
 
+	virtual std::unordered_map<std::string, ComponentProperty> GetComponentProperties()
+	{
+		std::unordered_map<std::string, ComponentProperty> returnMap;
+
+		returnMap["Position"] = { PropertyType::FLOAT3, glm::value_ptr(m_Position) };
+		returnMap["Scale"] = { PropertyType::FLOAT3, glm::value_ptr(m_Scale) };
+		returnMap["Rotation"] = { PropertyType::FLOAT3, glm::value_ptr(m_Rotation) };
+
+		return returnMap;
+	}
+
 private:
 	glm::vec3 m_Position;
 	glm::vec3 m_Scale;
