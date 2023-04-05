@@ -102,5 +102,6 @@ void Window::UpdateFramebuffer(uint32_t width, uint32_t height)
 	{
 		m_MainFramebuffer = nullptr;
 		m_MainFramebuffer = CreateScope<Framebuffer>(width, height);
+		glViewport(0, 0, width, height);
 	}
 }

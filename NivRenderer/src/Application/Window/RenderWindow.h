@@ -8,7 +8,7 @@ void BuildRenderWindow(Window* window)
 	if (window->GetFramebuffer())
 	{
 		ImGui::BeginChild("Frame");
-		ImVec2 wsize = ImGui::GetWindowViewport()->Size;
+		ImVec2 wsize = ImGui::GetWindowSize();
 		unsigned int framebufferTexture = window->GetFramebuffer()->GetTextureColorBuffer()->GetTextureId();
 		ImGui::Image((ImTextureID)framebufferTexture, wsize, ImVec2(0, 1), ImVec2(1, 0));
 		ImGui::EndChild();
