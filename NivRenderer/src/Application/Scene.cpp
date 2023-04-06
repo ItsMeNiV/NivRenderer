@@ -38,6 +38,9 @@ void Scene::RemoveSceneObject(uint32_t sceneObjectId)
         }
     }
     ECSRegistry::GetInstance().RemoveEntity(sceneObjectId);
+    if (object->GetParentEntityId() != -1)
+        ECSRegistry::GetInstance().GetEntity<SceneObject>(object->GetParentEntityId())->RemoveChildEntity(sceneObjectId);
+
     if(std::find(m_SceneObjectIds.begin(), m_SceneObjectIds.end(), sceneObjectId) != m_SceneObjectIds.end())
         m_SceneObjectIds.erase(std::remove(m_SceneObjectIds.begin(), m_SceneObjectIds.end(), sceneObjectId));
 }

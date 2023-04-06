@@ -39,7 +39,8 @@ void displaySceneObject(Ref<Scene> scene, uint32_t sceneObjectId, int32_t& selec
 		ImGui::PopID();
 		if (nodeOpen)
 		{
-			for (Ref<Entity> entity : sceneObject->GetChildEntities())
+			auto childEntities = sceneObject->GetChildEntities();
+			for (Ref<Entity> entity : childEntities)
 			{
 				displaySceneObject(scene, entity->GetId(), selectedObjectId);
 			}
