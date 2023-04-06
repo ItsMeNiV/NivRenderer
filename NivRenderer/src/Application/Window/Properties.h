@@ -16,25 +16,28 @@ void BuildProperties(int32_t& selectedSceneObject)
 	}
 	Ref<SceneObject> sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(selectedSceneObject);
 
-	ImGui::SeparatorText(sceneObject->GetEntityName()->c_str());
-	std::vector<Ref<Component>> components = ECSRegistry::GetInstance().GetAllComponents(selectedSceneObject);
-	for (auto& component : components)
+	if (sceneObject)
 	{
-		if (ImGui::CollapsingHeader(component->GetName(), ImGuiTreeNodeFlags_DefaultOpen))
+		ImGui::SeparatorText(sceneObject->GetEntityName()->c_str());
+		std::vector<Ref<Component>> components = ECSRegistry::GetInstance().GetAllComponents(selectedSceneObject);
+		for (auto& component : components)
 		{
-			for (auto& it : component->GetComponentProperties())
+			if (ImGui::CollapsingHeader(component->GetName(), ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				switch (it.second.type)
+				for (auto& it : component->GetComponentProperties())
 				{
-				case PropertyType::FLOAT:
-					ImGui::InputFloat(it.first.c_str(), (float*)it.second.valuePtr);
-					break;
-				case PropertyType::FLOAT3:
-					ImGui::InputFloat3(it.first.c_str(), (float*)it.second.valuePtr);
-					break;
-				case PropertyType::INT:
-					ImGui::InputInt(it.first.c_str(), (int*)it.second.valuePtr);
-					break;
+					switch (it.second.type)
+					{
+					case PropertyType::FLOAT:
+						ImGui::InputFloat(it.first.c_str(), (float*)it.second.valuePtr);
+						break;
+					case PropertyType::FLOAT3:
+						ImGui::InputFloat3(it.first.c_str(), (float*)it.second.valuePtr);
+						break;
+					case PropertyType::INT:
+						ImGui::InputInt(it.first.c_str(), (int*)it.second.valuePtr);
+						break;
+					}
 				}
 			}
 		}
