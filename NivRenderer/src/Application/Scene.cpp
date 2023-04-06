@@ -2,6 +2,7 @@
 
 #include "Entity/ECSRegistry.h"
 #include "Entity/Components/TransformComponent.h"
+#include "Entity/Components/MeshComponent.h"
 
 Scene::Scene()
 {
@@ -21,6 +22,7 @@ uint32_t Scene::AddSceneObject(int32_t parentObjectId)
     if(parentObjectId == -1)
         m_SceneObjectIds.push_back(object->GetId());
     ECSRegistry::GetInstance().AddComponent<TransformComponent>(object->GetId());
+    ECSRegistry::GetInstance().AddComponent<MeshComponent>(object->GetId());
     return object->GetId();
 }
 

@@ -2,7 +2,7 @@
 
 enum PropertyType
 {
-	FLOAT3, FLOAT, INT
+	FLOAT3, FLOAT, INT, STRING
 };
 
 struct ComponentProperty

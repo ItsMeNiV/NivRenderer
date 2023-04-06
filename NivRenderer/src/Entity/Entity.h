@@ -6,11 +6,6 @@ static uint32_t NextEntityId = 0;
 class Entity
 {
 public:
-	Entity(std::string&& entityName)
-		: m_EntityId(NextEntityId++), m_EntityName(std::move(entityName)), m_ChildEntities(), m_ParentEntityId(-1)
-	{}
-	virtual ~Entity() {}
-
 	void AddChildEntity(Ref<Entity> entity)
 	{
 		m_ChildEntities.push_back(entity);
@@ -31,6 +26,12 @@ public:
 	const std::vector<Ref<Entity>>& GetChildEntities() const { return m_ChildEntities; }
 	const int32_t GetParentEntityId() const { return m_ParentEntityId; }
 	void SetParentEntityId(uint32_t parentId) { m_ParentEntityId = parentId; }
+
+protected:
+	Entity(std::string&& entityName)
+		: m_EntityId(NextEntityId++), m_EntityName(std::move(entityName)), m_ChildEntities(), m_ParentEntityId(-1)
+	{}
+	virtual ~Entity() {}
 
 private:
 	uint32_t m_EntityId;

@@ -37,6 +37,9 @@ void BuildProperties(int32_t& selectedSceneObject)
 					case PropertyType::INT:
 						ImGui::InputInt(it.first.c_str(), (int*)it.second.valuePtr);
 						break;
+					case PropertyType::STRING:
+						//TODO
+						break;
 					}
 				}
 			}

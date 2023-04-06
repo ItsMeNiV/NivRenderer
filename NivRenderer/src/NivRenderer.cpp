@@ -20,7 +20,7 @@ int main()
 Application::Application()
 	: m_Window(CreateRef<Window>(1600, 900, "NivRenderer")), m_Renderer(CreateRef<Renderer>(m_Window)), m_Scene(CreateRef<Scene>())
 {
-	//Test: Setup Testscene (Remove later)
+	//Setup Testscene (TODO: Remove later)
 	uint32_t oId = m_Scene->AddSceneObject();
 	m_Scene->AddSceneObject(oId);
 	m_Scene->AddSceneObject();
