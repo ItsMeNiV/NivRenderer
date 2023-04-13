@@ -35,7 +35,11 @@ set(SRC_FILES
  "src/Application/Scene.h" "src/Application/Scene.cpp"
  "src/Rendering/OpenGL/Framebuffer.h" "src/Rendering/OpenGL/Framebuffer.cpp"
  "src/Rendering/OpenGL/Texture.h" "src/Rendering/OpenGL/Texture.cpp"
-)
+ "src/Rendering/RenderPipeline.h"
+ "src/Rendering/RenderPass.h"
+ "src/Rendering/Proxy/ProxyManager.h"
+ "src/Rendering/Proxy/SceneProxy.h"
+ "src/Rendering/Proxy/SceneObjectProxy.h")
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp

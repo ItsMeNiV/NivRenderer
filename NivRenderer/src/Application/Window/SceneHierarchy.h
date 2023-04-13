@@ -1,7 +1,7 @@
 #pragma once
 #include "imgui.h"
 
-void displaySceneObjectContextMenu(Ref<Scene> scene, uint32_t sceneObjectId, int32_t& selectedObjectId)
+void displaySceneObjectContextMenu(Ref<Scene> scene, uint32_t sceneObjectId, int32_t& selectedObjectId, bool allowDelete)
 {
 	if (ImGui::BeginPopupContextItem("Context Menu"))
 	{
@@ -10,7 +10,7 @@ void displaySceneObjectContextMenu(Ref<Scene> scene, uint32_t sceneObjectId, int
 			scene->AddSceneObject(sceneObjectId);
 		}
 
-		if (ImGui::MenuItem("Delete"))
+		if (allowDelete && ImGui::MenuItem("Delete"))
 		{
 			scene->RemoveSceneObject(sceneObjectId);
 			if (sceneObjectId == selectedObjectId)
@@ -35,7 +35,7 @@ void displaySceneObject(Ref<Scene> scene, uint32_t sceneObjectId, int32_t& selec
 		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
 			selectedObjectId = sceneObject->GetId();
 		ImGui::PushID(sceneObjectId);
-		displaySceneObjectContextMenu(scene, sceneObjectId, selectedObjectId);
+		displaySceneObjectContextMenu(scene, sceneObjectId, selectedObjectId, true);
 		ImGui::PopID();
 		if (nodeOpen)
 		{
@@ -54,7 +54,7 @@ void displaySceneObject(Ref<Scene> scene, uint32_t sceneObjectId, int32_t& selec
 		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
 			selectedObjectId = sceneObject->GetId();
 		ImGui::PushID(sceneObjectId);
-		displaySceneObjectContextMenu(scene, sceneObjectId, selectedObjectId);
+		displaySceneObjectContextMenu(scene, sceneObjectId, selectedObjectId, true);
 		ImGui::PopID();
 	}
 }
@@ -64,7 +64,7 @@ void BuildSceneHierarchy(Ref<Scene> scene, int32_t& selectedSceneObjectId)
 	ImGui::Begin("Scene Hierarchy", 0, ImGuiWindowFlags_NoCollapse);
 	const char* label = "Scene";
 	bool sceneOpen = ImGui::TreeNodeEx(label, ImGuiTreeNodeFlags_DefaultOpen);
-	displaySceneObjectContextMenu(scene, -1, selectedSceneObjectId);
+	displaySceneObjectContextMenu(scene, -1, selectedSceneObjectId, false);
 	if(sceneOpen)
 	{
 		int32_t selectedObject = selectedSceneObjectId;
