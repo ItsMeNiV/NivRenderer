@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
 Renderer::Renderer(Ref<Window> window, Ref<RenderPipeline> renderPipeline)
-	: m_ActiveWindow(window), m_ActiveRenderPipeline(renderPipeline)
+	: m_ActiveWindow(window), m_ActiveRenderPipeline(renderPipeline), m_ProxyManager(CreateScope<ProxyManager>())
 {
 	window->CreateRenderContext();
 
@@ -35,17 +35,25 @@ Renderer::~Renderer()
 {
 }
 
+void Renderer::PrepareFrame()
+{
+    m_ProxyManager->UpdateProxies(m_ActiveScene);
+}
+
 void Renderer::RenderScene()
 {
 	m_ActiveWindow->GetFramebuffer()->Bind();
 	glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-    //TEST
-    exampleShader->Bind();
-    glBindVertexArray(vertexArray);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    //TEST
+    if (m_ActiveScene)
+    {
+        //TEST
+        exampleShader->Bind();
+        glBindVertexArray(vertexArray);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        //TEST
+    }
 
 	m_ActiveWindow->GetFramebuffer()->Unbind();
 }

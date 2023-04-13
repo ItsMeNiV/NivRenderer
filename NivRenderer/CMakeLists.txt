@@ -37,9 +37,11 @@ set(SRC_FILES
  "src/Rendering/OpenGL/Texture.h" "src/Rendering/OpenGL/Texture.cpp"
  "src/Rendering/RenderPipeline.h"
  "src/Rendering/RenderPass.h"
- "src/Rendering/Proxy/ProxyManager.h"
+ "src/Rendering/Proxy/Proxy.h"
+ "src/Rendering/Proxy/ProxyManager.cpp" "src/Rendering/Proxy/ProxyManager.h"
  "src/Rendering/Proxy/SceneProxy.h"
- "src/Rendering/Proxy/SceneObjectProxy.h")
+ "src/Rendering/Proxy/SceneObjectProxy.h"
+)
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp

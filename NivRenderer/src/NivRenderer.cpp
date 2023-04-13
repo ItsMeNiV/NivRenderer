@@ -25,6 +25,8 @@ Application::Application()
 	m_Scene->AddSceneObject(oId);
 	m_Scene->AddSceneObject();
 	m_Scene->AddSceneObject();
+
+	m_Renderer->SetActiveScene(m_Scene);
 }
 
 void Application::Run()
@@ -37,8 +39,8 @@ void Application::Run()
 		m_Window->RenderImGui(m_Scene);
 
 		//Handle inputs
+		m_Renderer->PrepareFrame();
 		m_Renderer->RenderScene();
-		
 
 		m_Window->SwapBuffers();
 	}
