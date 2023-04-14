@@ -1,8 +1,6 @@
 #pragma once
 #include "Base.h"
 
-static uint32_t NextEntityId = 0;
-
 class Entity
 {
 public:
@@ -28,8 +26,8 @@ public:
 	void SetParentEntityId(uint32_t parentId) { m_ParentEntityId = parentId; }
 
 protected:
-	Entity(std::string&& entityName)
-		: m_EntityId(NextEntityId++), m_EntityName(std::move(entityName)), m_ChildEntities(), m_ParentEntityId(-1)
+	Entity(uint32_t id, std::string&& entityName)
+		: m_EntityId(id), m_EntityName(std::move(entityName)), m_ChildEntities(), m_ParentEntityId(-1)
 	{}
 	virtual ~Entity() {}
 

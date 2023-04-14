@@ -5,8 +5,8 @@
 #include "Entity/Components/MeshComponent.h"
 
 Scene::Scene()
-{
-}
+    : m_Id(ECSRegistry::GetInstance().CreateNewEntityId())
+{}
 
 Scene::~Scene()
 {

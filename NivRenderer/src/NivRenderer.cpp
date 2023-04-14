@@ -18,13 +18,16 @@ int main()
 }
 
 Application::Application()
-	: m_Window(CreateRef<Window>(1600, 900, "NivRenderer")), m_Scene(CreateRef<Scene>()), m_Renderer(CreateRef<Renderer>(m_Window, CreateRef<RenderPipeline>()))
+	: m_Window(CreateRef<Window>(1600, 900, "NivRenderer")), m_Scene(CreateRef<Scene>())
 {
 	//Setup Testscene (TODO: Remove later)
 	uint32_t oId = m_Scene->AddSceneObject();
 	m_Scene->AddSceneObject(oId);
 	m_Scene->AddSceneObject();
 	m_Scene->AddSceneObject();
+
+	Ref<RenderPipeline> forwardRenderingPipeline = CreateRef<RenderPipeline>(std::vector<Ref<RenderPass>>(), 1920, 1080, 4);
+	m_Renderer = CreateRef<Renderer>(m_Window, forwardRenderingPipeline);
 
 	m_Renderer->SetActiveScene(m_Scene);
 }

@@ -5,7 +5,7 @@
 class SceneObject : public Entity
 {
 public:
-	SceneObject();
+	SceneObject(uint32_t id);
 
 	virtual ~SceneObject();
 

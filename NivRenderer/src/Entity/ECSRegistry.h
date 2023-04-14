@@ -19,6 +19,8 @@ public:
 	void RemoveEntity(uint32_t entityId);
 	std::vector<Ref<Component>> GetAllComponents(uint32_t entityId);
 
+	uint32_t CreateNewEntityId();
+
 	template<typename T>
 	void AddComponent(uint32_t entityId)
 	{
@@ -38,7 +40,7 @@ public:
 	{
 		static_assert(std::is_base_of_v<Entity, T>);
 
-		Ref<T> entity = CreateRef<T>();
+		Ref<T> entity = CreateRef<T>(m_NextEntityId++);
 		m_Entities.push_back(entity);
 		m_EntityComponentsMap[entity->GetId()] = std::vector<Ref<Component>>();
 
@@ -94,7 +96,9 @@ public:
 	}
 
 private:
-	ECSRegistry() {}
+	ECSRegistry() : m_NextEntityId(0) {}
+
+	uint32_t m_NextEntityId;
 
 	std::vector<Ref<Entity>> m_Entities;
 	std::unordered_map<uint32_t, std::vector<Ref<Component>>> m_EntityComponentsMap;

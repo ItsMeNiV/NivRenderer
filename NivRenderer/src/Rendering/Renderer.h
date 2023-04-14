@@ -20,8 +20,4 @@ private:
 	Ref<Scene> m_ActiveScene;
 	Ref<RenderPipeline> m_ActiveRenderPipeline;
 	Scope<ProxyManager> m_ProxyManager;
-
-	//TEST
-	Ref<Shader> exampleShader;
-	unsigned int vertexArray;
 };

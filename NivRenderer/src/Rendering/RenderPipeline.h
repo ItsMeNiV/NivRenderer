@@ -1,12 +1,23 @@
 #pragma once
 #include "Base.h"
 #include "RenderPass.h"
+#include "Rendering/Proxy/ProxyManager.h"
+#include "Rendering/OpenGL/Framebuffer.h"
 
 class RenderPipeline
 {
 public:
+    RenderPipeline(std::vector<Ref<RenderPass>> renderPasses, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount);
 
+    Framebuffer& Run(Ref<Scene> scene, const ProxyManager& proxyManager);
 
 private:
-    std::vector<RenderPass> m_RenderPasses;
+    std::vector<Ref<RenderPass>> m_RenderPasses;
+    Scope<Framebuffer> m_Framebuffer;
+
+    //TEST
+    uint32_t m_ResolutionWidth, m_ResolutionHeight, m_SampleCount;
+    Ref<Shader> exampleShader;
+    unsigned int vertexArray;
+    bool firstRun = true;
 };
