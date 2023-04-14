@@ -13,7 +13,7 @@ void ProxyManager::UpdateProxies(Ref<Scene> scene)
     {
         ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId);
         if(!m_Proxies.count(sceneObjectId))
-            m_Proxies[sceneObjectId] = CreateRef<SceneObjectProxy>();
+            m_Proxies[sceneObjectId] = CreateRef<SceneObjectProxy>(sceneObjectId);
         //Add proxy-properties
     }
 }

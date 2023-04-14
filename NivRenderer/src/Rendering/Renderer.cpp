@@ -6,7 +6,7 @@ Renderer::Renderer(Ref<Window> window, Ref<RenderPipeline> renderPipeline)
 	window->CreateRenderContext();
 
     //TEST
-    exampleShader = CreateRef<Shader>("assets/exampleshader.glsl", ShaderType::VERTEX_AND_FRAGMENT);
+    exampleShader = CreateRef<Shader>("assets/shaders/exampleshader.glsl", ShaderType::VERTEX_AND_FRAGMENT);
 
     float vertices[] = {
         -0.5f, -0.5f, 0.0f, // left  

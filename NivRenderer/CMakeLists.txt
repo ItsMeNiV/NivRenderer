@@ -15,6 +15,7 @@ set(INCLUDE_DIRS
 "vendor/OpenGLStarter"
 "vendor/stb_image"
 "vendor/imgui"
+"vendor/assimp/include"
 )
 
 set(SRC_FILES
@@ -61,11 +62,13 @@ list(APPEND SRC_FILES
 add_subdirectory("vendor/glfw")
 #GLM
 add_subdirectory("vendor/glm")
+#Assimp
+add_subdirectory("vendor/assimp")
 
 add_executable (${CMAKE_PROJECT_NAME} ${SRC_FILES})
 
 include_directories(${INCLUDE_DIRS})
-target_link_libraries(${CMAKE_PROJECT_NAME} glfw)
+target_link_libraries(${CMAKE_PROJECT_NAME} glfw assimp)
 
 add_custom_target(copy_assets
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/assets ${CMAKE_CURRENT_BINARY_DIR}/assets

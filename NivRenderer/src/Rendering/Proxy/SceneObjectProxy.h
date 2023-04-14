@@ -5,7 +5,7 @@
 class SceneObjectProxy : public Proxy
 {
 public:
-
+    SceneObjectProxy(uint32_t id) : Proxy(id) {}
 
 private:
 

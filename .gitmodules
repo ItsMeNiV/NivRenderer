@@ -10,3 +10,6 @@
 [submodule "NivRenderer/vendor/imgui"]
 	path = NivRenderer/vendor/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "NivRenderer/vendor/assimp"]
+	path = NivRenderer/vendor/assimp
+	url = https://github.com/assimp/assimp.git
