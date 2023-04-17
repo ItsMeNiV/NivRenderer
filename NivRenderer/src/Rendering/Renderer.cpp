@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
-Renderer::Renderer(Ref<Window> window, Ref<RenderPipeline> renderPipeline)
-	: m_ActiveWindow(window), m_ActiveRenderPipeline(renderPipeline), m_ProxyManager(CreateScope<ProxyManager>())
+Renderer::Renderer(Ref<Window> window)
+	: m_ActiveWindow(window), m_ActiveScene(nullptr), m_ActiveRenderPipeline(nullptr), m_ProxyManager(CreateScope<ProxyManager>())
 {
 	window->CreateRenderContext();
 }

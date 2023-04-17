@@ -40,9 +40,9 @@ set(SRC_FILES
  "src/Rendering/RenderPass.h"
  "src/Rendering/Proxy/Proxy.h"
  "src/Rendering/Proxy/ProxyManager.cpp" "src/Rendering/Proxy/ProxyManager.h"
- 
  "src/Rendering/Proxy/SceneObjectProxy.h"
- )
+ "src/Rendering/ForwardPipeline/ForwardPass.h"
+)
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp

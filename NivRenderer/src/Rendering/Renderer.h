@@ -7,13 +7,14 @@
 class Renderer
 {
 public:
-	Renderer(Ref<Window> window, Ref<RenderPipeline> renderPipeline);
+	Renderer(Ref<Window> window);
 	~Renderer();
 
 	void PrepareFrame();
 	void RenderScene();
 
 	void SetActiveScene(const Ref<Scene> scene) { m_ActiveScene = scene; }
+	void SetActivePipeline(const Ref<RenderPipeline> renderPipeline) { m_ActiveRenderPipeline = renderPipeline; }
 
 private:
 	Ref<Window> m_ActiveWindow;

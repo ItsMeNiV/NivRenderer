@@ -32,7 +32,7 @@ public:
 
 		Ref<T> component = CreateRef<T>();
 
-		m_EntityComponentsMap[entityId].push_back(component);
+		m_EntityComponentsMapNew[entityId].second.push_back(component);
 	}
 
 	template<typename T>
@@ -40,19 +40,13 @@ public:
 	{
 		static_assert(std::is_base_of_v<Entity, T>);
 
-		Ref<T> entity = CreateRef<T>(m_NextEntityId++);
-		m_Entities.push_back(entity);
-		m_EntityComponentsMap[entity->GetId()] = std::vector<Ref<Component>>();
+		Ref<T> entity = CreateRef<T>(CreateNewEntityId());
+		m_EntityComponentsMapNew[entity->GetId()].first = entity;
+		m_EntityComponentsMapNew[entity->GetId()].second = std::vector<Ref<Component>>();
 
 		if (entityIdParent != -1)
 		{
-			for (Ref<Entity> parent : m_Entities)
-			{
-				if (parent->GetId() == entityIdParent)
-				{
-					parent->AddChildEntity(entity);
-				}	
-			}
+			m_EntityComponentsMapNew[entityIdParent].first->AddChildEntity(entity);
 		}
 			
 		return entity;
@@ -61,16 +55,10 @@ public:
 	template<typename T>
 	Ref<T> GetEntity(uint32_t entityId)
 	{
-		for (Ref<Entity> e : m_Entities)
-		{
-			if (e->GetId() == entityId)
-			{
-				Ref<T> returnPtr = std::static_pointer_cast<T>(e);
-				if (returnPtr)
-					return returnPtr;
-				break;
-			}
-		}
+		auto entity = m_EntityComponentsMapNew[entityId].first;
+		Ref<T> returnPtr = std::static_pointer_cast<T>(entity);
+		if (returnPtr)
+			return returnPtr;
 
 		std::cerr << "Entity with ID " << std::to_string(entityId) << " not found!" << std::endl;
 		return nullptr;
@@ -85,7 +73,7 @@ public:
 			return nullptr;
 		}
 
-		for (const Ref<Component> c : m_EntityComponentsMap[entityId])
+		for (const Ref<Component> c : m_EntityComponentsMapNew[entityId].second)
 		{
 			Ref<T> returnPtr = std::static_pointer_cast<T>(c);
 			if (returnPtr)
@@ -100,8 +88,7 @@ private:
 
 	uint32_t m_NextEntityId;
 
-	std::vector<Ref<Entity>> m_Entities;
-	std::unordered_map<uint32_t, std::vector<Ref<Component>>> m_EntityComponentsMap;
+	std::unordered_map<uint32_t, std::pair<Ref<Entity>, std::vector<Ref<Component>>>> m_EntityComponentsMapNew;
 
 	bool checkIfEntityExists(uint32_t entityId);
 };

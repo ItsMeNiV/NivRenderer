@@ -3,6 +3,7 @@
 #include "Entity/ECSRegistry.h"
 #include "Entity/Entities/SceneObject.h"
 #include "Entity/Components/TransformComponent.h"
+#include "Rendering/ForwardPipeline/ForwardPass.h"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
@@ -26,9 +27,13 @@ Application::Application()
 	m_Scene->AddSceneObject();
 	m_Scene->AddSceneObject();
 
-	Ref<RenderPipeline> forwardRenderingPipeline = CreateRef<RenderPipeline>(std::vector<Ref<RenderPass>>(), 1920, 1080, 4);
-	m_Renderer = CreateRef<Renderer>(m_Window, forwardRenderingPipeline);
+	m_Renderer = CreateRef<Renderer>(m_Window);
 
+	Ref<RenderPass> forwardPass = CreateRef<ForwardPass>(CreateRef<Shader>("assets/shaders/exampleshader.glsl", ShaderType::VERTEX_AND_FRAGMENT), 1920, 1080);
+	std::vector<Ref<RenderPass>> renderPasses;
+	renderPasses.push_back(forwardPass);
+
+	m_Renderer->SetActivePipeline(CreateRef<RenderPipeline>(renderPasses, 1920, 1080, 4));
 	m_Renderer->SetActiveScene(m_Scene);
 }
 

@@ -13,11 +13,8 @@ public:
 
 private:
     std::vector<Ref<RenderPass>> m_RenderPasses;
-    Scope<Framebuffer> m_Framebuffer;
+    Scope<Framebuffer> m_OutputFramebuffer;
 
     //TEST
     uint32_t m_ResolutionWidth, m_ResolutionHeight, m_SampleCount;
-    Ref<Shader> exampleShader;
-    unsigned int vertexArray;
-    bool firstRun = true;
 };
