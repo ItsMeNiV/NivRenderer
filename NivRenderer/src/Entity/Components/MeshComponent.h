@@ -30,6 +30,10 @@ public:
         : m_Vertices(vertices), m_Indices(indices), m_Textures(textures)
     {}
 
+    const std::vector<MeshVertex>& GetVertices() const { return m_Vertices; }
+    const std::vector<uint32_t>& GetIndices() const { return m_Indices; }
+    const std::vector<MeshTexture>& GetTextures() const { return m_Textures; }
+
 private:
 	std::vector<MeshVertex> m_Vertices;
 	std::vector<uint32_t> m_Indices;
@@ -89,12 +93,14 @@ public:
         std::vector<uint32_t> defaultIndices;
         std::vector<MeshTexture> defaultTextures;
 
-        Mesh defaultMesh = Mesh(defaultVertices, defaultIndices, defaultTextures);
+        Ref<Mesh> defaultMesh = CreateRef<Mesh>(defaultVertices, defaultIndices, defaultTextures);
         m_SubMeshes.push_back(defaultMesh);
 	}
 
 	~MeshComponent()
 	{}
+
+    const std::vector<Ref<Mesh>>& GetSubMeshes() const { return m_SubMeshes; }
 
 	virtual std::unordered_map<std::string, ComponentProperty> GetComponentProperties()
 	{
@@ -110,7 +116,7 @@ public:
 private:
 	std::string m_Path;
     std::string m_Directory;
-	std::vector<Mesh> m_SubMeshes;
+	std::vector<Ref<Mesh>> m_SubMeshes;
     //TODO Needs to be moved into it's own assetloader component
     std::vector<MeshTexture> textures_loaded;
 
@@ -145,7 +151,7 @@ private:
         }
     }
 
-    Mesh processMesh(aiMesh* mesh, const aiScene* scene)
+    Ref<Mesh> processMesh(aiMesh* mesh, const aiScene* scene)
     {
         std::vector<MeshVertex> vertices;
         std::vector<uint32_t> indices;
@@ -214,7 +220,7 @@ private:
         textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
         // return a mesh object created from the extracted mesh data
-        return Mesh(vertices, indices, textures);
+        return CreateRef<Mesh>(vertices, indices, textures);
     }
 
     std::vector<MeshTexture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)

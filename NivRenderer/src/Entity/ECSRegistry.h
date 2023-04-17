@@ -75,7 +75,7 @@ public:
 
 		for (const Ref<Component> c : m_EntityComponentsMapNew[entityId].second)
 		{
-			Ref<T> returnPtr = std::static_pointer_cast<T>(c);
+			Ref<T> returnPtr = std::dynamic_pointer_cast<T>(c);
 			if (returnPtr)
 				return returnPtr;
 		}

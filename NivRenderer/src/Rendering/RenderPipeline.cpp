@@ -5,7 +5,7 @@ RenderPipeline::RenderPipeline(std::vector<Ref<RenderPass>> renderPasses, uint32
 {
 }
 
-Framebuffer& RenderPipeline::Run(Ref<Scene> scene, const ProxyManager& proxyManager)
+Framebuffer& RenderPipeline::Run(Ref<Scene> scene, ProxyManager& proxyManager)
 {
     if (!m_OutputFramebuffer)
     {
@@ -15,7 +15,7 @@ Framebuffer& RenderPipeline::Run(Ref<Scene> scene, const ProxyManager& proxyMana
     for (auto currentPass : m_RenderPasses)
     {
         //Map input
-        currentPass->Run();
+        currentPass->Run(scene, proxyManager);
         //Get output
 
         //If last pass:

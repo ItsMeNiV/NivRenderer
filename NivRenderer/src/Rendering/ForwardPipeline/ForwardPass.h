@@ -1,36 +1,18 @@
 #pragma once
 #include "Base.h"
+#include "Application/Scene.h"
 #include "Rendering/RenderPass.h"
+#include "Rendering/Proxy/SceneObjectProxy.h"
+#include "Rendering/Proxy/ProxyManager.h"
 
 class ForwardPass : public RenderPass
 {
 public:
     ForwardPass(Ref<Shader> passShader, uint32_t resolutionWidth, uint32_t resolutionHeight)
         : RenderPass(passShader, resolutionWidth, resolutionHeight)
-    {
-        float vertices[] = {
-            -0.5f, -0.5f, 0.0f, // left  
-             0.5f, -0.5f, 0.0f, // right 
-             0.0f,  0.5f, 0.0f  // top   
-        };
+    {}
 
-        unsigned int vertexBuffer;
-        glGenVertexArrays(1, &vertexArray);
-        glGenBuffers(1, &vertexBuffer);
-        glBindVertexArray(vertexArray);
-
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        glBindVertexArray(0);
-    }
-
-    virtual void Run()
+    virtual void Run(Ref<Scene> scene, ProxyManager& proxyManager)
     {
         m_OutputFramebuffer->Bind();
 
@@ -38,13 +20,26 @@ public:
         glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         m_PassShader->Bind();
-        glBindVertexArray(vertexArray);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glm::mat4 view(1.0f);
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), float(1920) / float(1080), 0.1f, 1000.0f);
+        glm::mat4 viewProj = projection * view;
+        m_PassShader->SetMat4("viewProjection", viewProj);
+        for (uint32_t id : scene->GetSceneObjectIds())
+        {
+            Ref<SceneObjectProxy> objectProxy = std::static_pointer_cast<SceneObjectProxy>(proxyManager.GetProxy(id));
+            objectProxy->Bind();
+            m_PassShader->SetMat4("model", objectProxy->GetModelMatrix());
+            if (objectProxy->GetIndexCount())
+                glDrawElements(GL_TRIANGLES, objectProxy->GetIndexCount(), GL_UNSIGNED_BYTE, 0);
+            else
+                glDrawArrays(GL_TRIANGLES, 0, objectProxy->GetVerticesCount());
+        }
+
 
         m_OutputFramebuffer->Unbind();
     }
 
 private:
-    unsigned int vertexArray;
-    bool firstRun = true;
+
 };
