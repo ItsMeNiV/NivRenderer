@@ -6,7 +6,12 @@
 class SceneObjectProxy : public Proxy
 {
 public:
-    SceneObjectProxy(uint32_t id) : Proxy(id) {}
+    SceneObjectProxy(uint32_t id) : Proxy(id)
+    {
+        glGenVertexArrays(1, &m_VertexArray);
+        glGenBuffers(1, &m_VertexBuffer);
+        glGenBuffers(1, &m_IndexBuffer);
+    }
 
     void SetTransform(glm::vec3 position, glm::vec3 scale, glm::vec3 rotation)
     {
@@ -19,9 +24,6 @@ public:
     void SetMesh(Ref<MeshComponent> mesh)
     {
         //TODO Make this work with multiple sub-meshes (Indices over multiple submeshes won't work)
-        glGenVertexArrays(1, &m_VertexArray);
-        glGenBuffers(1, &m_VertexBuffer);
-        glGenBuffers(1, &m_IndexBuffer);
         glBindVertexArray(m_VertexArray);
 
         std::vector<MeshVertex> vertices;

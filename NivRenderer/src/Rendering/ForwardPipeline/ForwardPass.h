@@ -31,7 +31,7 @@ public:
             objectProxy->Bind();
             m_PassShader->SetMat4("model", objectProxy->GetModelMatrix());
             if (objectProxy->GetIndexCount())
-                glDrawElements(GL_TRIANGLES, objectProxy->GetIndexCount(), GL_UNSIGNED_BYTE, 0);
+                glDrawElements(GL_TRIANGLES, objectProxy->GetIndexCount(), GL_UNSIGNED_INT, 0);
             else
                 glDrawArrays(GL_TRIANGLES, 0, objectProxy->GetVerticesCount());
         }
