@@ -26,6 +26,9 @@ Application::Application()
 	m_Scene->AddSceneObject(oId);
 	m_Scene->AddSceneObject();
 	m_Scene->AddSceneObject();
+	Ref<Camera> camera = CreateRef<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), 1920, 1080);
+	m_Scene->AddCamera(camera);
+	m_Window->CreateCameraController(camera.get());
 
 	m_Renderer = CreateRef<Renderer>(m_Window);
 
@@ -46,7 +49,7 @@ void Application::Run()
 
 		m_Window->RenderImGui(m_Scene);
 
-		//Handle inputs
+		m_Window->ProcessInput();
 		m_Renderer->PrepareFrame();
 		m_Renderer->RenderScene();
 

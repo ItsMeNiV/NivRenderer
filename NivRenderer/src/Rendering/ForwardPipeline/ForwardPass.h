@@ -3,6 +3,7 @@
 #include "Application/Scene.h"
 #include "Rendering/RenderPass.h"
 #include "Rendering/Proxy/SceneObjectProxy.h"
+#include "Rendering/Proxy/CameraProxy.h"
 #include "Rendering/Proxy/ProxyManager.h"
 
 class ForwardPass : public RenderPass
@@ -15,15 +16,13 @@ public:
     virtual void Run(Ref<Scene> scene, ProxyManager& proxyManager)
     {
         m_OutputFramebuffer->Bind();
+        Ref<CameraProxy> camera = std::static_pointer_cast<CameraProxy>(proxyManager.GetProxy(scene->GetCameraId()));
 
         //TEST
         glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         m_PassShader->Bind();
-        glm::mat4 view(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), float(1920) / float(1080), 0.1f, 1000.0f);
-        glm::mat4 viewProj = projection * view;
+        glm::mat4 viewProj = camera->GetProjection() * camera->GetView();
         m_PassShader->SetMat4("viewProjection", viewProj);
         for (uint32_t id : scene->GetSceneObjectIds())
         {

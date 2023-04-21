@@ -1,5 +1,6 @@
 #include "ProxyManager.h"
 #include "Rendering/Proxy/SceneObjectProxy.h"
+#include "Rendering/Proxy/CameraProxy.h"
 #include "Entity/ECSRegistry.h"
 #include "Entity/Components/MeshComponent.h"
 #include "Entity/Components/TransformComponent.h"
@@ -25,6 +26,14 @@ void ProxyManager::UpdateProxies(Ref<Scene> scene)
         proxy->SetTransform(transform->GetPosition(), transform->GetScale(), transform->GetRotation());
         proxy->SetMesh(mesh);
     }
+
+    if (!m_Proxies.count(scene->GetCameraId()))
+    {
+        Ref<CameraProxy> proxy = CreateRef<CameraProxy>(scene->GetCameraId());
+        m_Proxies[scene->GetCameraId()] = proxy;
+    }
+    Ref<CameraProxy> proxy = std::static_pointer_cast<CameraProxy>(m_Proxies[scene->GetCameraId()]);
+    proxy->UpdateData(ECSRegistry::GetInstance().GetEntity<CameraObject>(scene->GetCameraId())->GetCameraPtr());
 }
 
 Ref<Proxy> ProxyManager::GetProxy(uint32_t id)

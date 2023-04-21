@@ -46,3 +46,11 @@ void Scene::RemoveSceneObject(uint32_t sceneObjectId)
     if(std::find(m_SceneObjectIds.begin(), m_SceneObjectIds.end(), sceneObjectId) != m_SceneObjectIds.end())
         m_SceneObjectIds.erase(std::remove(m_SceneObjectIds.begin(), m_SceneObjectIds.end(), sceneObjectId));
 }
+
+uint32_t Scene::AddCamera(const Ref<Camera> cameraPtr)
+{
+    Ref<Entity> object = ECSRegistry::GetInstance().CreateEntity<CameraObject>();
+    std::static_pointer_cast<CameraObject>(object)->SetCameraPtr(cameraPtr);
+    m_CameraId = object->GetId();
+    return object->GetId();
+}

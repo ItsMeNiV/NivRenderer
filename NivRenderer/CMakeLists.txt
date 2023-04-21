@@ -33,6 +33,7 @@ set(SRC_FILES
  "src/Entity/Components/TransformComponent.h"
  "src/Entity/Components/MeshComponent.h"
  "src/Entity/Entities/SceneObject.h" "src/Entity/Entities/SceneObject.cpp"
+ "src/Entity/Entities/CameraObject.h"
  "src/Application/Scene.h" "src/Application/Scene.cpp"
  "src/Rendering/OpenGL/Framebuffer.h" "src/Rendering/OpenGL/Framebuffer.cpp"
  "src/Rendering/OpenGL/Texture.h" "src/Rendering/OpenGL/Texture.cpp"
@@ -41,7 +42,9 @@ set(SRC_FILES
  "src/Rendering/Proxy/Proxy.h"
  "src/Rendering/Proxy/ProxyManager.cpp" "src/Rendering/Proxy/ProxyManager.h"
  "src/Rendering/Proxy/SceneObjectProxy.h"
+ "src/Rendering/Proxy/CameraProxy.h"
  "src/Rendering/ForwardPipeline/ForwardPass.h"
+ "src/Rendering/OpenGL/VertexLayout.h"
 )
 
 list(APPEND SRC_FILES

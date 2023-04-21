@@ -11,7 +11,8 @@
 #include "backends/imgui_impl_glfw.h"
 
 Window::Window(uint32_t width, uint32_t height, const char* title)
-	: m_Width(width), m_Height(height), m_Title(title), m_Window(nullptr), m_SelectedObject(-1), m_MainFramebuffer(nullptr)
+	: m_Width(width), m_Height(height), m_Title(title), m_Window(nullptr), m_SelectedObject(-1),
+	m_MainFramebuffer(nullptr), m_CameraController(nullptr), m_IsFocused(false), m_FirstMouse(true), m_DeltaTime(0.0f), m_LastFrame(0.0f)
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -35,12 +36,23 @@ void Window::CreateRenderContext()
 {
 	glfwMakeContextCurrent(m_Window);
 
+	glfwSetWindowUserPointer(m_Window, this);
+
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cerr << "Failed to initialize GLAD" << std::endl;
 	}
 	glfwSwapInterval(0); // Disable vsync
 	glViewport(0, 0, m_Width, m_Height);
+
+	glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+		Window* thisClass = (Window*)glfwGetWindowUserPointer(window);
+		thisClass->keyCallback(window, key, scancode, action, mods);
+	});
+	glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xpos, double ypos) {
+		Window* thisClass = (Window*)glfwGetWindowUserPointer(window);
+		thisClass->cursorPosCallback(window, xpos, ypos);
+	});
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -62,6 +74,10 @@ bool Window::ShouldClose()
 
 void Window::PrepareFrame()
 {
+	float currentFrame = glfwGetTime();
+	m_DeltaTime = currentFrame - m_LastFrame;
+	m_LastFrame = currentFrame;
+
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
@@ -103,5 +119,72 @@ void Window::UpdateFramebuffer(uint32_t width, uint32_t height)
 		m_MainFramebuffer = nullptr;
 		m_MainFramebuffer = CreateScope<Framebuffer>(width, height);
 		glViewport(0, 0, width, height);
+	}
+}
+
+void Window::CreateCameraController(Camera* camera)
+{
+	m_CameraController = CreateScope<CameraControllerFirstPerson>(camera, 3.0f, 0.1f);
+}
+
+void Window::ProcessInput()
+{
+	if (!m_CameraController)
+		return;
+
+	if (glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_PRESS)
+		m_CameraController->ProcessKeyboard(FORWARD, m_DeltaTime);
+	if (glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_PRESS)
+		m_CameraController->ProcessKeyboard(BACKWARD, m_DeltaTime);
+	if (glfwGetKey(m_Window, GLFW_KEY_A) == GLFW_PRESS)
+		m_CameraController->ProcessKeyboard(LEFT, m_DeltaTime);
+	if (glfwGetKey(m_Window, GLFW_KEY_D) == GLFW_PRESS)
+		m_CameraController->ProcessKeyboard(RIGHT, m_DeltaTime);
+	if (glfwGetKey(m_Window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && !m_Sprinting)
+	{
+		m_CameraController->SetSpeed(8.0f);
+		m_Sprinting = true;
+	}
+	else if (glfwGetKey(m_Window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && m_Sprinting)
+	{
+		m_CameraController->SetSpeed(3.0f);
+		m_Sprinting = false;
+	}
+}
+
+void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	{
+		m_IsFocused = !m_IsFocused;
+		if (m_IsFocused)
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		else
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		m_FirstMouse = true;
+	}
+
+}
+
+void Window::cursorPosCallback(GLFWwindow* window, double xPos, double yPos)
+{
+	if (m_CameraController && m_IsFocused)
+	{
+		float xpos = static_cast<float>(xPos);
+		float ypos = static_cast<float>(yPos);
+
+		if (m_FirstMouse)
+		{
+			m_LastX = xpos;
+			m_LastY = ypos;
+			m_FirstMouse = false;
+		}
+
+		float xOffset = xpos - m_LastX;
+		float yOffset = m_LastY - ypos;
+		m_LastX = xpos;
+		m_LastY = ypos;
+
+		m_CameraController->ProcessMouseMovement(xOffset, yOffset);
 	}
 }
