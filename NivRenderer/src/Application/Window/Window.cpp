@@ -12,7 +12,8 @@
 
 Window::Window(uint32_t width, uint32_t height, const char* title)
 	: m_Width(width), m_Height(height), m_Title(title), m_Window(nullptr), m_SelectedObject(-1),
-	m_MainFramebuffer(nullptr), m_CameraController(nullptr), m_IsFocused(false), m_FirstMouse(true), m_DeltaTime(0.0f), m_LastFrame(0.0f)
+	m_MainFramebuffer(nullptr), m_CameraControllerFirstPerson(nullptr), m_CameraControllerArcball(nullptr),
+	m_IsFocused(false), m_FirstMouse(true), m_ArcballMove(false), m_DeltaTime(0.0f), m_LastFrame(0.0f)
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -52,6 +53,14 @@ void Window::CreateRenderContext()
 	glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xpos, double ypos) {
 		Window* thisClass = (Window*)glfwGetWindowUserPointer(window);
 		thisClass->cursorPosCallback(window, xpos, ypos);
+	});
+	glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods) {
+		Window* thisClass = (Window*)glfwGetWindowUserPointer(window);
+		thisClass->mouseButtonCallback(window, button, action, mods);
+	});
+	glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xoffset, double yoffset) {
+		Window* thisClass = (Window*)glfwGetWindowUserPointer(window);
+		thisClass->scrollCallback(window, xoffset, yoffset);
 	});
 
 	IMGUI_CHECKVERSION();
@@ -124,30 +133,31 @@ void Window::UpdateFramebuffer(uint32_t width, uint32_t height)
 
 void Window::CreateCameraController(Camera* camera)
 {
-	m_CameraController = CreateScope<CameraControllerFirstPerson>(camera, 3.0f, 0.1f);
+	m_CameraControllerFirstPerson = CreateScope<CameraControllerFirstPerson>(camera, 3.0f, 0.1f);
+	m_CameraControllerArcball = CreateScope<CameraControllerArcball>(camera, 5.0f, 0.3f);
 }
 
 void Window::ProcessInput()
 {
-	if (!m_CameraController)
+	if (!m_CameraControllerFirstPerson)
 		return;
 
 	if (glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_PRESS)
-		m_CameraController->ProcessKeyboard(FORWARD, m_DeltaTime);
+		m_CameraControllerFirstPerson->ProcessKeyboard(FORWARD, m_DeltaTime);
 	if (glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_PRESS)
-		m_CameraController->ProcessKeyboard(BACKWARD, m_DeltaTime);
+		m_CameraControllerFirstPerson->ProcessKeyboard(BACKWARD, m_DeltaTime);
 	if (glfwGetKey(m_Window, GLFW_KEY_A) == GLFW_PRESS)
-		m_CameraController->ProcessKeyboard(LEFT, m_DeltaTime);
+		m_CameraControllerFirstPerson->ProcessKeyboard(LEFT, m_DeltaTime);
 	if (glfwGetKey(m_Window, GLFW_KEY_D) == GLFW_PRESS)
-		m_CameraController->ProcessKeyboard(RIGHT, m_DeltaTime);
+		m_CameraControllerFirstPerson->ProcessKeyboard(RIGHT, m_DeltaTime);
 	if (glfwGetKey(m_Window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS && !m_Sprinting)
 	{
-		m_CameraController->SetSpeed(8.0f);
+		m_CameraControllerFirstPerson->SetSpeed(8.0f);
 		m_Sprinting = true;
 	}
 	else if (glfwGetKey(m_Window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE && m_Sprinting)
 	{
-		m_CameraController->SetSpeed(3.0f);
+		m_CameraControllerFirstPerson->SetSpeed(3.0f);
 		m_Sprinting = false;
 	}
 }
@@ -168,23 +178,44 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
 
 void Window::cursorPosCallback(GLFWwindow* window, double xPos, double yPos)
 {
-	if (m_CameraController && m_IsFocused)
+	float xpos = static_cast<float>(xPos);
+	float ypos = static_cast<float>(yPos);
+
+	if (m_FirstMouse)
 	{
-		float xpos = static_cast<float>(xPos);
-		float ypos = static_cast<float>(yPos);
-
-		if (m_FirstMouse)
-		{
-			m_LastX = xpos;
-			m_LastY = ypos;
-			m_FirstMouse = false;
-		}
-
-		float xOffset = xpos - m_LastX;
-		float yOffset = m_LastY - ypos;
 		m_LastX = xpos;
 		m_LastY = ypos;
-
-		m_CameraController->ProcessMouseMovement(xOffset, yOffset);
+		m_FirstMouse = false;
 	}
+
+	float xOffset = xpos - m_LastX;
+	float yOffset = m_LastY - ypos;
+	m_LastX = xpos;
+	m_LastY = ypos;
+
+	if (m_CameraControllerFirstPerson && m_IsFocused)
+	{
+		m_CameraControllerFirstPerson->ProcessMouseMovement(xOffset, yOffset);
+	}
+	else if (m_CameraControllerArcball && m_ArcballMove)
+	{
+		m_CameraControllerArcball->ProcessMouseMovement(xOffset, yOffset);
+	}
+}
+
+void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+	if (button == GLFW_MOUSE_BUTTON_LEFT)
+	{
+		if (action == GLFW_PRESS)
+			m_ArcballMove = true;
+		else if (action == GLFW_RELEASE)
+			m_ArcballMove = false;
+	}
+}
+
+void Window::scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	if (m_CameraControllerArcball)
+		m_CameraControllerArcball->ProcessScroll(yoffset);
 }

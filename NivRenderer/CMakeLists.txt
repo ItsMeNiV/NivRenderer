@@ -25,6 +25,7 @@ set(SRC_FILES
  "src/Application/Window/SceneHierarchy.h"
  "src/Application/Window/Properties.h"
  "src/Application/Window/RenderWindow.h"
+ "src/Application/Window/CameraControllerArcball.h" "src/Application/Window/CameraControllerArcball.cpp"
  "src/Application/Input.h"
  "src/Rendering/Renderer.cpp" "src/Rendering/Renderer.h"
  "src/Entity/ECSRegistry.cpp" "src/Entity/ECSRegistry.h"

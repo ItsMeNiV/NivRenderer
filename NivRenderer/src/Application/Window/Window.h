@@ -1,6 +1,7 @@
 #pragma once
 #include "Base.h"
 
+#include "Application/Window/CameraControllerArcball.h"
 #include "Application/Scene.h"
 #include "Rendering/OpenGL/Framebuffer.h"
 
@@ -28,7 +29,6 @@ private:
 	GLFWwindow* m_Window;
 	uint32_t m_Width, m_Height;
 	const char* m_Title;
-	bool m_IsFocused;
 	float m_DeltaTime, m_LastFrame;
 
 	//Scene-Hierarchy
@@ -38,10 +38,13 @@ private:
 	Scope<Framebuffer> m_MainFramebuffer;
 
 	//Camera Controller
-	Scope<CameraControllerFirstPerson> m_CameraController;
-	bool m_FirstMouse, m_Sprinting;
+	Scope<CameraControllerFirstPerson> m_CameraControllerFirstPerson;
+	Scope<CameraControllerArcball> m_CameraControllerArcball;
+	bool m_FirstMouse, m_Sprinting, m_IsFocused, m_ArcballMove;
 	float m_LastX, m_LastY;
 
 	void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	void cursorPosCallback(GLFWwindow* window, double xPos, double yPos);
+	void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+	void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 };
