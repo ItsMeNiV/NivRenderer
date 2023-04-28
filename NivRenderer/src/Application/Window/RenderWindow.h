@@ -1,7 +1,7 @@
 #pragma once
 #include "imgui.h"
 
-bool BuildRenderWindow(Window* window)
+void BuildRenderWindow(Window* window)
 {
 	ImGui::Begin("Render", 0, ImGuiWindowFlags_NoCollapse);
 	window->UpdateFramebuffer(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
