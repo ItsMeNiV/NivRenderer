@@ -36,6 +36,7 @@ private:
 
 	//Render-Window
 	Scope<Framebuffer> m_MainFramebuffer;
+	bool m_RenderWindowHovered;
 
 	//Camera Controller
 	Scope<CameraControllerFirstPerson> m_CameraControllerFirstPerson;

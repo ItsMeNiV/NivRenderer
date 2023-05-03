@@ -13,7 +13,7 @@
 Window::Window(uint32_t width, uint32_t height, const char* title)
 	: m_Width(width), m_Height(height), m_Title(title), m_Window(nullptr), m_SelectedObject(-1),
 	m_MainFramebuffer(nullptr), m_CameraControllerFirstPerson(nullptr), m_CameraControllerArcball(nullptr),
-	m_IsFocused(false), m_FirstMouse(true), m_ArcballMove(false), m_DeltaTime(0.0f), m_LastFrame(0.0f)
+	m_IsFocused(false), m_FirstMouse(true), m_ArcballMove(false), m_DeltaTime(0.0f), m_LastFrame(0.0f), m_RenderWindowHovered(false)
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -101,7 +101,7 @@ void Window::RenderImGui(Ref<Scene> scene)
 	ImGui::DockSpace(dockspace_id);
 	BuildSceneHierarchy(scene, m_SelectedObject);
 	BuildProperties(m_SelectedObject);
-	BuildRenderWindow(this);
+	m_RenderWindowHovered = BuildRenderWindow(this);
 	ImGui::End();
 	ImGui::Render();
 }
@@ -205,6 +205,9 @@ void Window::cursorPosCallback(GLFWwindow* window, double xPos, double yPos)
 
 void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
+	if (!m_RenderWindowHovered)
+		return;
+
 	if (button == GLFW_MOUSE_BUTTON_LEFT)
 	{
 		if (action == GLFW_PRESS)
@@ -216,6 +219,6 @@ void Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int
 
 void Window::scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	if (m_CameraControllerArcball)
+	if (m_CameraControllerArcball && m_RenderWindowHovered)
 		m_CameraControllerArcball->ProcessScroll(yoffset);
 }
