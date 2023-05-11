@@ -15,6 +15,9 @@ void ProxyManager::UpdateProxies(Ref<Scene> scene)
     for (uint32_t sceneObjectId : scene->GetSceneObjectIds())
     {
         auto sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId);
+        if (!sceneObject->GetDirtyFlag())
+            continue;
+
         if (!m_Proxies.count(sceneObjectId))
         {
             Ref<SceneObjectProxy> proxy = CreateRef<SceneObjectProxy>(sceneObjectId);
@@ -25,6 +28,8 @@ void ProxyManager::UpdateProxies(Ref<Scene> scene)
         Ref<MeshComponent> mesh = ECSRegistry::GetInstance().GetComponent<MeshComponent>(sceneObjectId);
         proxy->SetTransform(transform->GetPosition(), transform->GetScale(), transform->GetRotation());
         proxy->SetMesh(mesh);
+
+        sceneObject->SetDirtyFlag(false);
     }
 
     if (!m_Proxies.count(scene->GetCameraId()))

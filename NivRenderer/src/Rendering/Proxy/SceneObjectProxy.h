@@ -27,6 +27,7 @@ public:
 
         std::vector<MeshVertex> vertices;
         std::vector<uint32_t> indices;
+        m_Textures.clear();
 
         for (auto& m : mesh->GetSubMeshes())
         {
@@ -40,6 +41,8 @@ public:
             }
             vertices.insert(vertices.end(), verts.begin(), verts.end());
             indices.insert(indices.end(), inds.begin(), inds.end());
+
+            m_Textures.insert(m_Textures.end(), m->GetTextures().begin(), m->GetTextures().end());
         }
         m_IndexCount = indices.size();
         m_VerticesCount = vertices.size();
@@ -84,9 +87,11 @@ public:
     const uint32_t GetIndexCount() const { return m_IndexCount; }
     const uint32_t GetVerticesCount() const { return m_VerticesCount; }
     glm::mat4& GetModelMatrix() { return m_ModelMatrix; }
+    const std::vector<MeshTexture>& GetTextures() const { return m_Textures; }
 
 private:
     glm::mat4 m_ModelMatrix;
+    std::vector<MeshTexture> m_Textures;
 
     //TODO: Abstract
     uint32_t m_VertexArray, m_VertexBuffer, m_IndexBuffer;

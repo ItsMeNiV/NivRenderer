@@ -55,17 +55,18 @@ void BuildProperties(int32_t& selectedSceneObject)
 			{
 				for (auto& it : component->GetComponentProperties())
 				{
+					bool wasEdited = false;
 					const char* label = it.first.c_str();
 					switch (it.second.type)
 					{
 					case PropertyType::FLOAT:
-						ImGui::InputFloat(label, (float*)it.second.valuePtr);
+						wasEdited = ImGui::InputFloat(label, (float*)it.second.valuePtr);
 						break;
 					case PropertyType::FLOAT3:
-						ImGui::InputFloat3(label, (float*)it.second.valuePtr);
+						wasEdited = ImGui::InputFloat3(label, (float*)it.second.valuePtr);
 						break;
 					case PropertyType::INT:
-						ImGui::InputInt(label, (int*)it.second.valuePtr);
+						wasEdited = ImGui::InputInt(label, (int*)it.second.valuePtr);
 						break;
 					case PropertyType::PATH:
 						std::string* inputString = (std::string*)it.second.valuePtr;
@@ -74,11 +75,16 @@ void BuildProperties(int32_t& selectedSceneObject)
 						if (ImGui::Button("Reload"))
 						{
 							it.second.callback();
+							wasEdited = true;
 						}
 						break;
 					}
+
+					if (wasEdited)
+						sceneObject->SetDirtyFlag(true);
 				}
 			}
+
 		}
 	}
 
