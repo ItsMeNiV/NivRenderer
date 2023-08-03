@@ -96,7 +96,19 @@ void Window::RenderImGui(Ref<Scene> scene)
 {
 	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
-	ImGui::Begin("Renderer", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
+	ImGui::Begin("Renderer", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_MenuBar);
+
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("Reload Shaders", NULL, false) && m_CommandHandlerCallback)
+				m_CommandHandlerCallback(WindowCommandEvent(WindowCommand::RecompileShaders));
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
+
 	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 	ImGui::DockSpace(dockspace_id);
 	BuildSceneHierarchy(scene, m_SelectedObject);
@@ -160,6 +172,11 @@ void Window::ProcessInput()
 		m_CameraControllerFirstPerson->SetSpeed(3.0f);
 		m_Sprinting = false;
 	}
+}
+
+void Window::SetCommandHandler(WindowCommandEventCallbackFn commandHandlerCallback)
+{
+	m_CommandHandlerCallback = commandHandlerCallback;
 }
 
 void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)

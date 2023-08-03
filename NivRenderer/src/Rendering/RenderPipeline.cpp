@@ -24,3 +24,13 @@ Framebuffer& RenderPipeline::Run(Ref<Scene> scene, ProxyManager& proxyManager)
 
     return *m_OutputFramebuffer;
 }
+
+void RenderPipeline::RecompileShaders()
+{
+    for (auto currentPass : m_RenderPasses)
+    {
+        //Map input
+        currentPass->RecompilePassShader();
+    }
+
+}

@@ -16,6 +16,8 @@ public:
 	void SetActiveScene(const Ref<Scene> scene) { m_ActiveScene = scene; }
 	void SetActivePipeline(const Ref<RenderPipeline> renderPipeline) { m_ActiveRenderPipeline = renderPipeline; }
 
+	Ref<RenderPipeline> GetActivePipeline() { return m_ActiveRenderPipeline; }
+
 private:
 	Ref<Window> m_ActiveWindow;
 	Ref<Scene> m_ActiveScene;

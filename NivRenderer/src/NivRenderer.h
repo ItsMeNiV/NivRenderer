@@ -15,4 +15,6 @@ private:
 	Ref<Scene> m_Scene;
 	Ref<Window> m_Window;
 	Ref<Renderer> m_Renderer;
+
+	void handleWindowCommand(WindowCommandEvent command);
 };

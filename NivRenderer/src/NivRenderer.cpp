@@ -30,6 +30,8 @@ Application::Application()
 	m_Scene->AddCamera(camera);
 	m_Window->CreateCameraController(camera.get());
 
+	m_Window->SetCommandHandler([&](WindowCommandEvent command) { handleWindowCommand(command); });
+
 	m_Renderer = CreateRef<Renderer>(m_Window);
 
 	Ref<RenderPass> forwardPass = CreateRef<ForwardPass>(CreateRef<Shader>("assets/shaders/forwardrender.glsl", ShaderType::VERTEX_AND_FRAGMENT), 1920, 1080);
@@ -55,4 +57,10 @@ void Application::Run()
 
 		m_Window->SwapBuffers();
 	}
+}
+
+void Application::handleWindowCommand(WindowCommandEvent command)
+{
+	if(command.GetCommand() == WindowCommand::RecompileShaders)
+		m_Renderer->GetActivePipeline()->RecompileShaders();
 }

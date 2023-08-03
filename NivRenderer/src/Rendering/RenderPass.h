@@ -16,6 +16,8 @@ public:
 
     const Ref<Framebuffer> GetOutputFramebuffer() const { return m_OutputFramebuffer; }
 
+    void RecompilePassShader() { m_PassShader->RecompileFromSource(); }
+
 protected:
     Ref<Framebuffer> m_InputFramebuffer;
     Ref<Framebuffer> m_OutputFramebuffer;

@@ -11,6 +11,8 @@ public:
 
     Framebuffer& Run(Ref<Scene> scene, ProxyManager& proxyManager);
 
+    void RecompileShaders();
+
 private:
     std::vector<Ref<RenderPass>> m_RenderPasses;
     Scope<Framebuffer> m_OutputFramebuffer;

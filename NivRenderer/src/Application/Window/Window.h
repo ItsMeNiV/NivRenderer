@@ -4,10 +4,13 @@
 #include "Application/Window/CameraControllerArcball.h"
 #include "Application/Scene.h"
 #include "Rendering/OpenGL/Framebuffer.h"
+#include "Application/Window/WindowEvents.h"
 
 class Window
 {
 public:
+	using WindowCommandEventCallbackFn = std::function<void(WindowCommandEvent)>;
+
 	Window(uint32_t width, uint32_t height, const char* title);
 	~Window();
 
@@ -20,6 +23,7 @@ public:
 	void UpdateFramebuffer(uint32_t width, uint32_t height);
 	void CreateCameraController(Camera* camera);
 	void ProcessInput();
+	void SetCommandHandler(WindowCommandEventCallbackFn commandHandlerCallback);
 
 	const uint32_t GetWidth() const { return m_Width; }
 	const uint32_t GetHeight() const { return m_Height; }
@@ -30,6 +34,7 @@ private:
 	uint32_t m_Width, m_Height;
 	const char* m_Title;
 	float m_DeltaTime, m_LastFrame;
+	WindowCommandEventCallbackFn m_CommandHandlerCallback;
 
 	//Scene-Hierarchy
 	int32_t m_SelectedObject;
