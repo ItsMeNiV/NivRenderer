@@ -4,6 +4,7 @@
 #include "Rendering/RenderPass.h"
 #include "Rendering/Proxy/SceneObjectProxy.h"
 #include "Rendering/Proxy/CameraProxy.h"
+#include "Rendering/Proxy/LightProxy.h"
 #include "Rendering/Proxy/ProxyManager.h"
 
 class ForwardPass : public RenderPass
@@ -22,8 +23,26 @@ public:
         glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_PassShader->Bind();
-        glm::mat4 viewProj = camera->GetProjection() * camera->GetView();
+        glm::mat4 view = camera->GetView();
+        glm::mat4 viewProj = camera->GetProjection() * view;
         m_PassShader->SetMat4("viewProjection", viewProj);
+        glm::vec3 viewPos = glm::vec3(-view[3][0], -view[3][1], -view[3][2]);
+        m_PassShader->SetVec3("viewPos", viewPos);
+
+        //Set Light uniforms
+        uint32_t i = 0;
+        for (uint32_t id : scene->GetSceneLightIds())
+        {
+            Ref<DirectionalLightProxy> directionalLightProxy = std::static_pointer_cast<DirectionalLightProxy>(proxyManager.GetProxy(id));
+            if (directionalLightProxy)
+            {
+                m_PassShader->SetVec3("directionalLights[" + std::to_string(i) + "].color", directionalLightProxy->GetLightColor());
+                m_PassShader->SetVec3("directionalLights[" + std::to_string(i) + "].direction", directionalLightProxy->GetLightDirection());
+            }
+
+            i++;
+        }
+
         for (uint32_t id : scene->GetSceneObjectIds())
         {
             Ref<SceneObjectProxy> objectProxy = std::static_pointer_cast<SceneObjectProxy>(proxyManager.GetProxy(id));

@@ -1,5 +1,6 @@
 #include "ProxyManager.h"
 #include "Rendering/Proxy/SceneObjectProxy.h"
+#include "Rendering/Proxy/LightProxy.h"
 #include "Rendering/Proxy/CameraProxy.h"
 #include "Entity/ECSRegistry.h"
 #include "Entity/Components/MeshComponent.h"
@@ -12,6 +13,31 @@ ProxyManager::ProxyManager()
 
 void ProxyManager::UpdateProxies(Ref<Scene> scene)
 {
+    for (uint32_t sceneLightId : scene->GetSceneLightIds())
+    {
+        auto lightObject = ECSRegistry::GetInstance().GetEntity<LightObject>(sceneLightId);
+        if (!lightObject->GetDirtyFlag())
+            continue;
+
+        bool isDirectionalLight = std::dynamic_pointer_cast<DirectionalLightObject>(lightObject) != 0;
+
+        if (!m_Proxies.count(sceneLightId))
+        {
+            Ref<Proxy> proxy;
+            if(isDirectionalLight)
+                proxy = CreateRef<DirectionalLightProxy>(sceneLightId);
+            m_Proxies[sceneLightId] = proxy;
+        }
+        if (isDirectionalLight)
+        {
+            Ref<DirectionalLightObject> dirLightObject = std::static_pointer_cast<DirectionalLightObject>(lightObject);
+            Ref<DirectionalLightProxy> proxy = std::static_pointer_cast<DirectionalLightProxy>(m_Proxies[sceneLightId]);
+            proxy->SetLightColor(dirLightObject->GetLightColor());
+            proxy->SetLightDirection(dirLightObject->GetDirection());
+        }
+        lightObject->SetDirtyFlag(false);
+    }
+
     for (uint32_t sceneObjectId : scene->GetSceneObjectIds())
     {
         auto sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId);

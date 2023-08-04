@@ -2,7 +2,7 @@
 
 void ECSRegistry::RemoveEntity(uint32_t entityId)
 {
-	m_EntityComponentsMapNew.erase(entityId);
+	m_EntityComponentsMap.erase(entityId);
 }
 
 std::vector<Ref<Component>> ECSRegistry::GetAllComponents(uint32_t entityId)
@@ -13,7 +13,7 @@ std::vector<Ref<Component>> ECSRegistry::GetAllComponents(uint32_t entityId)
 		return std::vector<Ref<Component>>();
 	}
 
-	return m_EntityComponentsMapNew[entityId].second;
+	return m_EntityComponentsMap[entityId].second;
 }
 
 uint32_t ECSRegistry::CreateNewEntityId()
@@ -23,5 +23,5 @@ uint32_t ECSRegistry::CreateNewEntityId()
 
 bool ECSRegistry::checkIfEntityExists(uint32_t entityId)
 {
-	return m_EntityComponentsMapNew.count(entityId);
+	return m_EntityComponentsMap.count(entityId);
 }

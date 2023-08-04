@@ -32,7 +32,7 @@ public:
 
 		Ref<T> component = CreateRef<T>();
 
-		m_EntityComponentsMapNew[entityId].second.push_back(component);
+		m_EntityComponentsMap[entityId].second.push_back(component);
 	}
 
 	template<typename T>
@@ -41,12 +41,12 @@ public:
 		static_assert(std::is_base_of_v<Entity, T>);
 
 		Ref<T> entity = CreateRef<T>(CreateNewEntityId());
-		m_EntityComponentsMapNew[entity->GetId()].first = entity;
-		m_EntityComponentsMapNew[entity->GetId()].second = std::vector<Ref<Component>>();
+		m_EntityComponentsMap[entity->GetId()].first = entity;
+		m_EntityComponentsMap[entity->GetId()].second = std::vector<Ref<Component>>();
 
 		if (entityIdParent != -1)
 		{
-			m_EntityComponentsMapNew[entityIdParent].first->AddChildEntity(entity);
+			m_EntityComponentsMap[entityIdParent].first->AddChildEntity(entity);
 		}
 			
 		return entity;
@@ -55,7 +55,7 @@ public:
 	template<typename T>
 	Ref<T> GetEntity(uint32_t entityId)
 	{
-		auto entity = m_EntityComponentsMapNew[entityId].first;
+		auto entity = m_EntityComponentsMap[entityId].first;
 		Ref<T> returnPtr = std::dynamic_pointer_cast<T>(entity);
 		if (returnPtr)
 			return returnPtr;
@@ -73,7 +73,7 @@ public:
 			return nullptr;
 		}
 
-		for (const Ref<Component> c : m_EntityComponentsMapNew[entityId].second)
+		for (const Ref<Component> c : m_EntityComponentsMap[entityId].second)
 		{
 			Ref<T> returnPtr = std::dynamic_pointer_cast<T>(c);
 			if (returnPtr)
@@ -88,7 +88,7 @@ private:
 
 	uint32_t m_NextEntityId;
 
-	std::unordered_map<uint32_t, std::pair<Ref<Entity>, std::vector<Ref<Component>>>> m_EntityComponentsMapNew;
+	std::unordered_map<uint32_t, std::pair<Ref<Entity>, std::vector<Ref<Component>>>> m_EntityComponentsMap;
 
 	bool checkIfEntityExists(uint32_t entityId);
 };

@@ -96,10 +96,10 @@ void BuildProperties(int32_t& selectedSceneObject)
 		{
 			bool wasEdited = false;
 			wasEdited = ImGui::ColorEdit3("Light Color", glm::value_ptr(directionalLightObject->GetLightColor()));
-			wasEdited = ImGui::InputFloat3("Light Direction", glm::value_ptr(directionalLightObject->GetDirection()));
+			wasEdited |= ImGui::InputFloat3("Light Direction", glm::value_ptr(directionalLightObject->GetDirection()));
 
 			if (wasEdited)
-				sceneObject->SetDirtyFlag(true);
+				directionalLightObject->SetDirtyFlag(true);
 		}
 	}
 
