@@ -48,50 +48,57 @@ public:
 	{
 		//Setup default cube
         std::vector<MeshVertex> defaultVertices;
-        defaultVertices.push_back({ { -1.0f,1.0f,-1.0f},  {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { -1.0f,1.0f,-1.0f},  {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
         defaultVertices.push_back({ { -1.0f,-1.0f,-1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,-1.0f,-1.0f},  {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,-1.0f,-1.0f},  {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,1.0f,-1.0f},   {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { -1.0f,1.0f,-1.0f},  {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,-1.0f,-1.0f},  {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,-1.0f,-1.0f},  {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,1.0f,-1.0f},   {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { -1.0f,1.0f,-1.0f},  {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
 
-        defaultVertices.push_back({ { -1.0f,-1.0f,1.0f},  {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { -1.0f,-1.0f,1.0f},  {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
         defaultVertices.push_back({ { -1.0f,-1.0f,-1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { -1.0f,1.0f,-1.0f},  {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { -1.0f,1.0f,-1.0f},  {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { -1.0f,1.0f,1.0f},   {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { -1.0f,-1.0f,1.0f},  {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { -1.0f,1.0f,-1.0f},  {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { -1.0f,1.0f,-1.0f},  {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { -1.0f,1.0f,1.0f},   {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { -1.0f,-1.0f,1.0f},  {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
 
         defaultVertices.push_back({ { 1.0f,-1.0f,-1.0f},  {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,-1.0f,1.0f},   {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,1.0f,1.0f},    {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,1.0f,1.0f},    {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,1.0f,-1.0f},   {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,-1.0f,1.0f},   {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,1.0f,1.0f},    {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,1.0f,1.0f},    {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,1.0f,-1.0f},   {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
         defaultVertices.push_back({ { 1.0f,-1.0f,-1.0f},  {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
 
         defaultVertices.push_back({ { -1.0f,-1.0f,1.0f},  {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { -1.0f,1.0f,1.0f},   {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,1.0f,1.0f},    {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,1.0f,1.0f},    {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,-1.0f,1.0f},   {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { -1.0f,1.0f,1.0f},   {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,1.0f,1.0f},    {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,1.0f,1.0f},    {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,-1.0f,1.0f},   {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
         defaultVertices.push_back({ { -1.0f,-1.0f,1.0f},  {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
 
         defaultVertices.push_back({ { -1.0f,1.0f,-1.0f},  {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,1.0f,-1.0f},   {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,1.0f,1.0f},    {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,1.0f,1.0f},    {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { -1.0f,1.0f,1.0f},   {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,1.0f,-1.0f},   {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,1.0f,1.0f},    {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,1.0f,1.0f},    {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { -1.0f,1.0f,1.0f},   {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
         defaultVertices.push_back({ { -1.0f,1.0f,-1.0f},  {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
 
         defaultVertices.push_back({ { -1.0f,-1.0f,-1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { -1.0f,-1.0f,1.0f},  {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,-1.0f,-1.0f},  {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,-1.0f,-1.0f},  {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { -1.0f,-1.0f,1.0f},  {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
-        defaultVertices.push_back({ { 1.0f,-1.0f,1.0f},   {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { -1.0f,-1.0f,1.0f},  {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,-1.0f,-1.0f},  {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,-1.0f,-1.0f},  {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { -1.0f,-1.0f,1.0f},  {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
+        defaultVertices.push_back({ { 1.0f,-1.0f,1.0f},   {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f}, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f } });
 
         std::vector<uint32_t> defaultIndices;
         std::vector<MeshTexture> defaultTextures;
+
+        MeshTexture defaultTexture;
+        defaultTexture.id = TextureFromFile("default.png", "assets/textures");
+        defaultTexture.type = "texture_diffuse";
+        defaultTexture.path = "assets/textures/default.png";
+        defaultTextures.push_back(defaultTexture);
+        textures_loaded.push_back(defaultTexture);
 
         Ref<Mesh> defaultMesh = CreateRef<Mesh>(defaultVertices, defaultIndices, defaultTextures);
         m_SubMeshes.push_back(defaultMesh);

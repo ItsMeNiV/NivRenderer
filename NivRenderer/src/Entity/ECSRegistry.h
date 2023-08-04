@@ -56,7 +56,7 @@ public:
 	Ref<T> GetEntity(uint32_t entityId)
 	{
 		auto entity = m_EntityComponentsMapNew[entityId].first;
-		Ref<T> returnPtr = std::static_pointer_cast<T>(entity);
+		Ref<T> returnPtr = std::dynamic_pointer_cast<T>(entity);
 		if (returnPtr)
 			return returnPtr;
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "Entity/ECSRegistry.h"
 #include "Entity/Entities/SceneObject.h"
+#include "Entity/Entities/LightObject.h"
 #include "Entity/Component.h"
 
 #include "imgui.h"
@@ -85,6 +86,20 @@ void BuildProperties(int32_t& selectedSceneObject)
 				}
 			}
 
+		}
+	}
+	else
+	{
+		Ref<DirectionalLightObject> directionalLightObject = ECSRegistry::GetInstance().GetEntity<DirectionalLightObject>(selectedSceneObject);
+
+		if (directionalLightObject)
+		{
+			bool wasEdited = false;
+			wasEdited = ImGui::ColorEdit3("Light Color", glm::value_ptr(directionalLightObject->GetLightColor()));
+			wasEdited = ImGui::InputFloat3("Light Direction", glm::value_ptr(directionalLightObject->GetDirection()));
+
+			if (wasEdited)
+				sceneObject->SetDirtyFlag(true);
 		}
 	}
 

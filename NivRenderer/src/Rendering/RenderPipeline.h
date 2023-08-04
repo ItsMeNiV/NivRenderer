@@ -7,7 +7,7 @@
 class RenderPipeline
 {
 public:
-    RenderPipeline(std::vector<Ref<RenderPass>> renderPasses, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount);
+    RenderPipeline(std::vector<Ref<RenderPass>> renderPasses, std::vector<Ref<RenderPass>> postProcessingPasses, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount);
 
     Framebuffer& Run(Ref<Scene> scene, ProxyManager& proxyManager);
 
@@ -15,6 +15,7 @@ public:
 
 private:
     std::vector<Ref<RenderPass>> m_RenderPasses;
+    std::vector<Ref<RenderPass>> m_PostProcessingPasses;
     Scope<Framebuffer> m_OutputFramebuffer;
 
     //TEST

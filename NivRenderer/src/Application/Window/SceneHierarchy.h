@@ -21,6 +21,26 @@ void displaySceneObjectContextMenu(Ref<Scene> scene, uint32_t sceneObjectId, int
 	}
 }
 
+void displaySceneLightContextMenu(Ref<Scene> scene, uint32_t sceneObjectId, int32_t& selectedObjectId, bool allowDelete)
+{
+	if (ImGui::BeginPopupContextItem("Context Menu"))
+	{
+		if (ImGui::MenuItem("Add Directional Light"))
+		{
+			scene->AddSceneDirectionalLight();
+		}
+
+		if (allowDelete && ImGui::MenuItem("Delete"))
+		{
+			scene->RemoveSceneLight(sceneObjectId);
+			if (sceneObjectId == selectedObjectId)
+				selectedObjectId = -1;
+		}
+
+		ImGui::EndPopup();
+	}
+}
+
 void displaySceneObject(Ref<Scene> scene, uint32_t sceneObjectId, int32_t& selectedObjectId)
 {
 	ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow;
@@ -59,19 +79,45 @@ void displaySceneObject(Ref<Scene> scene, uint32_t sceneObjectId, int32_t& selec
 	}
 }
 
+void displaySceneLight(Ref<Scene> scene, uint32_t sceneLightId, int32_t& selectedObjectId)
+{
+	ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+	Ref<LightObject> lightObject = ECSRegistry::GetInstance().GetEntity<LightObject>(sceneLightId);
+
+	if (selectedObjectId == sceneLightId)
+		nodeFlags |= ImGuiTreeNodeFlags_Selected;
+
+	ImGui::TreeNodeEx(lightObject->GetEntityName()->c_str(), nodeFlags);
+	if (ImGui::IsItemClicked())
+		selectedObjectId = lightObject->GetId();
+	ImGui::PushID(sceneLightId);
+	displaySceneLightContextMenu(scene, sceneLightId, selectedObjectId, true);
+	ImGui::PopID();
+}
+
 void BuildSceneHierarchy(Ref<Scene> scene, int32_t& selectedSceneObjectId)
 {
 	ImGui::Begin("Scene Hierarchy", 0, ImGuiWindowFlags_NoCollapse);
-	const char* label = "Scene";
-	bool sceneOpen = ImGui::TreeNodeEx(label, ImGuiTreeNodeFlags_DefaultOpen);
+	bool sceneOpen = ImGui::TreeNodeEx("Scene", ImGuiTreeNodeFlags_DefaultOpen);
 	displaySceneObjectContextMenu(scene, -1, selectedSceneObjectId, false);
 	if(sceneOpen)
 	{
+		//Lights
+		bool lightOpen = ImGui::TreeNodeEx("Lights", ImGuiTreeNodeFlags_DefaultOpen);
+		displaySceneLightContextMenu(scene, -1, selectedSceneObjectId, false);
+		if (lightOpen)
+		{
+			int32_t selectedObject = selectedSceneObjectId;
+			for (uint32_t sceneLightId : scene->GetSceneLightIds())
+				displaySceneLight(scene, sceneLightId, selectedObject);
+			selectedSceneObjectId = selectedObject;
+			ImGui::TreePop();
+		}
+
+		//SceneObjects
 		int32_t selectedObject = selectedSceneObjectId;
 		for (uint32_t sceneObjectId : scene->GetSceneObjectIds())
-		{
 			displaySceneObject(scene, sceneObjectId, selectedObject);
-		}
 		selectedSceneObjectId = selectedObject;
 		ImGui::TreePop();
 	}

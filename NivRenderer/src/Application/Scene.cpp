@@ -47,6 +47,21 @@ void Scene::RemoveSceneObject(uint32_t sceneObjectId)
         m_SceneObjectIds.erase(std::remove(m_SceneObjectIds.begin(), m_SceneObjectIds.end(), sceneObjectId));
 }
 
+uint32_t Scene::AddSceneDirectionalLight()
+{
+    Ref<Entity> object = ECSRegistry::GetInstance().CreateEntity<DirectionalLightObject>();
+    m_SceneLightIds.push_back(object->GetId());
+    return object->GetId();
+}
+
+void Scene::RemoveSceneLight(uint32_t sceneLightId)
+{
+    ECSRegistry::GetInstance().RemoveEntity(sceneLightId);
+
+    if (std::find(m_SceneLightIds.begin(), m_SceneLightIds.end(), sceneLightId) != m_SceneLightIds.end())
+        m_SceneLightIds.erase(std::remove(m_SceneLightIds.begin(), m_SceneLightIds.end(), sceneLightId));
+}
+
 uint32_t Scene::AddCamera(const Ref<Camera> cameraPtr)
 {
     Ref<Entity> object = ECSRegistry::GetInstance().CreateEntity<CameraObject>();
