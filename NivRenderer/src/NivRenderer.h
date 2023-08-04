@@ -17,4 +17,5 @@ private:
 	Ref<Renderer> m_Renderer;
 
 	void handleWindowCommand(WindowCommandEvent command);
+	void setupDefaultScene();
 };

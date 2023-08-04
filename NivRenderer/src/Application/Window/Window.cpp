@@ -13,7 +13,7 @@
 Window::Window(uint32_t width, uint32_t height, const char* title)
 	: m_Width(width), m_Height(height), m_Title(title), m_Window(nullptr), m_SelectedObject(-1),
 	m_MainFramebuffer(nullptr), m_CameraControllerFirstPerson(nullptr), m_CameraControllerArcball(nullptr),
-	m_IsFocused(false), m_FirstMouse(true), m_ArcballMove(false), m_DeltaTime(0.0f), m_LastFrame(0.0f), m_RenderWindowHovered(false)
+	m_IsFocused(false), m_FirstMouse(true), m_ArcballMove(false), m_DeltaTime(0.0f), m_LastFrame(0.0f), m_RenderWindowHovered(false), m_FirstRender(true)
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -102,18 +102,41 @@ void Window::RenderImGui(Ref<Scene> scene)
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("Reload Shaders", NULL, false) && m_CommandHandlerCallback)
+			if (ImGui::MenuItem("Recompile Shaders", NULL, false) && m_CommandHandlerCallback)
 				m_CommandHandlerCallback(WindowCommandEvent(WindowCommand::RecompileShaders));
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
 	}
 
+	//Setup Dockspace default layout
 	ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 	ImGui::DockSpace(dockspace_id);
+	if (m_FirstRender)
+	{
+		ImGui::DockBuilderRemoveNode(dockspace_id); // Clear out existing layout
+		ImGui::DockBuilderAddNode(dockspace_id); // Add empty node
+		ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetCurrentWindow()->Viewport->WorkSize);
+
+		ImGuiID dock_main_id = dockspace_id;
+		ImGuiID dock_id_scene = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.20f, NULL, &dock_main_id);
+		ImGuiID dock_id_props = ImGui::DockBuilderSplitNode(dock_id_scene, ImGuiDir_Down, 0.40f, NULL, &dock_id_scene);
+		ImGui::DockBuilderGetNode(dock_main_id)->LocalFlags |= ImGuiDockNodeFlags_NoWindowMenuButton | ImGuiDockNodeFlags_NoCloseButton;
+		ImGui::DockBuilderGetNode(dock_id_scene)->LocalFlags |= ImGuiDockNodeFlags_NoWindowMenuButton | ImGuiDockNodeFlags_NoCloseButton;
+		ImGui::DockBuilderGetNode(dock_id_props)->LocalFlags |= ImGuiDockNodeFlags_NoWindowMenuButton | ImGuiDockNodeFlags_NoCloseButton;
+
+		ImGui::DockBuilderDockWindow("Render", dock_main_id);
+		ImGui::DockBuilderDockWindow("Scene Hierarchy", dock_id_scene);
+		ImGui::DockBuilderDockWindow("Properties", dock_id_props);
+		ImGui::DockBuilderFinish(dockspace_id);
+
+		m_FirstRender = false;
+	}
+
 	BuildSceneHierarchy(scene, m_SelectedObject);
 	BuildProperties(m_SelectedObject);
 	m_RenderWindowHovered = BuildRenderWindow(this);
+
 	ImGui::End();
 	ImGui::Render();
 }

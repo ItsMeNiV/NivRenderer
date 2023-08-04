@@ -35,6 +35,7 @@ private:
 	const char* m_Title;
 	float m_DeltaTime, m_LastFrame;
 	WindowCommandEventCallbackFn m_CommandHandlerCallback;
+	bool m_FirstRender;
 
 	//Scene-Hierarchy
 	int32_t m_SelectedObject;

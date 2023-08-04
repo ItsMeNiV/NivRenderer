@@ -21,14 +21,7 @@ int main()
 Application::Application()
 	: m_Window(CreateRef<Window>(1600, 900, "NivRenderer")), m_Scene(CreateRef<Scene>())
 {
-	//Setup Testscene (TODO: Remove later)
-	uint32_t oId = m_Scene->AddSceneObject();
-	m_Scene->AddSceneObject(oId);
-	m_Scene->AddSceneObject();
-	m_Scene->AddSceneObject();
-	Ref<Camera> camera = CreateRef<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), 1920, 1080);
-	m_Scene->AddCamera(camera);
-	m_Window->CreateCameraController(camera.get());
+	setupDefaultScene();
 
 	m_Window->SetCommandHandler([&](WindowCommandEvent command) { handleWindowCommand(command); });
 
@@ -61,6 +54,14 @@ void Application::Run()
 
 void Application::handleWindowCommand(WindowCommandEvent command)
 {
-	if(command.GetCommand() == WindowCommand::RecompileShaders)
+	if (command.GetCommand() == WindowCommand::RecompileShaders)
 		m_Renderer->GetActivePipeline()->RecompileShaders();
+}
+
+void Application::setupDefaultScene()
+{
+	m_Scene->AddSceneObject();
+	Ref<Camera> camera(CreateRef<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), 1920, 1080));
+	m_Scene->AddCamera(camera);
+	m_Window->CreateCameraController(camera.get());
 }
