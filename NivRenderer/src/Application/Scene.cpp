@@ -54,6 +54,13 @@ uint32_t Scene::AddSceneDirectionalLight()
     return object->GetId();
 }
 
+uint32_t Scene::AddPointLight()
+{
+    Ref<Entity> object = ECSRegistry::GetInstance().CreateEntity<PointLightObject>();
+    m_SceneLightIds.push_back(object->GetId());
+    return object->GetId();
+}
+
 void Scene::RemoveSceneLight(uint32_t sceneLightId)
 {
     ECSRegistry::GetInstance().RemoveEntity(sceneLightId);

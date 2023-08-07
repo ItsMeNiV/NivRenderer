@@ -91,6 +91,7 @@ void BuildProperties(int32_t& selectedSceneObject)
 	else
 	{
 		Ref<DirectionalLightObject> directionalLightObject = ECSRegistry::GetInstance().GetEntity<DirectionalLightObject>(selectedSceneObject);
+        Ref<PointLightObject> pointLightObject = ECSRegistry::GetInstance().GetEntity<PointLightObject>(selectedSceneObject);
 
 		if (directionalLightObject)
 		{
@@ -101,6 +102,18 @@ void BuildProperties(int32_t& selectedSceneObject)
 			if (wasEdited)
 				directionalLightObject->SetDirtyFlag(true);
 		}
+        else if (pointLightObject)
+        {
+            bool wasEdited = false;
+            wasEdited = ImGui::ColorEdit3("Light Color", glm::value_ptr(pointLightObject->GetLightColor()));
+            wasEdited |= ImGui::InputFloat3("Light Position", glm::value_ptr(pointLightObject->GetPosition()));
+            int32_t strengthInput = pointLightObject->GetStrength();
+            wasEdited |= ImGui::InputInt("Light Strength", &strengthInput);
+            pointLightObject->SetStrength(std::min(std::max(strengthInput, 7), 3250)); //Value must be between 7 and 3250
+
+            if (wasEdited)
+				pointLightObject->SetDirtyFlag(true);
+        }
 	}
 
 	ImGui::End();

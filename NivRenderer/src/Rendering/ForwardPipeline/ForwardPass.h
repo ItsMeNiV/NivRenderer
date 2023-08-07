@@ -30,18 +30,33 @@ public:
         m_PassShader->SetVec3("viewPos", viewPos);
 
         //Set Light uniforms
-        uint32_t i = 0;
+        uint32_t pointLightIndex = 0;
+        bool hasDirectionalLight = false;
         for (uint32_t id : scene->GetSceneLightIds())
         {
-            Ref<DirectionalLightProxy> directionalLightProxy = std::static_pointer_cast<DirectionalLightProxy>(proxyManager.GetProxy(id));
-            if (directionalLightProxy)
+            Ref<Proxy> proxy = proxyManager.GetProxy(id);
+            bool isDirectionalLight = std::dynamic_pointer_cast<DirectionalLightProxy>(proxy) != 0;
+            bool isPointLight = std::dynamic_pointer_cast<PointLightProxy>(proxy) != 0;
+            if (isDirectionalLight)
             {
-                m_PassShader->SetVec3("directionalLights[" + std::to_string(i) + "].color", directionalLightProxy->GetLightColor());
-                m_PassShader->SetVec3("directionalLights[" + std::to_string(i) + "].direction", directionalLightProxy->GetLightDirection());
+                hasDirectionalLight = true;
+                Ref<DirectionalLightProxy> directionalLightProxy =
+                    std::static_pointer_cast<DirectionalLightProxy>(proxyManager.GetProxy(id));
+                m_PassShader->SetVec3("directionalLight.color", directionalLightProxy->GetLightColor());
+                m_PassShader->SetVec3("directionalLight.direction", directionalLightProxy->GetLightDirection());
             }
-
-            i++;
+            else if (isPointLight)
+            {
+                Ref<PointLightProxy> pointLightProxy =
+                    std::static_pointer_cast<PointLightProxy>(proxyManager.GetProxy(id));
+                m_PassShader->SetVec3("pointLights[" + std::to_string(pointLightIndex) + "].color", pointLightProxy->GetLightColor());
+                m_PassShader->SetVec3("pointLights[" + std::to_string(pointLightIndex) + "].position", pointLightProxy->GetLightPosition());
+                m_PassShader->SetInt("pointLights[" + std::to_string(pointLightIndex) + "].strength", pointLightProxy->GetLightStrength());
+                pointLightIndex++;
+            }
         }
+        m_PassShader->SetBool("hasDirectionalLight", hasDirectionalLight);
+        m_PassShader->SetInt("amountPointLights", pointLightIndex);
 
         for (uint32_t id : scene->GetSceneObjectIds())
         {

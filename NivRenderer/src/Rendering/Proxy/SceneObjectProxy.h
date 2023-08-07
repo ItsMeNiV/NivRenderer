@@ -13,6 +13,13 @@ public:
         glGenBuffers(1, &m_IndexBuffer);
     }
 
+    virtual ~SceneObjectProxy()
+    {
+        glDeleteBuffers(1, &m_VertexBuffer);
+        glDeleteBuffers(1, &m_IndexBuffer);
+        glDeleteVertexArrays(1, &m_VertexArray);
+    }
+
     void SetTransform(glm::vec3 position, glm::vec3 scale, glm::vec3 rotation)
     {
         m_ModelMatrix = glm::mat4(1.0f);

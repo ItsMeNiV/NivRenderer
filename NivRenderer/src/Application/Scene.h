@@ -13,6 +13,7 @@ public:
     uint32_t AddSceneObject(int32_t parentObjectId = -1);
     void RemoveSceneObject(uint32_t sceneObjectId);
     uint32_t AddSceneDirectionalLight();
+    uint32_t AddPointLight();
     void RemoveSceneLight(uint32_t sceneLightId);
 
     uint32_t AddCamera(const Ref<Camera> cameraPtr);

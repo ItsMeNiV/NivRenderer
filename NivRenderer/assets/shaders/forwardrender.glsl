@@ -28,8 +28,9 @@ void main()
 //=========================//
 
 #ifdef FRAGMENT
+#include "lighting.glsl"
 
-#define MAX_DIR_LIGHTS 32
+#define MAX_POINT_LIGHTS 32
 
 in vec2 v_TextureCoords;
 in vec3 v_Normal;
@@ -37,17 +38,13 @@ in vec3 v_FragPos;
 
 out vec4 FragColor;
 
-struct DirectionalLight {
-    vec3 direction;
-    vec3 color;
-};
-
 uniform sampler2D diffuseTexture;
 uniform sampler2D normalTexture;
 uniform vec3 viewPos;
-uniform DirectionalLight directionalLights[MAX_DIR_LIGHTS];
-
-vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir);
+uniform DirectionalLight directionalLight;
+uniform PointLight pointLights[MAX_POINT_LIGHTS];
+uniform bool hasDirectionalLight;
+uniform int amountPointLights;
 
 void main()
 {
@@ -55,27 +52,13 @@ void main()
     vec3 viewDir = normalize(viewPos - v_FragPos);
 
     vec3 result = vec3(0.0, 0.0, 0.0);
+    if(hasDirectionalLight)
+        result += CalcDirLight(directionalLight, normal, viewDir, diffuseTexture, v_TextureCoords);
 
-    for(int i = 0; i < 1; i++)
-        result += CalcDirLight(directionalLights[i], normal, viewDir);
+    for(int i = 0; i < amountPointLights; i++)
+        result += CalcPointLight(pointLights[i], normal, viewDir, v_FragPos, diffuseTexture, v_TextureCoords);
 
     FragColor = vec4(result, 1.0);
-}
-
-// calculates the color when using a directional light.
-vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir)
-{
-    vec3 lightDir = normalize(-light.direction);
-    // diffuse shading
-    float diff = max(dot(normal, lightDir), 0.0);
-    // specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
-    //float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess); TODO
-    // combine results
-    vec3 ambient = 0.2 * light.color * vec3(texture(diffuseTexture, v_TextureCoords));
-    vec3 diffuse = light.color * diff * vec3(texture(diffuseTexture, v_TextureCoords));
-    //vec3 specular = light.color * spec * vec3(texture(material.specular, TexCoords)); TODO
-    return (ambient + diffuse /*+ specular*/);
 }
 
 #endif

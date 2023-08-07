@@ -29,6 +29,10 @@ void displaySceneLightContextMenu(Ref<Scene> scene, uint32_t sceneObjectId, int3
 		{
 			scene->AddSceneDirectionalLight();
 		}
+        if (ImGui::MenuItem("Add Point Light"))
+        {
+            scene->AddPointLight();
+        }
 
 		if (allowDelete && ImGui::MenuItem("Delete"))
 		{

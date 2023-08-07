@@ -6,6 +6,7 @@ class CameraProxy : public Proxy
 {
 public:
     CameraProxy(uint32_t id) : Proxy(id) {}
+    virtual ~CameraProxy() = default;
 
     void UpdateData(Ref<Camera> camera)
     {
