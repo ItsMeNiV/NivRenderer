@@ -1,20 +1,12 @@
 #pragma once
 #include "Base.h"
 #include "Entity/Component.h"
+#include "Entity/Assets/AssetManager.h"
 //TODO Needs to be moved into it's own assetloader component
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
 #include "stb_image.h"
-
-struct MeshVertex
-{
-	glm::vec3 Position;
-	glm::vec3 Normal;
-	glm::vec2 TexCoords;
-    glm::vec3 Tangent;
-    glm::vec3 Bitangent;
-};
 
 struct MeshTexture
 {
@@ -129,6 +121,7 @@ private:
 
     void reloadMesh()
     {
+        AssetManager::GetInstance().LoadMesh(m_Path);
         //TODO: This logic should be moved to a separate AssetHandler. Loading Models and Textures that are needed, etc
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(m_Path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);

@@ -73,11 +73,13 @@ void BuildProperties(int32_t& selectedSceneObject)
 						std::string* inputString = (std::string*)it.second.valuePtr;
 						ImGui::InputText(label, inputString, 0, InputTextCallback, (void*)inputString);
 						ImGui::SameLine();
+                        ImGui::PushID((std::string("Reload") + it.first).c_str());
 						if (ImGui::Button("Reload"))
 						{
 							it.second.callback();
 							wasEdited = true;
 						}
+                        ImGui::PopID();
 						break;
 					}
 

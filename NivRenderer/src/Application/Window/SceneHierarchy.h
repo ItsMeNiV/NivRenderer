@@ -1,7 +1,7 @@
 #pragma once
 #include "imgui.h"
 
-void displaySceneObjectContextMenu(Ref<Scene> scene, uint32_t sceneObjectId, int32_t& selectedObjectId, bool allowDelete)
+inline void displaySceneObjectContextMenu(const Ref<Scene>& scene, const uint32_t sceneObjectId, int32_t& selectedObjectId, const bool allowDelete)
 {
 	if (ImGui::BeginPopupContextItem("Context Menu"))
 	{
@@ -21,7 +21,7 @@ void displaySceneObjectContextMenu(Ref<Scene> scene, uint32_t sceneObjectId, int
 	}
 }
 
-void displaySceneLightContextMenu(Ref<Scene> scene, uint32_t sceneObjectId, int32_t& selectedObjectId, bool allowDelete)
+inline void displaySceneLightContextMenu(const Ref<Scene> &scene, const uint32_t& sceneObjectId, int32_t& selectedObjectId, const bool allowDelete)
 {
 	if (ImGui::BeginPopupContextItem("Context Menu"))
 	{
@@ -45,7 +45,7 @@ void displaySceneLightContextMenu(Ref<Scene> scene, uint32_t sceneObjectId, int3
 	}
 }
 
-void displaySceneObject(Ref<Scene> scene, uint32_t sceneObjectId, int32_t& selectedObjectId)
+inline void displaySceneObject(const Ref<Scene> &scene, const uint32_t& sceneObjectId, int32_t& selectedObjectId)
 {
 	ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow;
 	Ref<SceneObject> sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId);
@@ -53,7 +53,7 @@ void displaySceneObject(Ref<Scene> scene, uint32_t sceneObjectId, int32_t& selec
 	if (selectedObjectId == sceneObjectId)
 		nodeFlags |= ImGuiTreeNodeFlags_Selected;
 
-	if (sceneObject->GetChildEntities().size() > 0)
+	if (!sceneObject->GetChildEntities().empty())
 	{
 		bool nodeOpen = ImGui::TreeNodeEx(sceneObject->GetEntityName()->c_str(), nodeFlags);
 		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
@@ -83,7 +83,7 @@ void displaySceneObject(Ref<Scene> scene, uint32_t sceneObjectId, int32_t& selec
 	}
 }
 
-void displaySceneLight(Ref<Scene> scene, uint32_t sceneLightId, int32_t& selectedObjectId)
+inline void displaySceneLight(const Ref<Scene> &scene, const uint32_t& sceneLightId, int32_t& selectedObjectId)
 {
 	ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 	Ref<LightObject> lightObject = ECSRegistry::GetInstance().GetEntity<LightObject>(sceneLightId);
@@ -99,7 +99,7 @@ void displaySceneLight(Ref<Scene> scene, uint32_t sceneLightId, int32_t& selecte
 	ImGui::PopID();
 }
 
-void BuildSceneHierarchy(Ref<Scene> scene, int32_t& selectedSceneObjectId)
+inline void BuildSceneHierarchy(const Ref<Scene> &scene, int32_t& selectedSceneObjectId)
 {
 	ImGui::Begin("Scene Hierarchy", 0, ImGuiWindowFlags_NoCollapse);
 	bool sceneOpen = ImGui::TreeNodeEx("Scene", ImGuiTreeNodeFlags_DefaultOpen);

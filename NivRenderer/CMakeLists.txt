@@ -48,7 +48,7 @@ set(SRC_FILES
  "src/Rendering/Proxy/CameraProxy.h"
  "src/Rendering/ForwardPipeline/ForwardPass.h"
  "src/Rendering/OpenGL/VertexLayout.h"
- "src/Entity/Entities/LightObject.h" "src/Rendering/Proxy/LightProxy.h")
+ "src/Entity/Entities/LightObject.h" "src/Rendering/Proxy/LightProxy.h" "src/Entity/Components/MaterialComponent.h" "src/Entity/Assets/AssetManager.h" "src/Entity/Assets/MeshAsset.h")
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp

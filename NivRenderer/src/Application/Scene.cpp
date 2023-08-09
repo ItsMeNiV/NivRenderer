@@ -3,6 +3,7 @@
 #include "Entity/ECSRegistry.h"
 #include "Entity/Components/TransformComponent.h"
 #include "Entity/Components/MeshComponent.h"
+#include "Entity/Components/MaterialComponent.h"
 
 Scene::Scene()
     : m_Id(ECSRegistry::GetInstance().CreateNewEntityId())
@@ -23,6 +24,7 @@ uint32_t Scene::AddSceneObject(int32_t parentObjectId)
         m_SceneObjectIds.push_back(object->GetId());
     ECSRegistry::GetInstance().AddComponent<TransformComponent>(object->GetId());
     ECSRegistry::GetInstance().AddComponent<MeshComponent>(object->GetId());
+    ECSRegistry::GetInstance().AddComponent<MaterialComponent>(object->GetId());
     return object->GetId();
 }
 
