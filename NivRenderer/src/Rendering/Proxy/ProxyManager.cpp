@@ -63,8 +63,10 @@ void ProxyManager::UpdateProxies(Ref<Scene> scene)
         Ref<SceneObjectProxy> proxy = std::static_pointer_cast<SceneObjectProxy>(m_Proxies[sceneObjectId]);
         Ref<TransformComponent> transform = ECSRegistry::GetInstance().GetComponent<TransformComponent>(sceneObjectId);
         Ref<MeshComponent> mesh = ECSRegistry::GetInstance().GetComponent<MeshComponent>(sceneObjectId);
+        Ref<MaterialComponent> material = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(sceneObjectId);
         proxy->SetTransform(transform->GetPosition(), transform->GetScale(), transform->GetRotation());
         proxy->SetMesh(mesh);
+        proxy->SetMaterial(material);
 
         sceneObject->SetDirtyFlag(false);
     }

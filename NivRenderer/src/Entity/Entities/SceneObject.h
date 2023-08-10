@@ -9,7 +9,10 @@ public:
 
 	virtual ~SceneObject();
 
-private:
+	std::string *GetModelPath() { return &m_ModelPath; }
+    void LoadMeshAndMaterial();
 
+private:
+    std::string m_ModelPath;
 
 };

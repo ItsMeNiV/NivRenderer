@@ -33,10 +33,15 @@ set(SRC_FILES
  "src/Entity/ECSRegistry.cpp" "src/Entity/ECSRegistry.h"
  "src/Entity/Entity.h"
  "src/Entity/Component.h"
+ "src/Entity/Assets/AssetManager.h" "src/Entity/Assets/AssetManager.cpp"
+ "src/Entity/Assets/MeshAsset.h" "src/Entity/Assets/MeshAsset.cpp"
+ "src/Entity/Assets/TextureAsset.h" "src/Entity/Assets/TextureAsset.cpp"
  "src/Entity/Components/TransformComponent.h"
- "src/Entity/Components/MeshComponent.h"
+ "src/Entity/Components/MeshComponent.h" "src/Entity/Components/MeshComponent.cpp"
+ "src/Entity/Components/MaterialComponent.h" "src/Entity/Components/MaterialComponent.cpp"
  "src/Entity/Entities/SceneObject.h" "src/Entity/Entities/SceneObject.cpp"
  "src/Entity/Entities/CameraObject.h"
+ "src/Entity/Entities/LightObject.h"
  "src/Application/Scene.h" "src/Application/Scene.cpp"
  "src/Rendering/OpenGL/Framebuffer.h" "src/Rendering/OpenGL/Framebuffer.cpp"
  "src/Rendering/OpenGL/Texture.h" "src/Rendering/OpenGL/Texture.cpp"
@@ -44,11 +49,12 @@ set(SRC_FILES
  "src/Rendering/RenderPass.h"
  "src/Rendering/Proxy/Proxy.h"
  "src/Rendering/Proxy/ProxyManager.cpp" "src/Rendering/Proxy/ProxyManager.h"
- "src/Rendering/Proxy/SceneObjectProxy.h"
+ "src/Rendering/Proxy/SceneObjectProxy.h" "src/Rendering/Proxy/SceneObjectProxy.cpp"
  "src/Rendering/Proxy/CameraProxy.h"
+ "src/Rendering/Proxy/LightProxy.h"
  "src/Rendering/ForwardPipeline/ForwardPass.h"
  "src/Rendering/OpenGL/VertexLayout.h"
- "src/Entity/Entities/LightObject.h" "src/Rendering/Proxy/LightProxy.h" "src/Entity/Components/MaterialComponent.h" "src/Entity/Assets/AssetManager.h" "src/Entity/Assets/MeshAsset.h")
+ )
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp

@@ -49,6 +49,18 @@ void BuildProperties(int32_t& selectedSceneObject)
 	if (sceneObject)
 	{
 		ImGui::SeparatorText(sceneObject->GetEntityName()->c_str());
+
+		//Model-Path
+        ImGui::InputText("Model Path", sceneObject->GetModelPath(), 0, InputTextCallback, sceneObject->GetModelPath());
+        ImGui::SameLine();
+        ImGui::PushID("Reload##Model");
+        if (ImGui::Button("Reload"))
+        {
+            sceneObject->LoadMeshAndMaterial();
+            sceneObject->SetDirtyFlag(true);
+        }
+        ImGui::PopID();
+
 		std::vector<Ref<Component>> components = ECSRegistry::GetInstance().GetAllComponents(selectedSceneObject);
 		for (auto& component : components)
 		{
@@ -87,7 +99,6 @@ void BuildProperties(int32_t& selectedSceneObject)
 						sceneObject->SetDirtyFlag(true);
 				}
 			}
-
 		}
 	}
 	else

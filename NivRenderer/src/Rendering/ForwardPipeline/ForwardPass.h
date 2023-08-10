@@ -63,15 +63,16 @@ public:
             Ref<SceneObjectProxy> objectProxy = std::static_pointer_cast<SceneObjectProxy>(proxyManager.GetProxy(id));
             objectProxy->Bind();
             m_PassShader->SetMat4("model", objectProxy->GetModelMatrix());
-            
-            for (auto& t : objectProxy->GetTextures())
+
+            if (objectProxy->HasDiffuseTexture())
             {
-                if (t.type == "texture_diffuse")
-                {
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, t.id);
-                    m_PassShader->SetTexture("diffuseTexture", 0);
-                }
+                objectProxy->BindDiffuseTexture(0);
+                m_PassShader->SetTexture("diffuseTexture", 0);
+            }
+            if (objectProxy->HasSpecularTexture())
+            {
+                objectProxy->BindSpecularTexture(1);
+                m_PassShader->SetTexture("specularTexture", 1);
             }
             
 

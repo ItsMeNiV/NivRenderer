@@ -39,6 +39,7 @@ in vec3 v_FragPos;
 out vec4 FragColor;
 
 uniform sampler2D diffuseTexture;
+uniform sampler2D specularTexture;
 uniform sampler2D normalTexture;
 uniform vec3 viewPos;
 uniform DirectionalLight directionalLight;
@@ -53,10 +54,10 @@ void main()
 
     vec3 result = vec3(0.0, 0.0, 0.0);
     if(hasDirectionalLight)
-        result += CalcDirLight(directionalLight, normal, viewDir, diffuseTexture, v_TextureCoords);
+        result += CalcDirLight(directionalLight, normal, viewDir, diffuseTexture, specularTexture, v_TextureCoords);
 
     for(int i = 0; i < amountPointLights; i++)
-        result += CalcPointLight(pointLights[i], normal, viewDir, v_FragPos, diffuseTexture, v_TextureCoords);
+        result += CalcPointLight(pointLights[i], normal, viewDir, v_FragPos, diffuseTexture, specularTexture, v_TextureCoords);
 
     FragColor = vec4(result, 1.0);
 }

@@ -1,36 +1,29 @@
 #pragma once
 #include "Base.h"
 #include "Entity/Component.h"
+#include "Entity/Assets/AssetManager.h"
 
 class MaterialComponent : public Component
 {
 public:
-    MaterialComponent() : MaterialComponent(std::string(""), std::string("")) {}
-    MaterialComponent(std::string &&diffusePath) : MaterialComponent(std::move(diffusePath), std::string("")) {}
-    MaterialComponent(std::string &&diffusePath, std::string &&specularPath) :
-        Component("MaterialComponent"), m_DiffusePath(std::move(diffusePath)), m_SpecularPath(std::move(specularPath)) {}
-
+    MaterialComponent();
+    MaterialComponent(std::string &&diffusePath);
+    MaterialComponent(std::string &&diffusePath, std::string &&specularPath);
     ~MaterialComponent() = default;
 
-    virtual std::unordered_map<std::string, ComponentProperty> GetComponentProperties()
-    {
-        std::unordered_map<std::string, ComponentProperty> returnMap;
-
-        returnMap["Diffuse Path"] = {PropertyType::PATH, &m_DiffusePath, [this]() { reloadTexture(); }};
-        returnMap["Specular Path"] = {PropertyType::PATH, &m_SpecularPath, [this]() { reloadTexture(); }};
-
-        return returnMap;
-    }
+    std::unordered_map<std::string, ComponentProperty> GetComponentProperties() override;
 
     const std::string& GetDiffusePath() const { return m_DiffusePath; }
     const std::string& GetSpecularPath() const { return m_SpecularPath; }
+    const Ref<TextureAsset>& GetDiffuseTextureAsset() const { return m_DiffuseTextureAsset; }
+    const Ref<TextureAsset>& GetSpecularTextureAsset() const { return m_SpecularTextureAsset; }
 
 private:
     std::string m_DiffusePath;
+    Ref<TextureAsset> m_DiffuseTextureAsset;
     std::string m_SpecularPath;
+    Ref<TextureAsset> m_SpecularTextureAsset;
 
-    void reloadTexture()
-    {
-        std::cout << "Reloading Texture" << std::endl;
-    }
+    void reloadDiffuseTexture();
+    void reloadSpecularTexture();
 };

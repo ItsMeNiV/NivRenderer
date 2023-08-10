@@ -174,7 +174,7 @@ void Window::CreateCameraController(Camera* camera)
 
 void Window::ProcessInput()
 {
-	if (!m_CameraControllerFirstPerson)
+    if (!m_CameraControllerFirstPerson || !m_IsFocused)
 		return;
 
 	if (glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_PRESS)

@@ -24,22 +24,22 @@ float calcQuadraticTerm(float distance)
 }
 
 // calculates the color when using a directional light.
-vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir, sampler2D diffuseTexture, vec2 textureCoords)
+vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir, sampler2D diffuseTexture, sampler2D specularTexture, vec2 textureCoords)
 {
     vec3 lightDir = normalize(-light.direction);
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
-    //vec3 reflectDir = reflect(-lightDir, normal); TODO
-    //float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess); TODO
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64.0);
     // combine results
-    vec3 ambient = 0.2 * light.color * vec3(texture(diffuseTexture, textureCoords));
-    vec3 diffuse = light.color * diff * vec3(texture(diffuseTexture, textureCoords));
-    //vec3 specular = light.color * spec * vec3(texture(material.specular, TexCoords)); TODO
-    return ambient + diffuse; //+ specular
+    vec3 ambient = 0.2 * light.color * texture(diffuseTexture, textureCoords).rgb;
+    vec3 diffuse = light.color * diff * texture(diffuseTexture, textureCoords).rgb;
+    vec3 specular = light.color * spec * texture(specularTexture, textureCoords).r;
+    return ambient + diffuse + specular;
 }
 
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir, vec3 fragPos, sampler2D diffuseTexture, vec2 textureCoords)
+vec3 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir, vec3 fragPos, sampler2D diffuseTexture, sampler2D specularTexture, vec2 textureCoords)
 {
     // ambient
     vec3 ambient = 0.2 * light.color * texture(diffuseTexture, textureCoords).rgb;
@@ -50,9 +50,9 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir, vec3 fragPos, s
     vec3 diffuse = light.color * diff * texture(diffuseTexture, textureCoords).rgb;  
     
     // specular
-    //vec3 reflectDir = reflect(-lightDir, norm); TODO
-    //float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess); TODO
-    //vec3 specular = light.specular * spec * texture(material.specular, TexCoords).rgb; TODO
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64.0);
+    vec3 specular = light.color * spec * texture(specularTexture, textureCoords).r;
     
     // attenuation
     float distance    = length(light.position - fragPos);
@@ -60,7 +60,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir, vec3 fragPos, s
 
     ambient  *= attenuation;  
     diffuse   *= attenuation;
-    //specular *= attenuation;   
+    specular *= attenuation;   
         
-    return ambient + diffuse;// + specular;
+    return ambient + diffuse + specular;
 }

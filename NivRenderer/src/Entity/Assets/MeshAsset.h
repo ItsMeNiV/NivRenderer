@@ -1,4 +1,5 @@
 #pragma once
+#include "Base.h"
 
 struct MeshVertex
 {
@@ -12,13 +13,13 @@ struct MeshVertex
 class SubMesh
 {
 public:
-    SubMesh(std::vector<MeshVertex> vertices, std::vector<uint32_t> indices) :
+    SubMesh(const std::vector<MeshVertex>& vertices, const std::vector<uint32_t>& indices) :
         m_Vertices(vertices), m_Indices(indices)
     {
     }
 
-    const std::vector<MeshVertex> &GetVertices() const { return m_Vertices; }
-    const std::vector<uint32_t> &GetIndices() const { return m_Indices; }
+    const std::vector<MeshVertex>& GetVertices() const;
+    const std::vector<uint32_t>& GetIndices() const;
 
 private:
     std::vector<MeshVertex> m_Vertices;
@@ -28,8 +29,13 @@ private:
 class MeshAsset
 {
 public:
+    MeshAsset() = default;
+    MeshAsset(const Ref<SubMesh>& subMesh) { m_SubMeshes.push_back(subMesh); }
 
+    const std::vector<Ref<SubMesh>>& GetSubMeshes() const;
+    void AddSubMeshes(const std::vector<Ref<SubMesh>>& meshes);
 
 private:
+    std::vector<Ref<SubMesh>> m_SubMeshes;
 
 };
