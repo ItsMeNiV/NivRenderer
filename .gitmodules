@@ -13,3 +13,6 @@
 [submodule "NivRenderer/vendor/assimp"]
 	path = NivRenderer/vendor/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "NivRenderer/vendor/spdlog"]
+	path = NivRenderer/vendor/spdlog
+	url = https://github.com/gabime/spdlog.git
