@@ -1,14 +1,21 @@
 #pragma once
 #include "Base.h"
 
-enum PropertyType
+namespace NivRenderer
 {
-	FLOAT3, FLOAT, INT, STRING, PATH
-};
+    enum PropertyType
+    {
+        FLOAT3,
+        FLOAT,
+        INT,
+        STRING,
+        PATH
+    };
+}
 
 struct ComponentProperty
 {
-	PropertyType type;
+    NivRenderer::PropertyType type;
 	void* valuePtr;
 	std::function<void()> callback;
 };

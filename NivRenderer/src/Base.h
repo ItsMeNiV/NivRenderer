@@ -13,6 +13,7 @@
 
 #include "OpenGLStarter.h"
 #include "glm/glm.hpp"
+#include "spdlog/spdlog.h"
 
 template<typename T>
 using Scope = std::unique_ptr<T>;

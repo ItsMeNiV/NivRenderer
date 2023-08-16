@@ -15,7 +15,7 @@ std::unordered_map<std::string, ComponentProperty> MeshComponent::GetComponentPr
 {
     std::unordered_map<std::string, ComponentProperty> returnMap;
 
-    returnMap["Path"] = { PropertyType::PATH, &m_Path, [this](){
+    returnMap["Path"] = {NivRenderer::PropertyType::PATH, &m_Path, [this](){
         reloadMesh();
     }};
 

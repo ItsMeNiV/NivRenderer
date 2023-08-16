@@ -9,7 +9,7 @@ std::vector<Ref<Component>> ECSRegistry::GetAllComponents(uint32_t entityId)
 {
 	if (!checkIfEntityExists(entityId))
 	{
-		std::cerr << "Entity with ID " << std::to_string(entityId) << " not found!" << std::endl;
+        SPDLOG_DEBUG("Entity with ID " + std::to_string(entityId) + " not found!");
 		return std::vector<Ref<Component>>();
 	}
 

@@ -72,16 +72,16 @@ void BuildProperties(int32_t& selectedSceneObject)
 					const char* label = it.first.c_str();
 					switch (it.second.type)
 					{
-					case PropertyType::FLOAT:
+					case NivRenderer::PropertyType::FLOAT:
 						wasEdited = ImGui::InputFloat(label, (float*)it.second.valuePtr);
 						break;
-					case PropertyType::FLOAT3:
+					case NivRenderer::PropertyType::FLOAT3:
 						wasEdited = ImGui::InputFloat3(label, (float*)it.second.valuePtr);
 						break;
-					case PropertyType::INT:
+					case NivRenderer::PropertyType::INT:
 						wasEdited = ImGui::InputInt(label, (int*)it.second.valuePtr);
 						break;
-					case PropertyType::PATH:
+					case NivRenderer::PropertyType::PATH:
 						std::string* inputString = (std::string*)it.second.valuePtr;
 						ImGui::InputText(label, inputString, 0, InputTextCallback, (void*)inputString);
 						ImGui::SameLine();

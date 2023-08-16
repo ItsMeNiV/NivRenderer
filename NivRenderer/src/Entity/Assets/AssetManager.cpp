@@ -21,7 +21,7 @@ Ref<MeshAsset> AssetManager::LoadMesh(const std::string& path)
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
-        std::cerr << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
+        SPDLOG_DEBUG(std::string("ERROR::ASSIMP::") + importer.GetErrorString());
         return nullptr;
     }
     processNode(scene->mRootNode, scene, subMeshes);

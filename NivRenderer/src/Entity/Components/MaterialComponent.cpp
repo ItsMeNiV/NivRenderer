@@ -17,8 +17,8 @@ std::unordered_map<std::string, ComponentProperty> MaterialComponent::GetCompone
 {
     std::unordered_map<std::string, ComponentProperty> returnMap;
 
-    returnMap["Diffuse Path"] = {PropertyType::PATH, &m_DiffusePath, [this]() { reloadDiffuseTexture(); }};
-    returnMap["Specular Path"] = {PropertyType::PATH, &m_SpecularPath, [this]() { reloadSpecularTexture(); }};
+    returnMap["Diffuse Path"] = {NivRenderer::PropertyType::PATH, &m_DiffusePath, [this]() { reloadDiffuseTexture(); }};
+    returnMap["Specular Path"] = {NivRenderer::PropertyType::PATH, &m_SpecularPath, [this]() { reloadSpecularTexture(); }};
 
     return returnMap;
 }

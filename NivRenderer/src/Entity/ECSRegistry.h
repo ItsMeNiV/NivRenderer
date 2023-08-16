@@ -26,7 +26,7 @@ public:
 	{
 		if (!checkIfEntityExists(entityId))
 		{
-			std::cerr << "Entity with ID " << std::to_string(entityId) << " not found!" << std::endl;
+            SPDLOG_DEBUG("Entity with ID " + std::to_string(entityId) + " not found!");
 			return;
 		}
 
@@ -60,7 +60,7 @@ public:
 		if (returnPtr)
 			return returnPtr;
 
-		std::cerr << "Entity with ID " << std::to_string(entityId) << " not found!" << std::endl;
+		SPDLOG_DEBUG("Entity with ID " + std::to_string(entityId) + " not found!");
 		return nullptr;
 	}
 
@@ -69,7 +69,7 @@ public:
 	{
 		if (!checkIfEntityExists(entityId))
 		{
-			std::cerr << "Entity with ID " << std::to_string(entityId) << " not found!" << std::endl;
+            SPDLOG_DEBUG("Entity with ID " + std::to_string(entityId) + " not found!");
 			return nullptr;
 		}
 

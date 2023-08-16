@@ -2,6 +2,8 @@
 # project specific logic here.
 #
 
+set(LOG_LEVEL "DEBUG")
+
 set(DEAR_IMGUI_PREFIX
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui"
     CACHE STRING "Path to Dear ImGui"
@@ -54,7 +56,7 @@ set(SRC_FILES
  "src/Rendering/Proxy/LightProxy.h"
  "src/Rendering/ForwardPipeline/ForwardPass.h"
  "src/Rendering/OpenGL/VertexLayout.h"
- )
+)
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp
@@ -76,11 +78,15 @@ add_subdirectory("vendor/glfw")
 add_subdirectory("vendor/glm")
 #Assimp
 add_subdirectory("vendor/assimp")
+#Spdlog
+add_subdirectory("vendor/spdlog")
 
 add_executable (${CMAKE_PROJECT_NAME} ${SRC_FILES})
 
 include_directories(${INCLUDE_DIRS})
-target_link_libraries(${CMAKE_PROJECT_NAME} glfw assimp)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE glfw assimp spdlog::spdlog_header_only)
+
+add_compile_definitions(SPDLOG_ACTIVE_LEVEL=${LOG_LEVEL})
 
 add_custom_target(copy_assets
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/assets ${CMAKE_CURRENT_BINARY_DIR}/assets

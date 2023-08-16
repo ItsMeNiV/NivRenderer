@@ -41,7 +41,7 @@ void Window::CreateRenderContext()
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		std::cerr << "Failed to initialize GLAD" << std::endl;
+        SPDLOG_DEBUG("Failed to initialize GLAD");
 	}
 	glfwSwapInterval(0); // Disable vsync
 	glViewport(0, 0, m_Width, m_Height);

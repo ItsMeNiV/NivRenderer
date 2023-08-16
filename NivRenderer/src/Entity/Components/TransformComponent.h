@@ -16,9 +16,9 @@ public:
 	{
 		std::unordered_map<std::string, ComponentProperty> returnMap;
 
-		returnMap["Position"] = { PropertyType::FLOAT3, glm::value_ptr(m_Position) };
-		returnMap["Scale"] = { PropertyType::FLOAT3, glm::value_ptr(m_Scale) };
-		returnMap["Rotation"] = { PropertyType::FLOAT3, glm::value_ptr(m_Rotation) };
+		returnMap["Position"] = {NivRenderer::PropertyType::FLOAT3, glm::value_ptr(m_Position) };
+		returnMap["Scale"] = {NivRenderer::PropertyType::FLOAT3, glm::value_ptr(m_Scale) };
+		returnMap["Rotation"] = {NivRenderer::PropertyType::FLOAT3, glm::value_ptr(m_Rotation) };
 
 		return returnMap;
 	}
