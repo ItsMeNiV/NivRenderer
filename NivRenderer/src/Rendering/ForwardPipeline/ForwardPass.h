@@ -82,6 +82,30 @@ public:
                 glDrawArrays(GL_TRIANGLES, 0, objectProxy->GetVerticesCount());
         }
 
+        if (pointLightIndex)
+        {
+            Ref<Shader> lightVisualizeShader = AssetManager::GetInstance().LoadShader(std::string("assets/shaders/lightcube.glsl"),
+                                                                                      ShaderType::VERTEX_AND_FRAGMENT);
+            lightVisualizeShader->Bind();
+            lightVisualizeShader->SetMat4("viewProjection", viewProj);
+
+            LightProxy::Bind();
+            for (uint32_t id : scene->GetSceneLightIds())
+            {
+                Ref<Proxy> proxy = proxyManager.GetProxy(id);
+                bool isPointLight = std::dynamic_pointer_cast<PointLightProxy>(proxy) != 0;
+
+                if (isPointLight)
+                {
+                    Ref<PointLightProxy> pointLightProxy =
+                        std::static_pointer_cast<PointLightProxy>(proxyManager.GetProxy(id));
+                    lightVisualizeShader->SetVec3("lightColor", pointLightProxy->GetLightColor());
+                    lightVisualizeShader->SetMat4("model", pointLightProxy->GetModelMatrix());
+
+                    glDrawArrays(GL_TRIANGLES, 0, LightProxy::GetVerticesCount());
+                }
+            }   
+        }
 
         m_OutputFramebuffer->Unbind();
     }

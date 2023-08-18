@@ -36,7 +36,7 @@ class PointLightObject : public LightObject
 {
 public:
 	PointLightObject(uint32_t id) : LightObject(id, std::string("Point Light (") + std::to_string(id) + std::string(")")),
-		m_Position(0.0f, 0.0f, 0.0f)
+		m_Position(0.0f, 0.0f, 0.0f), m_Strength(50)
 	{}
 
 	~PointLightObject() = default;

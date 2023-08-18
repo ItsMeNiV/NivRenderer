@@ -27,7 +27,7 @@ Application::Application()
 
 	setupDefaultScene();
 
-	Ref<RenderPass> forwardPass = CreateRef<ForwardPass>(CreateRef<Shader>("assets/shaders/forwardrender.glsl", ShaderType::VERTEX_AND_FRAGMENT), 1920, 1080);
+	Ref<RenderPass> forwardPass = CreateRef<ForwardPass>(AssetManager::GetInstance().LoadShader(std::string("assets/shaders/forwardrender.glsl"), ShaderType::VERTEX_AND_FRAGMENT), 1920, 1080);
 	std::vector<Ref<RenderPass>> renderPasses;
 	renderPasses.push_back(forwardPass);
 

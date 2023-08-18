@@ -121,8 +121,8 @@ void BuildProperties(int32_t& selectedSceneObject)
             wasEdited = ImGui::ColorEdit3("Light Color", glm::value_ptr(pointLightObject->GetLightColor()));
             wasEdited |= ImGui::InputFloat3("Light Position", glm::value_ptr(pointLightObject->GetPosition()));
             int32_t strengthInput = pointLightObject->GetStrength();
-            wasEdited |= ImGui::InputInt("Light Strength", &strengthInput);
-            pointLightObject->SetStrength(std::min(std::max(strengthInput, 7), 3250)); //Value must be between 7 and 3250
+            wasEdited |= ImGui::SliderInt("Light Strength", &strengthInput, 1, 100);
+            pointLightObject->SetStrength(std::min(std::max(strengthInput, 1), 100));
 
             if (wasEdited)
 				pointLightObject->SetDirtyFlag(true);

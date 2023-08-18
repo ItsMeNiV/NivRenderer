@@ -20,12 +20,14 @@ public:
 
     Ref<MeshAsset> LoadMesh(const std::string& path);
     Ref<TextureAsset> LoadTexture(const std::string& path);
+    Ref<Shader> LoadShader(const std::string& path, ShaderType shaderType);
 
 private:
     AssetManager();
 
     std::unordered_map<std::string, Ref<MeshAsset>> m_LoadedMeshAssets;
     std::unordered_map<std::string, Ref<TextureAsset>> m_LoadedTextureAssets;
+    std::unordered_map<std::string, Ref<Shader>> m_LoadedShaders;
 
     void loadDefaultMeshAndTextures();
     void processNode(const aiNode* node, const aiScene* scene, std::vector<Ref<SubMesh>>& subMeshes);

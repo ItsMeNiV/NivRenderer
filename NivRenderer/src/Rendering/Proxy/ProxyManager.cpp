@@ -35,16 +35,13 @@ void ProxyManager::UpdateProxies(Ref<Scene> scene)
         {
             Ref<DirectionalLightObject> dirLightObject = std::static_pointer_cast<DirectionalLightObject>(lightObject);
             Ref<DirectionalLightProxy> proxy = std::static_pointer_cast<DirectionalLightProxy>(m_Proxies[sceneLightId]);
-            proxy->SetLightColor(dirLightObject->GetLightColor());
-            proxy->SetLightDirection(dirLightObject->GetDirection());
+            proxy->UpdateData(dirLightObject->GetLightColor(), dirLightObject->GetDirection());
         }
         else if (isPointLight)
         {
             Ref<PointLightObject> pointLightObject = std::static_pointer_cast<PointLightObject>(lightObject);
             Ref<PointLightProxy> proxy = std::static_pointer_cast<PointLightProxy>(m_Proxies[sceneLightId]);
-            proxy->SetLightColor(pointLightObject->GetLightColor());
-            proxy->SetLightPosition(pointLightObject->GetPosition());
-            proxy->SetLightStrength(pointLightObject->GetStrength());
+            proxy->UpdateData(pointLightObject->GetLightColor(), pointLightObject->GetPosition(), pointLightObject->GetStrength());
         }
         lightObject->SetDirtyFlag(false);
     }

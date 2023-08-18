@@ -45,7 +45,21 @@ Ref<TextureAsset> AssetManager::LoadTexture(const std::string& path)
     stbi_set_flip_vertically_on_load(textureAsset->GetFlipVertical());
     textureAsset->SetTextureData(stbi_load(path.c_str(), textureAsset->GetWidth(), textureAsset->GetHeight(),
                                            textureAsset->GetNrComponents(), 0));
+    m_LoadedTextureAssets[path] = textureAsset;
+
     return textureAsset;
+}
+
+Ref<Shader> AssetManager::LoadShader(const std::string& path, ShaderType shaderType)
+{
+    if (m_LoadedShaders.contains(path))
+    {
+        return m_LoadedShaders[path];
+    }
+
+    Ref<Shader> shader = CreateRef<Shader>(path.c_str(), shaderType);
+    m_LoadedShaders[path] = shader;
+    return shader;
 }
 
 void AssetManager::loadDefaultMeshAndTextures()
