@@ -76,6 +76,8 @@ Texture::Texture(int width, int height, int sampleCount)
         glTexImage2D(m_TextureType, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, NULL);
     glTexParameteri(m_TextureType, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(m_TextureType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(m_TextureType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(m_TextureType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindTexture(m_TextureType, 0);
 }
 

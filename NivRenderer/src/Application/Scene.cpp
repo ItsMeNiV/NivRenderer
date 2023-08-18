@@ -7,7 +7,9 @@
 
 Scene::Scene()
     : m_Id(ECSRegistry::GetInstance().CreateNewEntityId())
-{}
+{
+    m_SceneSettings.visualizeLights = false;
+}
 
 Scene::~Scene()
 {

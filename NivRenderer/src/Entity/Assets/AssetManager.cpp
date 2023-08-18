@@ -67,6 +67,8 @@ void AssetManager::loadDefaultMeshAndTextures()
     // Setup default cube
     std::vector<Ref<SubMesh>> subMeshes;
     std::vector<MeshVertex> defaultVertices;
+
+    //Back
     defaultVertices.push_back(
         {{-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
     defaultVertices.push_back(
@@ -80,6 +82,7 @@ void AssetManager::loadDefaultMeshAndTextures()
     defaultVertices.push_back(
         {{-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
 
+    //Left
     defaultVertices.push_back(
         {{-1.0f, -1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
     defaultVertices.push_back(
@@ -93,6 +96,7 @@ void AssetManager::loadDefaultMeshAndTextures()
     defaultVertices.push_back(
         {{-1.0f, -1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
 
+    //Right
     defaultVertices.push_back(
         {{1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
     defaultVertices.push_back(
@@ -106,6 +110,7 @@ void AssetManager::loadDefaultMeshAndTextures()
     defaultVertices.push_back(
         {{1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
 
+    //Front
     defaultVertices.push_back(
         {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
     defaultVertices.push_back(
@@ -119,6 +124,7 @@ void AssetManager::loadDefaultMeshAndTextures()
     defaultVertices.push_back(
         {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
 
+    //Top
     defaultVertices.push_back(
         {{-1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
     defaultVertices.push_back(
@@ -132,6 +138,7 @@ void AssetManager::loadDefaultMeshAndTextures()
     defaultVertices.push_back(
         {{-1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
 
+    //Bottom
     defaultVertices.push_back(
         {{-1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
     defaultVertices.push_back(

@@ -134,7 +134,7 @@ void Window::RenderImGui(Ref<Scene> scene)
 	}
 
 	BuildSceneHierarchy(scene, m_SelectedObject);
-	BuildProperties(m_SelectedObject);
+    BuildProperties(m_SelectedObject, scene);
 	m_RenderWindowHovered = BuildRenderWindow(this);
 
 	ImGui::End();

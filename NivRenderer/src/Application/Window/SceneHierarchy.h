@@ -101,8 +101,14 @@ inline void displaySceneLight(const Ref<Scene> &scene, const uint32_t& sceneLigh
 
 inline void BuildSceneHierarchy(const Ref<Scene> &scene, int32_t& selectedSceneObjectId)
 {
+    ImGuiTreeNodeFlags sceneNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow;
+    if (selectedSceneObjectId == scene->GetId())
+        sceneNodeFlags |= ImGuiTreeNodeFlags_Selected;
+
 	ImGui::Begin("Scene Hierarchy", 0, ImGuiWindowFlags_NoCollapse);
-	bool sceneOpen = ImGui::TreeNodeEx("Scene", ImGuiTreeNodeFlags_DefaultOpen);
+    bool sceneOpen = ImGui::TreeNodeEx("Scene", sceneNodeFlags);
+    if (ImGui::IsItemClicked())
+        selectedSceneObjectId = scene->GetId();
 	displaySceneObjectContextMenu(scene, -1, selectedSceneObjectId, false);
 	if(sceneOpen)
 	{

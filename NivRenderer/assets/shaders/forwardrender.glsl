@@ -18,9 +18,9 @@ uniform mat4 viewProjection;
 void main()
 {
     v_TextureCoords = vertTextureCoords;
-    v_Normal = vertNormal;
+    v_Normal = mat3(transpose(inverse(model))) * vertNormal;
     v_FragPos = vec3(model * vec4(vertPosition, 1.0));
-    gl_Position = viewProjection * model * vec4(vertPosition.x, vertPosition.y, vertPosition.z, 1.0);
+    gl_Position = viewProjection * vec4(v_FragPos, 1.0);
 }
 
 #endif

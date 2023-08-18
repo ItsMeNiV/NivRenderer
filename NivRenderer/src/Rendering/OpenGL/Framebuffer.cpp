@@ -42,11 +42,11 @@ void Framebuffer::Unbind()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Framebuffer::BlitFramebuffer(unsigned int targetFramebuffer)
+void Framebuffer::BlitFramebuffer(unsigned int targetFramebuffer, int targetWidth, int targetHeight)
 {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_FrameBuffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetFramebuffer);
-    glBlitFramebuffer(0, 0, m_CurrentWidth, m_CurrentHeight, 0, 0, m_CurrentWidth, m_CurrentHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBlitFramebuffer(0, 0, m_CurrentWidth, m_CurrentHeight, 0, 0, targetWidth, targetHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }

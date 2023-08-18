@@ -18,6 +18,7 @@ public:
     {
         glEnable(GL_DEPTH_TEST);
         m_OutputFramebuffer->Bind();
+        glViewport(0, 0, m_OutputFramebuffer->GetWidth(), m_OutputFramebuffer->GetHeight());
         Ref<CameraProxy> camera = std::static_pointer_cast<CameraProxy>(proxyManager.GetProxy(scene->GetCameraId()));
 
         glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
@@ -26,7 +27,7 @@ public:
         glm::mat4 view = camera->GetView();
         glm::mat4 viewProj = camera->GetProjection() * view;
         m_PassShader->SetMat4("viewProjection", viewProj);
-        glm::vec3 viewPos = glm::vec3(-view[3][0], -view[3][1], -view[3][2]);
+        glm::vec3 viewPos = camera->GetPosition();
         m_PassShader->SetVec3("viewPos", viewPos);
 
         //Set Light uniforms
@@ -82,7 +83,7 @@ public:
                 glDrawArrays(GL_TRIANGLES, 0, objectProxy->GetVerticesCount());
         }
 
-        if (pointLightIndex)
+        if (scene->GetSceneSettings().visualizeLights && pointLightIndex)
         {
             Ref<Shader> lightVisualizeShader = AssetManager::GetInstance().LoadShader(std::string("assets/shaders/lightcube.glsl"),
                                                                                       ShaderType::VERTEX_AND_FRAGMENT);

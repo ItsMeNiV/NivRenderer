@@ -35,7 +35,7 @@ static int InputTextCallback(ImGuiInputTextCallbackData* data)
 	return 0;
 }
 
-void BuildProperties(int32_t& selectedSceneObject)
+void BuildProperties(int32_t& selectedSceneObject, const Ref<Scene>& scene)
 {
 	ImGui::Begin("Properties", 0, ImGuiWindowFlags_NoCollapse);
 
@@ -44,6 +44,12 @@ void BuildProperties(int32_t& selectedSceneObject)
 		ImGui::End();
 		return;
 	}
+    if (selectedSceneObject == scene->GetId())
+    {
+        ImGui::SeparatorText("General Scene Settings");
+        ImGui::Checkbox("Visualize Lights", &scene->GetSceneSettings().visualizeLights);
+    }
+
 	Ref<SceneObject> sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(selectedSceneObject);
 
 	if (sceneObject)

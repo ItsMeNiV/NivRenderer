@@ -12,7 +12,7 @@ public:
 	void Bind();
 	void Unbind();
 
-	void BlitFramebuffer(unsigned int targetFramebuffer);
+	void BlitFramebuffer(unsigned int targetFramebuffer, int targetWidth, int targetHeight);
 
 	const Ref<Texture> GetTextureColorBuffer() { return m_TextureColorBuffer; }
 	const int GetWidth() { return m_CurrentWidth; }

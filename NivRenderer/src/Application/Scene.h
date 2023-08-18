@@ -4,6 +4,11 @@
 #include "Entity/Entities/LightObject.h"
 #include "Entity/Entities/CameraObject.h"
 
+struct SceneSettings
+{
+    bool visualizeLights;
+};
+
 class Scene
 {
 public:
@@ -22,10 +27,12 @@ public:
     const std::vector<uint32_t>& GetSceneObjectIds() const { return m_SceneObjectIds; }
     const std::vector<uint32_t>& GetSceneLightIds() const { return m_SceneLightIds; }
     const uint32_t GetCameraId() const { return m_CameraId; }
+    SceneSettings& GetSceneSettings() { return m_SceneSettings; }
     
 private:
     uint32_t m_Id;
     std::vector<uint32_t> m_SceneObjectIds;
     std::vector<uint32_t> m_SceneLightIds;
     uint32_t m_CameraId;
+    SceneSettings m_SceneSettings;
 };

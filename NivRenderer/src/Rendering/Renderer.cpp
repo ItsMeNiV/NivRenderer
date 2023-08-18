@@ -20,7 +20,9 @@ void Renderer::RenderScene()
     if (m_ActiveScene)
     {
         auto& outputFramebuffer = m_ActiveRenderPipeline->Run(m_ActiveScene, *m_ProxyManager);
-        outputFramebuffer.BlitFramebuffer(m_ActiveWindow->GetFramebuffer()->GetId());
+        outputFramebuffer.BlitFramebuffer(m_ActiveWindow->GetFramebuffer()->GetId(),
+                                          m_ActiveWindow->GetFramebuffer()->GetWidth(),
+                                          m_ActiveWindow->GetFramebuffer()->GetHeight());
     }
 
 }

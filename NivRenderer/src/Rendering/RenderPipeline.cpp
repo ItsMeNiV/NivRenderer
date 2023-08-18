@@ -19,7 +19,8 @@ Framebuffer& RenderPipeline::Run(Ref<Scene> scene, ProxyManager& proxyManager)
         //Get output
 
         //If last pass:
-        currentPass->GetOutputFramebuffer()->BlitFramebuffer(m_OutputFramebuffer->GetId());
+        currentPass->GetOutputFramebuffer()->BlitFramebuffer(
+            m_OutputFramebuffer->GetId(), m_OutputFramebuffer->GetWidth(), m_OutputFramebuffer->GetHeight());
     }
 
     for (auto currentPass : m_PostProcessingPasses)
@@ -28,7 +29,8 @@ Framebuffer& RenderPipeline::Run(Ref<Scene> scene, ProxyManager& proxyManager)
         currentPass->Run(scene, proxyManager);
 
         //If last pass:
-        currentPass->GetOutputFramebuffer()->BlitFramebuffer(m_OutputFramebuffer->GetId());
+        currentPass->GetOutputFramebuffer()->BlitFramebuffer(
+            m_OutputFramebuffer->GetId(), m_OutputFramebuffer->GetWidth(), m_OutputFramebuffer->GetHeight());
     }
 
     return *m_OutputFramebuffer;
