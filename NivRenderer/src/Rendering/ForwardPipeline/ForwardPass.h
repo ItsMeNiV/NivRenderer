@@ -10,8 +10,8 @@
 class ForwardPass : public RenderPass
 {
 public:
-    ForwardPass(Ref<Shader> passShader, uint32_t resolutionWidth, uint32_t resolutionHeight)
-        : RenderPass(passShader, resolutionWidth, resolutionHeight)
+    ForwardPass(Ref<Shader> passShader, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount) :
+        RenderPass(passShader, resolutionWidth, resolutionHeight, sampleCount)
     {}
 
     virtual void Run(Ref<Scene> scene, ProxyManager& proxyManager)

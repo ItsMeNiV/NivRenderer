@@ -47,6 +47,7 @@ void Framebuffer::BlitFramebuffer(unsigned int targetFramebuffer, int targetWidt
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_FrameBuffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetFramebuffer);
     glBlitFramebuffer(0, 0, m_CurrentWidth, m_CurrentHeight, 0, 0, targetWidth, targetHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    GLenum test = glGetError();
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }

@@ -8,8 +8,8 @@
 class RenderPass
 {
 public:
-    RenderPass(Ref<Shader> passShader, uint32_t resolutionWidth, uint32_t resolutionHeight, Ref<Framebuffer> inputeFramebuffer = 0)
-        : m_PassShader(passShader), m_InputFramebuffer(inputeFramebuffer), m_OutputFramebuffer(CreateRef<Framebuffer>(resolutionWidth, resolutionHeight))
+    RenderPass(Ref<Shader> passShader, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount, Ref<Framebuffer> inputFramebuffer = 0)
+        : m_PassShader(passShader), m_InputFramebuffer(inputFramebuffer), m_OutputFramebuffer(CreateRef<Framebuffer>(resolutionWidth, resolutionHeight, sampleCount))
     {}
 
     virtual void Run(Ref<Scene> scene, ProxyManager& proxyManager) = 0;

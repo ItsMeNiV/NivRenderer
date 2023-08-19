@@ -1,7 +1,7 @@
 #include "RenderPipeline.h"
 
-RenderPipeline::RenderPipeline(std::vector<Ref<RenderPass>> renderPasses, std::vector<Ref<RenderPass>> postProcessingPasses, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount)
-    : m_RenderPasses(renderPasses), m_PostProcessingPasses(postProcessingPasses), m_OutputFramebuffer(nullptr), m_ResolutionWidth(resolutionWidth), m_ResolutionHeight(resolutionHeight), m_SampleCount(sampleCount)
+RenderPipeline::RenderPipeline(std::vector<Ref<RenderPass>> renderPasses, std::vector<Ref<RenderPass>> postProcessingPasses, uint32_t resolutionWidth, uint32_t resolutionHeight)
+    : m_RenderPasses(renderPasses), m_PostProcessingPasses(postProcessingPasses), m_OutputFramebuffer(nullptr), m_ResolutionWidth(resolutionWidth), m_ResolutionHeight(resolutionHeight)
 {
 }
 
@@ -9,7 +9,7 @@ Framebuffer& RenderPipeline::Run(Ref<Scene> scene, ProxyManager& proxyManager)
 {
     if (!m_OutputFramebuffer)
     {
-        m_OutputFramebuffer = CreateScope<Framebuffer>(m_ResolutionWidth, m_ResolutionHeight, m_SampleCount);
+        m_OutputFramebuffer = CreateScope<Framebuffer>(m_ResolutionWidth, m_ResolutionHeight);
     }
 
     for (auto currentPass : m_RenderPasses)

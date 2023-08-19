@@ -27,11 +27,11 @@ Application::Application()
 
 	setupDefaultScene();
 
-	Ref<RenderPass> forwardPass = CreateRef<ForwardPass>(AssetManager::GetInstance().LoadShader(std::string("assets/shaders/forwardrender.glsl"), ShaderType::VERTEX_AND_FRAGMENT), 1920, 1080);
+	Ref<RenderPass> forwardPass = CreateRef<ForwardPass>(AssetManager::GetInstance().LoadShader(std::string("assets/shaders/forwardrender.glsl"), ShaderType::VERTEX_AND_FRAGMENT), 1920, 1080, 4);
 	std::vector<Ref<RenderPass>> renderPasses;
 	renderPasses.push_back(forwardPass);
 
-	m_Renderer->SetActivePipeline(CreateRef<RenderPipeline>(renderPasses, std::vector<Ref<RenderPass>>(), 1920, 1080, 4));
+	m_Renderer->SetActivePipeline(CreateRef<RenderPipeline>(renderPasses, std::vector<Ref<RenderPass>>(), 1920, 1080));
 	m_Renderer->SetActiveScene(m_Scene);
 }
 
