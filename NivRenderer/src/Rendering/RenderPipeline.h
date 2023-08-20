@@ -12,6 +12,9 @@ public:
     Framebuffer& Run(Ref<Scene> scene, ProxyManager& proxyManager);
 
     void RecompileShaders();
+    void UpdateResolution(uint32_t width, uint32_t height);
+    void UpdateSampleCount(uint32_t sampleCount);
+    uint32_t GetSampleCount();
 
 private:
     std::vector<Ref<RenderPass>> m_RenderPasses;

@@ -27,11 +27,13 @@ Application::Application()
 
 	setupDefaultScene();
 
-	Ref<RenderPass> forwardPass = CreateRef<ForwardPass>(AssetManager::GetInstance().LoadShader(std::string("assets/shaders/forwardrender.glsl"), ShaderType::VERTEX_AND_FRAGMENT), 1920, 1080, 4);
+	Ref<RenderPass> forwardPass = CreateRef<ForwardPass>(
+        AssetManager::GetInstance().LoadShader(std::string("assets/shaders/forwardrender.glsl"),
+                                               ShaderType::VERTEX_AND_FRAGMENT), m_Scene->GetSceneSettings().renderResolution.x, m_Scene->GetSceneSettings().renderResolution.y, m_Scene->GetSceneSettings().sampleCount);
 	std::vector<Ref<RenderPass>> renderPasses;
 	renderPasses.push_back(forwardPass);
 
-	m_Renderer->SetActivePipeline(CreateRef<RenderPipeline>(renderPasses, std::vector<Ref<RenderPass>>(), 1920, 1080));
+	m_Renderer->SetActivePipeline(CreateRef<RenderPipeline>(renderPasses, std::vector<Ref<RenderPass>>(), m_Scene->GetSceneSettings().renderResolution.x, m_Scene->GetSceneSettings().renderResolution.y));
 	m_Renderer->SetActiveScene(m_Scene);
 }
 
@@ -62,7 +64,7 @@ void Application::setupDefaultScene()
 {
 	m_Scene->AddSceneObject();
 	m_Scene->AddSceneDirectionalLight();
-	Ref<Camera> camera(CreateRef<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), 1920, 1080));
+    Ref<Camera> camera(CreateRef<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), m_Scene->GetSceneSettings().renderResolution.x, m_Scene->GetSceneSettings().renderResolution.y));
 	m_Scene->AddCamera(camera);
 	m_Window->CreateCameraController(camera.get());
 }

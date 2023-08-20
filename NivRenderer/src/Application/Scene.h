@@ -7,6 +7,8 @@
 struct SceneSettings
 {
     bool visualizeLights;
+    glm::ivec2 renderResolution;
+    uint32_t sampleCount;
 };
 
 class Scene

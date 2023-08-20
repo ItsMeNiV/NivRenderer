@@ -9,6 +9,8 @@ Scene::Scene()
     : m_Id(ECSRegistry::GetInstance().CreateNewEntityId())
 {
     m_SceneSettings.visualizeLights = false;
+    m_SceneSettings.renderResolution = {1920, 1080};
+    m_SceneSettings.sampleCount = 4;
 }
 
 Scene::~Scene()

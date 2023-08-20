@@ -49,3 +49,28 @@ void RenderPipeline::RecompileShaders()
     }
 
 }
+
+void RenderPipeline::UpdateResolution(uint32_t width, uint32_t height)
+{
+    m_OutputFramebuffer = CreateScope<Framebuffer>(width, height);
+    for (auto currentPass : m_RenderPasses)
+    {
+        currentPass->UpdateResolution(width, height);
+    }
+}
+
+void RenderPipeline::UpdateSampleCount(uint32_t sampleCount)
+{
+        for (auto currentPass : m_RenderPasses)
+        {
+            currentPass->UpdateSampleCount(sampleCount);
+        }
+}
+
+uint32_t RenderPipeline::GetSampleCount()
+{
+    if (m_RenderPasses.size() == 0)
+        return 0;
+
+    return m_RenderPasses[0]->GetSampleCount();
+}

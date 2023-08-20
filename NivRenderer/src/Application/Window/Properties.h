@@ -48,6 +48,8 @@ void BuildProperties(int32_t& selectedSceneObject, const Ref<Scene>& scene)
     {
         ImGui::SeparatorText("General Scene Settings");
         ImGui::Checkbox("Visualize Lights", &scene->GetSceneSettings().visualizeLights);
+        ImGui::InputInt2("Render resolution", glm::value_ptr(scene->GetSceneSettings().renderResolution));
+        ImGui::InputInt("Sample count", (int32_t*)&scene->GetSceneSettings().sampleCount);
     }
 
 	Ref<SceneObject> sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(selectedSceneObject);
