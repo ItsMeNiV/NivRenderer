@@ -33,14 +33,12 @@ Ref<MeshAsset> AssetManager::LoadMesh(const std::string& path)
     return meshAsset;
 }
 
-Ref<TextureAsset> AssetManager::LoadTexture(const std::string& path)
+Ref<TextureAsset> AssetManager::LoadTexture(const std::string& path, bool flipVertical)
 {
-    if (m_LoadedTextureAssets.contains(path))
-    {
+    if (m_LoadedTextureAssets.contains(path) && m_LoadedTextureAssets[path]->GetFlipVertical() == flipVertical)
         return m_LoadedTextureAssets[path];
-    }
 
-    Ref<TextureAsset> textureAsset = CreateRef<TextureAsset>(true); //TODO: Make FlipVertical configurable
+    Ref<TextureAsset> textureAsset = CreateRef<TextureAsset>(flipVertical);
 
     stbi_set_flip_vertically_on_load(textureAsset->GetFlipVertical());
     textureAsset->SetTextureData(stbi_load(path.c_str(), textureAsset->GetWidth(), textureAsset->GetHeight(),
@@ -160,8 +158,10 @@ void AssetManager::loadDefaultMeshAndTextures()
     m_LoadedMeshAssets["default"] = defaultMeshAsset;
 
     const std::string defaultTexturePath("assets/textures/default.png");
-    const Ref<TextureAsset> defaultTexture = LoadTexture(defaultTexturePath);
-    m_LoadedTextureAssets["default"] = defaultTexture;
+    const Ref<TextureAsset> defaultTexture = LoadTexture(defaultTexturePath, false);
+    auto nodeHandle = m_LoadedTextureAssets.extract("assets/textures/default.png");
+    nodeHandle.key() = "default";
+    m_LoadedTextureAssets.insert(std::move(nodeHandle));
 }
 
 void AssetManager::processNode(const aiNode* node, const aiScene* scene, std::vector<Ref<SubMesh>>& subMeshes)

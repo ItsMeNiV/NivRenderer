@@ -19,7 +19,7 @@ public:
     }
 
     Ref<MeshAsset> LoadMesh(const std::string& path);
-    Ref<TextureAsset> LoadTexture(const std::string& path);
+    Ref<TextureAsset> LoadTexture(const std::string& path, bool flipVertical);
     Ref<Shader> LoadShader(const std::string& path, ShaderType shaderType);
 
 private:

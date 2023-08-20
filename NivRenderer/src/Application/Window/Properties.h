@@ -81,26 +81,30 @@ void BuildProperties(int32_t& selectedSceneObject, const Ref<Scene>& scene)
 					switch (it.second.type)
 					{
 					case NivRenderer::PropertyType::FLOAT:
-						wasEdited = ImGui::InputFloat(label, (float*)it.second.valuePtr);
+						wasEdited = ImGui::InputFloat(label, static_cast<float*>(it.second.valuePtr));
 						break;
 					case NivRenderer::PropertyType::FLOAT3:
-						wasEdited = ImGui::InputFloat3(label, (float*)it.second.valuePtr);
+						wasEdited = ImGui::InputFloat3(label, static_cast<float*>(it.second.valuePtr));
 						break;
 					case NivRenderer::PropertyType::INT:
-						wasEdited = ImGui::InputInt(label, (int*)it.second.valuePtr);
+						wasEdited = ImGui::InputInt(label, static_cast<int*>(it.second.valuePtr));
 						break;
 					case NivRenderer::PropertyType::PATH:
-						std::string* inputString = (std::string*)it.second.valuePtr;
-						ImGui::InputText(label, inputString, 0, InputTextCallback, (void*)inputString);
-						ImGui::SameLine();
-                        ImGui::PushID((std::string("Reload") + it.first).c_str());
-						if (ImGui::Button("Reload"))
-						{
-							it.second.callback();
-							wasEdited = true;
-						}
-                        ImGui::PopID();
-						break;
+					{
+                            std::string* inputString = static_cast<std::string*>(it.second.valuePtr);
+                            ImGui::InputText(label, inputString, 0, InputTextCallback, (void*)inputString);
+                            ImGui::PushID((std::string("Reload") + it.first).c_str());
+                            if (ImGui::Button("Reload"))
+                            {
+                                it.second.callback();
+                                wasEdited = true;
+                            }
+                            ImGui::PopID();
+                            break;   
+					}
+					case NivRenderer::PropertyType::BOOL:
+                        wasEdited = ImGui::Checkbox(it.first.c_str(), static_cast<bool*>(it.second.valuePtr));
+                        break;
 					}
 
 					if (wasEdited)

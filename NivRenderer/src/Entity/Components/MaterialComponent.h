@@ -21,8 +21,10 @@ public:
 private:
     std::string m_DiffusePath;
     Ref<TextureAsset> m_DiffuseTextureAsset;
+    bool m_FlipDiffuseTexture;
     std::string m_SpecularPath;
     Ref<TextureAsset> m_SpecularTextureAsset;
+    bool m_FlipSpecularTexture;
 
     void reloadDiffuseTexture();
     void reloadSpecularTexture();

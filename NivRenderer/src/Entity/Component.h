@@ -9,7 +9,8 @@ namespace NivRenderer
         FLOAT,
         INT,
         STRING,
-        PATH
+        PATH,
+        BOOL
     };
 }
 
