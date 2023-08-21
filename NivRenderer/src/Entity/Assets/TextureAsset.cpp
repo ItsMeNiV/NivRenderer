@@ -1,7 +1,7 @@
 #include "Entity/Assets/TextureAsset.h"
 
-TextureAsset::TextureAsset(bool flipVertical):
-    m_TextureData(nullptr), m_FlipVertical(flipVertical), m_Width(0), m_Height(0), m_NrComponents(0)
+TextureAsset::TextureAsset(const std::string& path, bool flipVertical) :
+    m_TextureData(nullptr), m_FlipVertical(flipVertical), m_Width(0), m_Height(0), m_NrComponents(0), m_Path(path)
 {
 }
 
@@ -38,4 +38,9 @@ int* TextureAsset::GetHeight()
 int* TextureAsset::GetNrComponents()
 {
     return &m_NrComponents;
+}
+
+const std::string& TextureAsset::GetPath()
+{
+    return m_Path;
 }

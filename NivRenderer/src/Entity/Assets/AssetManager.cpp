@@ -33,16 +33,18 @@ Ref<MeshAsset> AssetManager::LoadMesh(const std::string& path)
     return meshAsset;
 }
 
-Ref<TextureAsset> AssetManager::LoadTexture(const std::string& path, bool flipVertical)
+Ref<TextureAsset> AssetManager::LoadTexture(std::string const& path, bool flipVertical)
 {
-    if (m_LoadedTextureAssets.contains(path) && m_LoadedTextureAssets[path]->GetFlipVertical() == flipVertical)
+    const bool textureExists = m_LoadedTextureAssets.contains(path);
+    if (textureExists && m_LoadedTextureAssets[path]->GetFlipVertical() == flipVertical)
         return m_LoadedTextureAssets[path];
 
-    Ref<TextureAsset> textureAsset = CreateRef<TextureAsset>(flipVertical);
+    std::string pathToUse = textureExists ? m_LoadedTextureAssets[path]->GetPath() : path;
+
+    Ref<TextureAsset> textureAsset = CreateRef<TextureAsset>(pathToUse, flipVertical);
 
     stbi_set_flip_vertically_on_load(textureAsset->GetFlipVertical());
-    textureAsset->SetTextureData(stbi_load(path.c_str(), textureAsset->GetWidth(), textureAsset->GetHeight(),
-                                           textureAsset->GetNrComponents(), 0));
+    textureAsset->SetTextureData(stbi_load(pathToUse.c_str(), textureAsset->GetWidth(), textureAsset->GetHeight(), textureAsset->GetNrComponents(), 0));
     m_LoadedTextureAssets[path] = textureAsset;
 
     return textureAsset;

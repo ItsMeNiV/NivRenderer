@@ -18,8 +18,10 @@ public:
     void Unbind() const;
     bool HasDiffuseTexture() const;
     bool HasSpecularTexture() const;
+    bool HasNormalTexture() const;
     void BindDiffuseTexture(const int32_t slot) const;
     void BindSpecularTexture(const int32_t slot) const;
+    void BindNormalTexture(const int32_t slot) const;
 
     const uint32_t GetIndexCount() const { return m_IndexCount; }
     const uint32_t GetVerticesCount() const { return m_VerticesCount; }
@@ -27,7 +29,7 @@ public:
 
 private:
     glm::mat4 m_ModelMatrix;
-    uint32_t m_DiffuseTexture, m_SpecularTexture;
+    uint32_t m_DiffuseTexture, m_SpecularTexture, m_NormalTexture;
 
     //TODO: Abstract
     uint32_t m_VertexArray, m_VertexBuffer, m_IndexBuffer;

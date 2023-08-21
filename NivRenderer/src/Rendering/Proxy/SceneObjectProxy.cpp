@@ -1,6 +1,6 @@
 #include "Rendering/Proxy/SceneObjectProxy.h"
 
-SceneObjectProxy::SceneObjectProxy(uint32_t id): Proxy(id), m_DiffuseTexture(UINT32_MAX), m_SpecularTexture(UINT32_MAX)
+SceneObjectProxy::SceneObjectProxy(uint32_t id): Proxy(id), m_DiffuseTexture(UINT32_MAX), m_SpecularTexture(UINT32_MAX), m_NormalTexture(UINT32_MAX)
 {
     glGenVertexArrays(1, &m_VertexArray);
     glGenBuffers(1, &m_VertexBuffer);
@@ -18,7 +18,9 @@ void SceneObjectProxy::SetTransform(glm::vec3 position, glm::vec3 scale, glm::ve
 {
     m_ModelMatrix = glm::mat4(1.0f);
     m_ModelMatrix = glm::translate(m_ModelMatrix, position);
-    //m_ModelMatrix = glm::rotate(m_ModelMatrix, position); TODO
+    m_ModelMatrix = glm::rotate(m_ModelMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+    m_ModelMatrix = glm::rotate(m_ModelMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+    m_ModelMatrix = glm::rotate(m_ModelMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
     m_ModelMatrix = glm::scale(m_ModelMatrix, scale);
 }
 
@@ -74,11 +76,15 @@ void SceneObjectProxy::SetMaterial(const Ref<MaterialComponent>& material)
         glDeleteTextures(1, &m_DiffuseTexture);
     if (m_SpecularTexture != UINT32_MAX)
         glDeleteTextures(1, &m_SpecularTexture);
+    if (m_NormalTexture != UINT32_MAX)
+        glDeleteTextures(1, &m_NormalTexture);
 
     if (!material->GetDiffusePath().empty())
         createTextureFromAsset(material->GetDiffuseTextureAsset(), &m_DiffuseTexture);
     if (!material->GetSpecularPath().empty())
         createTextureFromAsset(material->GetSpecularTextureAsset(), &m_SpecularTexture);
+    if (!material->GetNormalPath().empty())
+        createTextureFromAsset(material->GetNormalTextureAsset(), &m_NormalTexture);
 }
 
 void SceneObjectProxy::Bind() const
@@ -105,6 +111,11 @@ bool SceneObjectProxy::HasSpecularTexture() const
     return m_SpecularTexture != UINT32_MAX;
 }
 
+bool SceneObjectProxy::HasNormalTexture() const
+{
+    return m_NormalTexture != UINT32_MAX;
+}
+
 void SceneObjectProxy::BindDiffuseTexture(const int32_t slot) const
 {
     glActiveTexture(GL_TEXTURE0 + slot);
@@ -115,6 +126,12 @@ void SceneObjectProxy::BindSpecularTexture(const int32_t slot) const
 {
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, m_SpecularTexture);
+}
+
+void SceneObjectProxy::BindNormalTexture(const int32_t slot) const
+{
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, m_NormalTexture);
 }
 
 void SceneObjectProxy::createTextureFromAsset(const Ref<TextureAsset>& textureAsset, uint32_t* textureId)

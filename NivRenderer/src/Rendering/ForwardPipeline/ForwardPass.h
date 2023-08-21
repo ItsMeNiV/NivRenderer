@@ -73,8 +73,19 @@ public:
             if (objectProxy->HasSpecularTexture())
             {
                 objectProxy->BindSpecularTexture(1);
+                m_PassShader->SetBool("hasSpecularTexture", true);
                 m_PassShader->SetTexture("specularTexture", 1);
             }
+            else
+                m_PassShader->SetBool("hasSpecularTexture", false);
+            if (objectProxy->HasNormalTexture())
+            {
+                objectProxy->BindNormalTexture(2);
+                m_PassShader->SetBool("hasNormalTexture", true);
+                m_PassShader->SetTexture("normalTexture", 2);
+            }
+            else
+                m_PassShader->SetBool("hasNormalTexture", false);
             
 
             if (objectProxy->GetIndexCount())

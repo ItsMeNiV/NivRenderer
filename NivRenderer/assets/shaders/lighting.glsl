@@ -24,7 +24,7 @@ float calcQuadraticTerm(float distance)
 }
 
 // calculates the color when using a directional light.
-vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir, sampler2D diffuseTexture, sampler2D specularTexture, vec2 textureCoords)
+vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir, sampler2D diffuseTexture, bool hasSpecularTexture, sampler2D specularTexture, vec2 textureCoords)
 {
     vec3 lightDir = normalize(-light.direction);
     // diffuse shading
@@ -35,11 +35,12 @@ vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir, sampler2D d
     // combine results
     vec3 ambient = 0.2 * light.color * texture(diffuseTexture, textureCoords).rgb;
     vec3 diffuse = light.color * diff * texture(diffuseTexture, textureCoords).rgb;
-    vec3 specular = light.color * spec * texture(specularTexture, textureCoords).r;
+    float specularValue = hasSpecularTexture ? texture(specularTexture, textureCoords).r : 0.0;
+    vec3 specular = light.color * spec * specularValue;
     return ambient + diffuse + specular;
 }
 
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir, vec3 fragPos, sampler2D diffuseTexture, sampler2D specularTexture, vec2 textureCoords)
+vec3 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir, vec3 fragPos, sampler2D diffuseTexture, bool hasSpecularTexture, sampler2D specularTexture, vec2 textureCoords)
 {
     // ambient
     vec3 ambient = 0.2 * light.color * texture(diffuseTexture, textureCoords).rgb;
@@ -52,7 +53,8 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir, vec3 fragPos, s
     // specular
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64.0);
-    vec3 specular = light.color * spec * texture(specularTexture, textureCoords).r;
+    float specularValue = hasSpecularTexture ? texture(specularTexture, textureCoords).r : 0.0;
+    vec3 specular = light.color * spec * specularValue;
     
     // attenuation
     float distance    = length(light.position - fragPos);
