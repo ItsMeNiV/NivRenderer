@@ -6,9 +6,14 @@ MeshComponent::MeshComponent()
     reloadMesh();
 }
 
-const Ref<MeshAsset>& MeshComponent::GetMeshAsset() const
+Ref<MeshAsset>& MeshComponent::GetMeshAsset()
 {
     return m_MeshAsset;
+}
+
+std::string& MeshComponent::GetPath()
+{
+    return m_Path;
 }
 
 std::unordered_map<std::string, ComponentProperty> MeshComponent::GetComponentProperties()

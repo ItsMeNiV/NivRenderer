@@ -9,7 +9,8 @@ public:
     MeshComponent();
 	~MeshComponent() = default;
 
-    const Ref<MeshAsset>& GetMeshAsset() const;
+    Ref<MeshAsset>& GetMeshAsset();
+    std::string& GetPath();
 
     std::unordered_map<std::string, ComponentProperty> GetComponentProperties() override;
 

@@ -3,6 +3,7 @@
 
 AssetManager::AssetManager()
 {
+    m_Importer = CreateScope<Assimp::Importer>();
     loadDefaultMeshAndTextures();
 }
 
@@ -15,13 +16,12 @@ Ref<MeshAsset> AssetManager::LoadMesh(const std::string& path)
 
     std::vector<Ref<SubMesh>> subMeshes;
 
-    Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(
+    const aiScene* scene = m_Importer->ReadFile(
         path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
-        SPDLOG_DEBUG(std::string("ERROR::ASSIMP::") + importer.GetErrorString());
+        SPDLOG_DEBUG(std::string("ERROR::ASSIMP::") + m_Importer->GetErrorString());
         return nullptr;
     }
     processNode(scene->mRootNode, scene, subMeshes);
@@ -60,6 +60,80 @@ Ref<Shader> AssetManager::LoadShader(const std::string& path, ShaderType shaderT
     Ref<Shader> shader = CreateRef<Shader>(path.c_str(), shaderType);
     m_LoadedShaders[path] = shader;
     return shader;
+}
+
+std::vector<std::string> AssetManager::LoadMeshAndTextures(std::string& path, Ref<MeshAsset>& mesh, Ref<TextureAsset>& diffuseTexture,
+                                       Ref<TextureAsset>& specularTexture, Ref<TextureAsset>& normalTexture,
+                                       bool flipVerticalDiffuse, bool flipVerticalSpecular, bool flipVerticalNormal)
+{
+    std::vector<std::string> returnPaths;
+    std::string directory = path.substr(0, path.find_last_of('/'));
+
+    const aiScene* scene = m_Importer->ReadFile(
+        path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+    {
+        SPDLOG_DEBUG(std::string("ERROR::ASSIMP::") + m_Importer->GetErrorString());
+        return returnPaths;
+    }
+
+    if (m_LoadedMeshAssets.contains(path))
+    {
+        mesh = m_LoadedMeshAssets[path];
+        returnPaths.push_back(path);
+    }
+    else
+    {
+        Ref<MeshAsset> newMesh = CreateRef<MeshAsset>();
+        std::vector<Ref<SubMesh>> subMeshes;
+        processNode(scene->mRootNode, scene, subMeshes);
+
+        newMesh->AddSubMeshes(subMeshes);
+        m_LoadedMeshAssets[path] = newMesh;
+        mesh = newMesh;
+        returnPaths.push_back(path);
+    }
+
+    //Load Texture paths. We assume one material per model and one texture of each type
+    aiMaterial* material = scene->mMaterials[0];
+    std::string diffusePath;
+    std::string specularPath;
+    std::string normalPath;
+
+    // 1. diffuse map
+    if (material->GetTextureCount(aiTextureType_DIFFUSE))
+    {
+        aiString diffuseFile;
+        material->GetTexture(aiTextureType_DIFFUSE, 0, &diffuseFile);
+        diffusePath = directory + '/' + diffuseFile.C_Str();
+    }
+    // 2. specular map
+    if (material->GetTextureCount(aiTextureType_SPECULAR))
+    {
+        aiString specularFile;
+        material->GetTexture(aiTextureType_SPECULAR, 0, &specularFile);
+        specularPath = directory + '/' + specularFile.C_Str();
+    }
+    // 3. normal maps
+    if (material->GetTextureCount(aiTextureType_NORMALS))
+    {
+        aiString normalFile;
+        material->GetTexture(aiTextureType_NORMALS, 0, &normalFile);
+        normalPath = directory + '/' + normalFile.C_Str();
+    }
+
+    returnPaths.push_back(diffusePath);
+    returnPaths.push_back(specularPath);
+    returnPaths.push_back(normalPath);
+
+    if (!diffusePath.empty())
+        diffuseTexture = LoadTexture(diffusePath, flipVerticalDiffuse);
+    if (!specularPath.empty())
+        specularTexture = LoadTexture(specularPath, flipVerticalDiffuse);
+    if (!normalPath.empty())
+        normalTexture = LoadTexture(normalPath, flipVerticalDiffuse);
+
+    return returnPaths;
 }
 
 void AssetManager::loadDefaultMeshAndTextures()
@@ -231,23 +305,6 @@ Ref<SubMesh> AssetManager::processMesh(aiMesh* mesh, const aiScene* scene)
         for (unsigned int j = 0; j < face.mNumIndices; j++)
             indices.push_back(face.mIndices[j]);
     }
-
-    /*
-    aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-
-    // 1. diffuse maps
-    std::vector<MeshTexture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-    textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-    // 2. specular maps
-    std::vector<MeshTexture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-    // 3. normal maps
-    std::vector<MeshTexture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-    // 4. height maps
-    std::vector<MeshTexture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-    */
 
     // return a SubMesh object created from the extracted mesh data
     return CreateRef<SubMesh>(vertices, indices);

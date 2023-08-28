@@ -60,7 +60,6 @@ void BuildProperties(int32_t& selectedSceneObject, const Ref<Scene>& scene)
 
 		//Model-Path
         ImGui::InputText("Model Path", sceneObject->GetModelPath(), 0, InputTextCallback, sceneObject->GetModelPath());
-        ImGui::SameLine();
         ImGui::PushID("Reload##Model");
         if (ImGui::Button("Reload"))
         {
@@ -68,6 +67,7 @@ void BuildProperties(int32_t& selectedSceneObject, const Ref<Scene>& scene)
             sceneObject->SetDirtyFlag(true);
         }
         ImGui::PopID();
+        ImGui::Spacing();
 
 		std::vector<Ref<Component>> components = ECSRegistry::GetInstance().GetAllComponents(selectedSceneObject);
 		for (auto& component : components)
@@ -82,12 +82,15 @@ void BuildProperties(int32_t& selectedSceneObject, const Ref<Scene>& scene)
 					{
 					case NivRenderer::PropertyType::FLOAT:
 						wasEdited = ImGui::InputFloat(label, static_cast<float*>(it.second.valuePtr));
+                        ImGui::Spacing();
 						break;
 					case NivRenderer::PropertyType::FLOAT3:
-						wasEdited = ImGui::InputFloat3(label, static_cast<float*>(it.second.valuePtr));
+                        wasEdited = ImGui::InputFloat3(label, static_cast<float*>(it.second.valuePtr));
+                        ImGui::Spacing();
 						break;
 					case NivRenderer::PropertyType::INT:
-						wasEdited = ImGui::InputInt(label, static_cast<int*>(it.second.valuePtr));
+                        wasEdited = ImGui::InputInt(label, static_cast<int*>(it.second.valuePtr));
+                        ImGui::Spacing();
 						break;
 					case NivRenderer::PropertyType::PATH:
 					{
@@ -104,6 +107,7 @@ void BuildProperties(int32_t& selectedSceneObject, const Ref<Scene>& scene)
 					}
 					case NivRenderer::PropertyType::BOOL:
                         wasEdited = ImGui::Checkbox(it.first.c_str(), static_cast<bool*>(it.second.valuePtr));
+                        ImGui::Spacing();
                         break;
 					}
 

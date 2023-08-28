@@ -14,12 +14,15 @@ public:
 
     std::unordered_map<std::string, ComponentProperty> GetComponentProperties() override;
 
-    const std::string& GetDiffusePath() const { return m_DiffusePath; }
-    const std::string& GetSpecularPath() const { return m_SpecularPath; }
-    const std::string& GetNormalPath() const { return m_NormalPath; }
-    const Ref<TextureAsset>& GetDiffuseTextureAsset() const { return m_DiffuseTextureAsset; }
-    const Ref<TextureAsset>& GetSpecularTextureAsset() const { return m_SpecularTextureAsset; }
-    const Ref<TextureAsset>& GetNormalTextureAsset() const { return m_NormalTextureAsset; }
+    std::string& GetDiffusePath() { return m_DiffusePath; }
+    std::string& GetSpecularPath() { return m_SpecularPath; }
+    std::string& GetNormalPath() { return m_NormalPath; }
+    Ref<TextureAsset>& GetDiffuseTextureAsset() { return m_DiffuseTextureAsset; }
+    Ref<TextureAsset>& GetSpecularTextureAsset() { return m_SpecularTextureAsset; }
+    Ref<TextureAsset>& GetNormalTextureAsset() { return m_NormalTextureAsset; }
+    bool& GetFlipDiffuseTexture() { return m_FlipDiffuseTexture; }
+    bool& GetFlipSpecularTexture() { return m_FlipSpecularTexture; }
+    bool& GetFlipNormalTexture() { return m_FlipNormalTexture; }
 
 private:
     std::string m_DiffusePath;
