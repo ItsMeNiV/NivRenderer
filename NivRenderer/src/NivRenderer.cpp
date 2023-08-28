@@ -63,7 +63,7 @@ void Application::handleWindowCommand(WindowCommandEvent command)
 void Application::setupDefaultScene()
 {
 	m_Scene->AddSceneObject();
-	m_Scene->AddSceneDirectionalLight();
+	m_Scene->AddDirectionalLight();
     Ref<Camera> camera(CreateRef<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), m_Scene->GetSceneSettings().renderResolution.x, m_Scene->GetSceneSettings().renderResolution.y));
 	m_Scene->AddCamera(camera);
 	m_Window->CreateCameraController(camera.get());

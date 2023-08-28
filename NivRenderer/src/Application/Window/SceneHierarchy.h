@@ -17,6 +17,13 @@ inline void displaySceneObjectContextMenu(const Ref<Scene>& scene, const uint32_
 				selectedObjectId = -1;
 		}
 
+		//Object is base "Scene" in Hierarchy
+        if (!allowDelete && !scene->HasSkybox())
+        {
+            if (ImGui::MenuItem("Add Skybox"))
+                scene->AddSkybox();
+        }
+
 		ImGui::EndPopup();
 	}
 }
@@ -25,10 +32,13 @@ inline void displaySceneLightContextMenu(const Ref<Scene> &scene, const uint32_t
 {
 	if (ImGui::BeginPopupContextItem("Context Menu"))
 	{
-		if (ImGui::MenuItem("Add Directional Light"))
-		{
-			scene->AddSceneDirectionalLight();
-		}
+        if (!scene->HasDirectionalLight())
+        {
+            if (ImGui::MenuItem("Add Directional Light"))
+            {
+                scene->AddDirectionalLight();
+            }   
+        }
         if (ImGui::MenuItem("Add Point Light"))
         {
             scene->AddPointLight();
@@ -123,6 +133,34 @@ inline void BuildSceneHierarchy(const Ref<Scene> &scene, int32_t& selectedSceneO
 			selectedSceneObjectId = selectedObject;
 			ImGui::TreePop();
 		}
+
+		//Skybox
+        if (scene->HasSkybox())
+        {
+            uint32_t skyboxId = scene->GetSkyboxObjectId();
+            ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            Ref<SkyboxObject> skyboxObject = ECSRegistry::GetInstance().GetEntity<SkyboxObject>(skyboxId);
+
+            if (selectedSceneObjectId == skyboxId)
+                nodeFlags |= ImGuiTreeNodeFlags_Selected;
+
+            ImGui::TreeNodeEx(skyboxObject->GetEntityName()->c_str(), nodeFlags);
+            if (ImGui::IsItemClicked())
+                selectedSceneObjectId = skyboxId;
+            ImGui::PushID(skyboxId);
+            if (ImGui::BeginPopupContextItem("Context Menu"))
+            {
+                if (ImGui::MenuItem("Delete"))
+                {
+                    scene->RemoveSkyboxObject();
+                    if (skyboxId == selectedSceneObjectId)
+                        selectedSceneObjectId = -1;
+                }
+
+                ImGui::EndPopup();
+            }
+            ImGui::PopID();
+        }
 
 		//SceneObjects
 		int32_t selectedObject = selectedSceneObjectId;

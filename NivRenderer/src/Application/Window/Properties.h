@@ -62,6 +62,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
         ImGui::PushID("Reload##Model");
         if (ImGui::Button("Reload"))
         {
+            *sceneObject->GetModelPath() = std::regex_replace(*sceneObject->GetModelPath(), std::regex("\\\\"), "\/");
             sceneObject->LoadMeshAndMaterial();
             sceneObject->SetDirtyFlag(true);
         }
@@ -98,6 +99,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
                             ImGui::PushID((std::string("Reload") + it.first).c_str());
                             if (ImGui::Button("Reload"))
                             {
+                                *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
                                 it.second.callback();
                                 wasEdited = true;
                             }
@@ -120,6 +122,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
 	{
         const Ref<DirectionalLightObject> directionalLightObject = ECSRegistry::GetInstance().GetEntity<DirectionalLightObject>(selectedSceneObject);
         const Ref<PointLightObject> pointLightObject = ECSRegistry::GetInstance().GetEntity<PointLightObject>(selectedSceneObject);
+        const Ref<SkyboxObject> skyboxObject = ECSRegistry::GetInstance().GetEntity<SkyboxObject>(selectedSceneObject);
 
 		if (directionalLightObject)
 		{
@@ -141,6 +144,35 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
 
             if (wasEdited)
 				pointLightObject->SetDirtyFlag(true);
+        }
+        else if (skyboxObject)
+        {
+            ImGui::InputText("Texture folder", skyboxObject->GetTextureFolder(), 0, InputTextCallback, skyboxObject->GetTextureFolder());
+            if (ImGui::Button("Populate Texture Paths"))
+            {
+                *skyboxObject->GetTextureFolder() =
+                    std::regex_replace(*skyboxObject->GetTextureFolder(), std::regex("\\\\"), "\/");
+                skyboxObject->SetTexturePathsFromFolder();
+                skyboxObject->SetDirtyFlag(true);
+            }
+
+            uint8_t i = 1;
+            for (auto& path : skyboxObject->GetTexturePaths())
+            {
+                std::string label = std::string("Texture path[") + std::to_string(i) + "]";
+                ImGui::InputText(label.c_str(), &path, 0, InputTextCallback, &path);
+                i++;
+            }
+            ImGui::PushID("Reload##Skybox");
+            if (ImGui::Button("Reload"))
+            {
+                for (auto& path : skyboxObject->GetTexturePaths())
+                    path = std::regex_replace(path, std::regex("\\\\"), "\/");
+                skyboxObject->LoadTextures();
+                skyboxObject->SetDirtyFlag(true);
+            }
+            ImGui::PopID();
+            ImGui::Checkbox("Flip Textures", static_cast<bool*>(skyboxObject->GetFlipTextures()));
         }
 	}
 

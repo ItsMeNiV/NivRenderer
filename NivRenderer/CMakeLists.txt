@@ -4,6 +4,88 @@
 
 set(LOG_LEVEL "DEBUG")
 
+# ASSIMP SETTINGS
+OPTION( BUILD_SHARED_LIBS
+  "Build package with shared libraries."
+  OFF
+)
+OPTION( ASSIMP_BUILD_FRAMEWORK
+  "Build package as Mac OS X Framework bundle."
+  OFF
+)
+OPTION( ASSIMP_DOUBLE_PRECISION
+  "Set to ON to enable double precision processing"
+  OFF
+)
+OPTION( ASSIMP_OPT_BUILD_PACKAGES
+  "Set to ON to generate CPack configuration files and packaging targets"
+  OFF
+)
+OPTION( ASSIMP_ANDROID_JNIIOSYSTEM
+  "Android JNI IOSystem support is active"
+  OFF
+)
+OPTION( ASSIMP_NO_EXPORT
+  "Disable Assimp's export functionality."
+  ON
+)
+OPTION( ASSIMP_BUILD_ASSIMP_TOOLS
+  "If the supplementary tools for Assimp are built in addition to the library."
+  OFF
+)
+OPTION ( ASSIMP_BUILD_SAMPLES
+  "If the official samples are built as well (needs Glut)."
+  OFF
+)
+OPTION ( ASSIMP_BUILD_TESTS
+  "If the test suite for Assimp is built in addition to the library."
+  OFF
+)
+OPTION ( ASSIMP_COVERALLS
+  "Enable this to measure test coverage."
+  OFF
+)
+OPTION( ASSIMP_INSTALL
+  "Disable this if you want to use assimp as a submodule."
+  ON
+)
+OPTION ( ASSIMP_ERROR_MAX
+  "Enable all warnings."
+  OFF
+)
+OPTION ( ASSIMP_ASAN
+  "Enable AddressSanitizer."
+  OFF
+)
+OPTION ( ASSIMP_UBSAN
+  "Enable Undefined Behavior sanitizer."
+  OFF
+)
+OPTION ( ASSIMP_BUILD_DOCS
+  "Build documentation using Doxygen."
+  OFF
+)
+OPTION( ASSIMP_INJECT_DEBUG_POSTFIX
+  "Inject debug postfix in .a/.so/.dll lib names"
+  ON
+)
+OPTION ( ASSIMP_IGNORE_GIT_HASH
+   "Don't call git to get the hash."
+   OFF
+)
+OPTION (ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT
+   "Don't build all importers."
+   OFF
+)
+OPTION (ASSIMP_BUILD_GLTF_IMPORTER
+   "Don't build all importers."
+   ON
+)
+OPTION (ASSIMP_BUILD_OBJ_IMPORTER
+   "Don't build all importers."
+   ON
+)
+
 set(DEAR_IMGUI_PREFIX
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui"
     CACHE STRING "Path to Dear ImGui"
@@ -44,6 +126,7 @@ set(SRC_FILES
  "src/Entity/Entities/SceneObject.h" "src/Entity/Entities/SceneObject.cpp"
  "src/Entity/Entities/CameraObject.h"
  "src/Entity/Entities/LightObject.h"
+ "src/Entity/Entities/SkyboxObject.h" "src/Entity/Entities/SkyboxObject.cpp"
  "src/Application/Scene.h" "src/Application/Scene.cpp"
  "src/Rendering/OpenGL/Framebuffer.h" "src/Rendering/OpenGL/Framebuffer.cpp"
  "src/Rendering/OpenGL/Texture.h" "src/Rendering/OpenGL/Texture.cpp"
@@ -54,6 +137,7 @@ set(SRC_FILES
  "src/Rendering/Proxy/SceneObjectProxy.h" "src/Rendering/Proxy/SceneObjectProxy.cpp"
  "src/Rendering/Proxy/CameraProxy.h"
  "src/Rendering/Proxy/LightProxy.h"
+ "src/Rendering/Proxy/SkyboxProxy.h"
  "src/Rendering/ForwardPipeline/ForwardPass.h"
  "src/Rendering/OpenGL/VertexLayout.h"
 )
@@ -87,12 +171,12 @@ include_directories(${INCLUDE_DIRS})
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE glfw assimp spdlog::spdlog_header_only)
 
 add_compile_definitions(SPDLOG_ACTIVE_LEVEL=${LOG_LEVEL})
+add_compile_definitions(CMAKE_CXX_STANDARD_REQUIRED=ON)
 
 add_custom_target(copy_assets
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/assets ${CMAKE_CURRENT_BINARY_DIR}/assets
 )
 add_dependencies(${CMAKE_PROJECT_NAME} copy_assets)
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 20)
-endif()
+set(CMAKE_CXX_STANDARD 20)
+set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 20)

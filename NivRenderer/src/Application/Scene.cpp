@@ -6,12 +6,14 @@
 #include "Entity/Components/MaterialComponent.h"
 
 Scene::Scene()
-    : m_Id(ECSRegistry::GetInstance().CreateNewEntityId())
+    : m_Id(ECSRegistry::GetInstance().CreateNewEntityId()), m_CameraId(UINT32_MAX), m_SkyboxId(UINT32_MAX)
 {
     m_SceneSettings.visualizeLights = false;
     m_SceneSettings.animateDirectionalLight = false;
     m_SceneSettings.renderResolution = {1920, 1080};
     m_SceneSettings.sampleCount = 4;
+    m_HasDirectionalLight = false;
+    m_HasSkybox = false;
 }
 
 Scene::~Scene()
@@ -54,10 +56,18 @@ void Scene::RemoveSceneObject(uint32_t sceneObjectId)
         m_SceneObjectIds.erase(std::remove(m_SceneObjectIds.begin(), m_SceneObjectIds.end(), sceneObjectId));
 }
 
-uint32_t Scene::AddSceneDirectionalLight()
+void Scene::RemoveSkyboxObject()
+{
+    ECSRegistry::GetInstance().RemoveEntity(m_SkyboxId);
+    m_HasSkybox = false;
+    m_SkyboxId = UINT32_MAX;
+}
+
+uint32_t Scene::AddDirectionalLight()
 {
     Ref<Entity> object = ECSRegistry::GetInstance().CreateEntity<DirectionalLightObject>();
     m_SceneLightIds.push_back(object->GetId());
+    m_HasDirectionalLight = true;
     return object->GetId();
 }
 
@@ -68,8 +78,19 @@ uint32_t Scene::AddPointLight()
     return object->GetId();
 }
 
+uint32_t Scene::AddSkybox()
+{
+    Ref<Entity> object = ECSRegistry::GetInstance().CreateEntity<SkyboxObject>();
+    m_SkyboxId = object->GetId();
+    m_HasSkybox = true;
+    return 0;
+}
+
 void Scene::RemoveSceneLight(uint32_t sceneLightId)
 {
+    if (ECSRegistry::GetInstance().GetEntity<DirectionalLightObject>(sceneLightId))
+        m_HasDirectionalLight = false;
+
     ECSRegistry::GetInstance().RemoveEntity(sceneLightId);
 
     if (std::find(m_SceneLightIds.begin(), m_SceneLightIds.end(), sceneLightId) != m_SceneLightIds.end())

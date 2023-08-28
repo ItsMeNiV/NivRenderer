@@ -9,10 +9,6 @@ SceneObject::SceneObject(uint32_t id)
 {
 }
 
-SceneObject::~SceneObject()
-{
-}
-
 void SceneObject::LoadMeshAndMaterial()
 {
     // Assumes that all SceneObjects have a mesh and material

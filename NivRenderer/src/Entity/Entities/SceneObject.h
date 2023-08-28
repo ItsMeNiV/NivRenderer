@@ -7,8 +7,6 @@ class SceneObject : public Entity
 public:
 	SceneObject(uint32_t id);
 
-	virtual ~SceneObject();
-
 	std::string *GetModelPath() { return &m_ModelPath; }
     void LoadMeshAndMaterial();
 

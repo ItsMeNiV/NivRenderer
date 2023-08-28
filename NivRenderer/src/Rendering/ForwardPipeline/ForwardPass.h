@@ -5,6 +5,7 @@
 #include "Rendering/Proxy/SceneObjectProxy.h"
 #include "Rendering/Proxy/CameraProxy.h"
 #include "Rendering/Proxy/LightProxy.h"
+#include "Rendering/Proxy/SkyboxProxy.h"
 #include "Rendering/Proxy/ProxyManager.h"
 
 class ForwardPass : public RenderPass
@@ -25,7 +26,8 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         m_PassShader->Bind();
         glm::mat4 view = camera->GetView();
-        glm::mat4 viewProj = camera->GetProjection() * view;
+        glm::mat4 projection = camera->GetProjection();
+        glm::mat4 viewProj = projection * view;
         m_PassShader->SetMat4("viewProjection", viewProj);
         glm::vec3 viewPos = camera->GetPosition();
         m_PassShader->SetVec3("viewPos", viewPos);
@@ -117,6 +119,28 @@ public:
                     glDrawArrays(GL_TRIANGLES, 0, LightProxy::GetVerticesCount());
                 }
             }   
+        }
+
+        if (scene->HasSkybox())
+        {
+            Ref<Shader> skyboxShader = AssetManager::GetInstance().LoadShader(std::string("assets/shaders/skybox.glsl"),
+                                                                              ShaderType::VERTEX_AND_FRAGMENT);
+            Ref<SkyboxProxy> skyboxProxy =
+                std::static_pointer_cast<SkyboxProxy>(proxyManager.GetProxy(scene->GetSkyboxObjectId()));
+            if (skyboxProxy->HasAllTexturesSet())
+            {
+                skyboxShader->Bind();
+                skyboxShader->SetMat4("projection", projection);
+                view = glm::mat4(glm::mat3(camera->GetView()));
+                skyboxShader->SetMat4("view", view);
+                skyboxShader->SetTexture("skybox", 0);
+                skyboxProxy->BindTexture(0);
+
+                glDepthFunc(GL_LEQUAL);
+                skyboxProxy->Bind();
+                glDrawArrays(GL_TRIANGLES, 0, 36);
+                glDepthFunc(GL_LESS);   
+            }
         }
 
         m_OutputFramebuffer->Unbind();

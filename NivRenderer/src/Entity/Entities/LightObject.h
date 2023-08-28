@@ -19,7 +19,7 @@ private:
 class DirectionalLightObject : public LightObject
 {
 public:
-	DirectionalLightObject(uint32_t id) : LightObject(id, std::string("Directional Light (") + std::to_string(id) + std::string(")")),
+	DirectionalLightObject(uint32_t id) : LightObject(id, std::string("Directional Light")),
 		m_Direction(0.0f, -1.0f, 0.0f)
 	{}
 
