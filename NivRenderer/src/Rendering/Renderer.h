@@ -18,6 +18,8 @@ public:
 
 	Ref<RenderPipeline> GetActivePipeline() { return m_ActiveRenderPipeline; }
 
+	void AnimateDirectionalLight();
+
 private:
 	Ref<Window> m_ActiveWindow;
 	Ref<Scene> m_ActiveScene;

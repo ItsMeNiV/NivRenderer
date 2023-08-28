@@ -28,6 +28,7 @@ public:
 	const uint32_t GetWidth() const { return m_Width; }
 	const uint32_t GetHeight() const { return m_Height; }
 	Framebuffer* const GetFramebuffer() const { return m_MainFramebuffer.get(); }
+    double GetWindowRuntime() const { return glfwGetTime(); }
 
 private:
 	GLFWwindow* m_Window;

@@ -16,7 +16,7 @@ struct InputTextCallback_UserData
 
 static int InputTextCallback(ImGuiInputTextCallbackData* data)
 {
-	InputTextCallback_UserData* user_data = (InputTextCallback_UserData*)data->UserData;
+    const auto user_data = static_cast<InputTextCallback_UserData*>(data->UserData);
 	if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
 	{
 		// Resize string callback
@@ -24,7 +24,7 @@ static int InputTextCallback(ImGuiInputTextCallbackData* data)
 		std::string* str = user_data->Str;
 		IM_ASSERT(data->Buf == str->c_str());
 		str->resize(data->BufTextLen);
-		data->Buf = (char*)str->c_str();
+		data->Buf = const_cast<char*>(str->c_str());
 	}
 	else if (user_data->ChainCallback)
 	{
@@ -35,9 +35,9 @@ static int InputTextCallback(ImGuiInputTextCallbackData* data)
 	return 0;
 }
 
-void BuildProperties(int32_t& selectedSceneObject, const Ref<Scene>& scene)
+inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>& scene)
 {
-	ImGui::Begin("Properties", 0, ImGuiWindowFlags_NoCollapse);
+	ImGui::Begin("Properties", nullptr, ImGuiWindowFlags_NoCollapse);
 
 	if (selectedSceneObject == -1)
 	{
@@ -48,13 +48,12 @@ void BuildProperties(int32_t& selectedSceneObject, const Ref<Scene>& scene)
     {
         ImGui::SeparatorText("General Scene Settings");
         ImGui::Checkbox("Visualize Lights", &scene->GetSceneSettings().visualizeLights);
+        ImGui::Checkbox("Animate Directional Light", &scene->GetSceneSettings().animateDirectionalLight);
         ImGui::InputInt2("Render resolution", glm::value_ptr(scene->GetSceneSettings().renderResolution));
-        ImGui::InputInt("Sample count", (int32_t*)&scene->GetSceneSettings().sampleCount);
+        ImGui::InputInt("Sample count", reinterpret_cast<int32_t*>(&scene->GetSceneSettings().sampleCount));
     }
 
-	Ref<SceneObject> sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(selectedSceneObject);
-
-	if (sceneObject)
+    if (const Ref<SceneObject> sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(selectedSceneObject))
 	{
 		ImGui::SeparatorText(sceneObject->GetEntityName()->c_str());
 
@@ -69,8 +68,8 @@ void BuildProperties(int32_t& selectedSceneObject, const Ref<Scene>& scene)
         ImGui::PopID();
         ImGui::Spacing();
 
-		std::vector<Ref<Component>> components = ECSRegistry::GetInstance().GetAllComponents(selectedSceneObject);
-		for (auto& component : components)
+        const std::vector<Ref<Component>> components = ECSRegistry::GetInstance().GetAllComponents(selectedSceneObject);
+		for (const auto& component : components)
 		{
 			if (ImGui::CollapsingHeader(component->GetName(), ImGuiTreeNodeFlags_DefaultOpen))
 			{
@@ -94,7 +93,7 @@ void BuildProperties(int32_t& selectedSceneObject, const Ref<Scene>& scene)
 						break;
 					case NivRenderer::PropertyType::PATH:
 					{
-                            std::string* inputString = static_cast<std::string*>(it.second.valuePtr);
+                            auto* inputString = static_cast<std::string*>(it.second.valuePtr);
                             ImGui::InputText(label, inputString, 0, InputTextCallback, (void*)inputString);
                             ImGui::PushID((std::string("Reload") + it.first).c_str());
                             if (ImGui::Button("Reload"))
@@ -119,8 +118,8 @@ void BuildProperties(int32_t& selectedSceneObject, const Ref<Scene>& scene)
 	}
 	else
 	{
-		Ref<DirectionalLightObject> directionalLightObject = ECSRegistry::GetInstance().GetEntity<DirectionalLightObject>(selectedSceneObject);
-        Ref<PointLightObject> pointLightObject = ECSRegistry::GetInstance().GetEntity<PointLightObject>(selectedSceneObject);
+        const Ref<DirectionalLightObject> directionalLightObject = ECSRegistry::GetInstance().GetEntity<DirectionalLightObject>(selectedSceneObject);
+        const Ref<PointLightObject> pointLightObject = ECSRegistry::GetInstance().GetEntity<PointLightObject>(selectedSceneObject);
 
 		if (directionalLightObject)
 		{

@@ -7,6 +7,7 @@
 struct SceneSettings
 {
     bool visualizeLights;
+    bool animateDirectionalLight;
     glm::ivec2 renderResolution;
     uint32_t sampleCount;
 };

@@ -94,32 +94,40 @@ std::vector<std::string> AssetManager::LoadMeshAndTextures(std::string& path, Re
         returnPaths.push_back(path);
     }
 
-    //Load Texture paths. We assume one material per model and one texture of each type
-    aiMaterial* material = scene->mMaterials[0];
     std::string diffusePath;
     std::string specularPath;
     std::string normalPath;
+    for (uint32_t i = 0; i < scene->mNumMaterials; i++)
+    {
+        const aiMaterial* material = scene->mMaterials[i];
 
-    // 1. diffuse map
-    if (material->GetTextureCount(aiTextureType_DIFFUSE))
-    {
-        aiString diffuseFile;
-        material->GetTexture(aiTextureType_DIFFUSE, 0, &diffuseFile);
-        diffusePath = directory + '/' + diffuseFile.C_Str();
-    }
-    // 2. specular map
-    if (material->GetTextureCount(aiTextureType_SPECULAR))
-    {
-        aiString specularFile;
-        material->GetTexture(aiTextureType_SPECULAR, 0, &specularFile);
-        specularPath = directory + '/' + specularFile.C_Str();
-    }
-    // 3. normal maps
-    if (material->GetTextureCount(aiTextureType_NORMALS))
-    {
-        aiString normalFile;
-        material->GetTexture(aiTextureType_NORMALS, 0, &normalFile);
-        normalPath = directory + '/' + normalFile.C_Str();
+        // 1. diffuse map
+        if (material->GetTextureCount(aiTextureType_DIFFUSE))
+        {
+            aiString diffuseFile;
+            material->GetTexture(aiTextureType_DIFFUSE, 0, &diffuseFile);
+            diffusePath = directory + '/' + diffuseFile.C_Str();
+        }
+        // 2. specular map
+        if (material->GetTextureCount(aiTextureType_SPECULAR))
+        {
+            aiString specularFile;
+            material->GetTexture(aiTextureType_SPECULAR, 0, &specularFile);
+            specularPath = directory + '/' + specularFile.C_Str();
+        }
+        // 3. normal maps
+        if (material->GetTextureCount(aiTextureType_NORMALS))
+        {
+            aiString normalFile;
+            material->GetTexture(aiTextureType_NORMALS, 0, &normalFile);
+            normalPath = directory + '/' + normalFile.C_Str();
+        }
+        else if (material->GetTextureCount(aiTextureType_HEIGHT))
+        {
+            aiString normalFile;
+            material->GetTexture(aiTextureType_HEIGHT, 0, &normalFile);
+            normalPath = directory + '/' + normalFile.C_Str();
+        }
     }
 
     returnPaths.push_back(diffusePath);

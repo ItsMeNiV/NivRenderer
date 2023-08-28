@@ -26,6 +26,9 @@ void Renderer::PrepareFrame()
     if (m_ActiveScene->GetSceneSettings().sampleCount != m_ActiveRenderPipeline->GetSampleCount())
         m_ActiveRenderPipeline->UpdateSampleCount(m_ActiveScene->GetSceneSettings().sampleCount);
 
+    if (m_ActiveScene->GetSceneSettings().animateDirectionalLight)
+        AnimateDirectionalLight();
+
     m_ProxyManager->UpdateProxies(m_ActiveScene);
 }
 
@@ -39,4 +42,20 @@ void Renderer::RenderScene()
                                           m_ActiveWindow->GetFramebuffer()->GetHeight());
     }
 
+}
+
+void Renderer::AnimateDirectionalLight()
+{
+    for(uint32_t lightId : m_ActiveScene->GetSceneLightIds())
+    {
+        const Ref<DirectionalLightObject> directionalLightObject =
+            ECSRegistry::GetInstance().GetEntity<DirectionalLightObject>(lightId);
+        if (directionalLightObject)
+        {
+            auto& direction = directionalLightObject->GetDirection();
+            const double time = m_ActiveWindow->GetWindowRuntime();
+            direction = glm::normalize(glm::vec3(-(1+sin(time) * 3), -3, -(1+cos(time) * 3)));
+            directionalLightObject->SetDirtyFlag(true);
+        }
+    }
 }

@@ -83,8 +83,8 @@ bool Window::ShouldClose()
 
 void Window::PrepareFrame()
 {
-	float currentFrame = glfwGetTime();
-	m_DeltaTime = currentFrame - m_LastFrame;
+    const float currentFrame = GetWindowRuntime();
+    m_DeltaTime = currentFrame - m_LastFrame;
 	m_LastFrame = currentFrame;
 
 	ImGui_ImplOpenGL3_NewFrame();
