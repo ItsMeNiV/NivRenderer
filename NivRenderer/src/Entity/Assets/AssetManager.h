@@ -19,12 +19,15 @@ public:
     }
 
     Ref<MeshAsset> LoadMesh(const std::string& path);
-    Ref<TextureAsset> LoadTexture(std::string const& path, bool flipVertical);
+    Ref<TextureAsset> LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel = false, int channelIndex = 0);
     Ref<Shader> LoadShader(const std::string& path, ShaderType shaderType);
     std::vector<std::string> LoadMeshAndTextures(std::string& path, Ref<MeshAsset>& mesh,
-                                                 Ref<TextureAsset>& diffuseTexture,
-                             Ref<TextureAsset>& specularTexture, Ref<TextureAsset>& normalTexture,
-                             bool flipVerticalDiffuse, bool flipVerticalSpecular, bool flipVerticalNormal);
+                                                 Ref<TextureAsset>& diffuseTexture, Ref<TextureAsset>& normalTexture,
+                                                 Ref<TextureAsset>& metallicTexture, Ref<TextureAsset>& roughnessTexture, Ref<TextureAsset>& aoTexture,
+                                                 Ref<TextureAsset>& emissiveTexture,
+                                                 bool flipVerticalDiffuse, bool flipVerticalNormal,
+                                                 bool flipVerticalMetallic,
+                                                 bool flipVerticalRoughness, bool flipVerticalAO, bool flipVerticalEmissive);
 
 private:
     AssetManager();

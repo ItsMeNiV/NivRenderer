@@ -12,15 +12,15 @@ public:
 	~TransformComponent()
 	{}
 
-	virtual std::unordered_map<std::string, ComponentProperty> GetComponentProperties()
+    std::vector<std::pair<std::string, ComponentProperty>> GetComponentProperties() override
 	{
-		std::unordered_map<std::string, ComponentProperty> returnMap;
+        std::vector<std::pair<std::string, ComponentProperty>> returnVector;
 
-		returnMap["Position"] = {NivRenderer::PropertyType::FLOAT3, glm::value_ptr(m_Position) };
-		returnMap["Scale"] = {NivRenderer::PropertyType::FLOAT3, glm::value_ptr(m_Scale) };
-		returnMap["Rotation"] = {NivRenderer::PropertyType::FLOAT3, glm::value_ptr(m_Rotation) };
+        returnVector.push_back({"Position", {NivRenderer::PropertyType::FLOAT3, glm::value_ptr(m_Position)}});;
+        returnVector.push_back({"Scale", {NivRenderer::PropertyType::FLOAT3, glm::value_ptr(m_Scale)}});
+        returnVector.push_back({"Rotation", {NivRenderer::PropertyType::FLOAT3, glm::value_ptr(m_Rotation)}});
 
-		return returnMap;
+        return returnVector;
 	}
 
 	const glm::vec3& GetPosition() const { return m_Position; }

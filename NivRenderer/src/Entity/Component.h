@@ -24,10 +24,11 @@ struct ComponentProperty
 class Component
 {
 public:
-	Component(const char* name) : m_Name(name) {}
+    Component(const char* name) : m_Name(name) {}
+    virtual ~Component() = default;
 
 	const char* GetName() const { return m_Name; }
-	virtual std::unordered_map<std::string, ComponentProperty> GetComponentProperties() = 0;
+	virtual std::vector<std::pair<std::string, ComponentProperty>> GetComponentProperties() = 0;
 
 private:
 	const char* m_Name;

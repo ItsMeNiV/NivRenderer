@@ -1,35 +1,30 @@
 #include "Entity/Components/MaterialComponent.h"
 
-MaterialComponent::MaterialComponent(): MaterialComponent(std::string("default"), std::string(""))
-{}
-
-MaterialComponent::MaterialComponent(std::string&& diffusePath): MaterialComponent(std::move(diffusePath), std::string(""))
-{}
-
-MaterialComponent::MaterialComponent(std::string&& diffusePath, std::string&& specularPath): MaterialComponent(std::move(diffusePath), std::move(specularPath), std::string(""))
-{}
-
-MaterialComponent::MaterialComponent(std::string&& diffusePath, std::string&& specularPath, std::string&& normalPath) :
-    Component("MaterialComponent"), m_DiffusePath(std::move(diffusePath)), m_SpecularPath(std::move(specularPath)), m_NormalPath(std::move(normalPath)),
-    m_FlipDiffuseTexture(false), m_FlipSpecularTexture(false), m_FlipNormalTexture(false)
+MaterialComponent::MaterialComponent() :
+    Component("MaterialComponent"), m_DiffusePath("default"), m_FlipDiffuseTexture(false), m_FlipNormalTexture(false),
+    m_FlipMetallicTexture(false), m_FlipRoughnessTexture(false), m_FlipAOTexture(false)
 {
     reloadDiffuseTexture();
-    reloadSpecularTexture();
-    reloadNormalTexture();
 }
 
-std::unordered_map<std::string, ComponentProperty> MaterialComponent::GetComponentProperties()
+std::vector<std::pair<std::string, ComponentProperty>> MaterialComponent::GetComponentProperties()
 {
-    std::unordered_map<std::string, ComponentProperty> returnMap;
+    std::vector<std::pair<std::string, ComponentProperty>> returnVector;
 
-    returnMap["Diffuse Path"] = {NivRenderer::PropertyType::PATH, &m_DiffusePath, [this]() { reloadDiffuseTexture(); }};
-    returnMap["Flip Diffuse Texture"] = {NivRenderer::PropertyType::BOOL, &m_FlipDiffuseTexture, []() { return; }};
-    returnMap["Specular Path"] = {NivRenderer::PropertyType::PATH, &m_SpecularPath, [this]() { reloadSpecularTexture(); }};
-    returnMap["Flip Specular Texture"] = {NivRenderer::PropertyType::BOOL, &m_FlipSpecularTexture, []() { return; }};
-    returnMap["Normal Path"] = {NivRenderer::PropertyType::PATH, &m_NormalPath, [this]() { reloadNormalTexture(); }};
-    returnMap["Flip Normal Texture"] = {NivRenderer::PropertyType::BOOL, &m_FlipNormalTexture, []() { return; }};
+    returnVector.push_back({"Diffuse Path", {NivRenderer::PropertyType::PATH, &m_DiffusePath, [this]() { reloadDiffuseTexture(); }}});
+    returnVector.push_back({"Flip Diffuse Texture", {NivRenderer::PropertyType::BOOL, &m_FlipDiffuseTexture, []() {return; }}});
+    returnVector.push_back({"Normal Path", {NivRenderer::PropertyType::PATH, &m_NormalPath, [this]() { reloadNormalTexture(); }}});
+    returnVector.push_back({"Flip Normal Texture", {NivRenderer::PropertyType::BOOL, &m_FlipNormalTexture, []() { return; }}});
+    returnVector.push_back({"Metallic Path", {NivRenderer::PropertyType::PATH, &m_MetallicPath,[this]() { reloadMetallicTexture(); }}});
+    returnVector.push_back({"Flip Metallic Texture", {NivRenderer::PropertyType::BOOL, &m_FlipMetallicTexture, []() { return; }}});
+    returnVector.push_back({"Roughness Path", {NivRenderer::PropertyType::PATH, &m_RoughnessPath, [this]() { reloadRoughnessTexture(); }}});
+    returnVector.push_back({"Flip Roughness Texture", {NivRenderer::PropertyType::BOOL, &m_FlipRoughnessTexture, []() { return; }}});
+    returnVector.push_back({"AO Path", {NivRenderer::PropertyType::PATH, &m_AOPath, [this]() { reloadAOTexture(); }}});
+    returnVector.push_back({"Flip AO Texture", {NivRenderer::PropertyType::BOOL, &m_FlipAOTexture, []() { return; }}});
+    returnVector.push_back({"Emissive Path", {NivRenderer::PropertyType::PATH, &m_EmissivePath, [this]() { reloadEmissiveTexture(); }}});
+    returnVector.push_back({"Flip Emissive Texture", {NivRenderer::PropertyType::BOOL, &m_FlipEmissiveTexture, []() { return; }}});
 
-    return returnMap;
+    return returnVector;
 }
 
 void MaterialComponent::reloadDiffuseTexture()
@@ -40,18 +35,42 @@ void MaterialComponent::reloadDiffuseTexture()
     m_DiffuseTextureAsset = AssetManager::GetInstance().LoadTexture(m_DiffusePath, m_FlipDiffuseTexture);
 }
 
-void MaterialComponent::reloadSpecularTexture()
-{
-    if (m_SpecularPath.empty())
-        return;
-
-    m_SpecularTextureAsset = AssetManager::GetInstance().LoadTexture(m_SpecularPath, m_FlipSpecularTexture);
-}
-
 void MaterialComponent::reloadNormalTexture()
 {
     if (m_NormalPath.empty())
         return;
 
     m_NormalTextureAsset = AssetManager::GetInstance().LoadTexture(m_NormalPath, m_FlipNormalTexture);
+}
+
+void MaterialComponent::reloadMetallicTexture()
+{
+    if (m_MetallicPath.empty())
+        return;
+
+    m_MetallicTextureAsset = AssetManager::GetInstance().LoadTexture(m_MetallicPath, m_FlipMetallicTexture);
+}
+
+void MaterialComponent::reloadRoughnessTexture()
+{
+    if (m_RoughnessPath.empty())
+        return;
+
+    m_RoughnessTextureAsset = AssetManager::GetInstance().LoadTexture(m_RoughnessPath, m_FlipRoughnessTexture);
+}
+
+void MaterialComponent::reloadAOTexture()
+{
+    if (m_AOPath.empty())
+        return;
+
+    m_AOTextureAsset = AssetManager::GetInstance().LoadTexture(m_AOPath, m_FlipAOTexture);
+}
+
+void MaterialComponent::reloadEmissiveTexture()
+{
+    if (m_EmissivePath.empty())
+        return;
+
+    m_EmissiveTextureAsset = AssetManager::GetInstance().LoadTexture(m_EmissivePath, m_FlipEmissiveTexture);
 }

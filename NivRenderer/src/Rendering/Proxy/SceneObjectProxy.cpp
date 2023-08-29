@@ -81,8 +81,8 @@ void SceneObjectProxy::SetMaterial(const Ref<MaterialComponent>& material)
 
     if (!material->GetDiffusePath().empty())
         createTextureFromAsset(material->GetDiffuseTextureAsset(), &m_DiffuseTexture);
-    if (!material->GetSpecularPath().empty())
-        createTextureFromAsset(material->GetSpecularTextureAsset(), &m_SpecularTexture);
+    if (!material->GetMetallicPath().empty())
+        createTextureFromAsset(material->GetMetallicTextureAsset(), &m_SpecularTexture);
     if (!material->GetNormalPath().empty())
         createTextureFromAsset(material->GetNormalTextureAsset(), &m_NormalTexture);
 }

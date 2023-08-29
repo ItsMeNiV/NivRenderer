@@ -16,15 +16,13 @@ std::string& MeshComponent::GetPath()
     return m_Path;
 }
 
-std::unordered_map<std::string, ComponentProperty> MeshComponent::GetComponentProperties()
+std::vector<std::pair<std::string, ComponentProperty>> MeshComponent::GetComponentProperties()
 {
-    std::unordered_map<std::string, ComponentProperty> returnMap;
+    std::vector<std::pair<std::string, ComponentProperty>> returnVector;
 
-    returnMap["Path"] = {NivRenderer::PropertyType::PATH, &m_Path, [this](){
-        reloadMesh();
-    }};
+    returnVector.push_back({"Path", {NivRenderer::PropertyType::PATH, &m_Path, [this]() { reloadMesh(); }}});
 
-    return returnMap;
+    return returnVector;
 }
 
 void MeshComponent::reloadMesh()

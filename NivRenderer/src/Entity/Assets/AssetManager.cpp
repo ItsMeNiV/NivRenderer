@@ -33,7 +33,7 @@ Ref<MeshAsset> AssetManager::LoadMesh(const std::string& path)
     return meshAsset;
 }
 
-Ref<TextureAsset> AssetManager::LoadTexture(std::string const& path, bool flipVertical)
+Ref<TextureAsset> AssetManager::LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel, int channelIndex)
 {
     const bool textureExists = m_LoadedTextureAssets.contains(path);
     if (textureExists && m_LoadedTextureAssets[path]->GetFlipVertical() == flipVertical)
@@ -44,7 +44,35 @@ Ref<TextureAsset> AssetManager::LoadTexture(std::string const& path, bool flipVe
     Ref<TextureAsset> textureAsset = CreateRef<TextureAsset>(pathToUse, flipVertical);
 
     stbi_set_flip_vertically_on_load(textureAsset->GetFlipVertical());
-    textureAsset->SetTextureData(stbi_load(pathToUse.c_str(), textureAsset->GetWidth(), textureAsset->GetHeight(), textureAsset->GetNrComponents(), 0));
+    if (loadOnlyOneChannel)
+    {
+        const unsigned char* loadedData = stbi_load(pathToUse.c_str(), textureAsset->GetWidth(), textureAsset->GetHeight(), textureAsset->GetNrComponents(), 0);
+        const uint32_t dataSize = (*textureAsset->GetWidth()) * (*textureAsset->GetHeight());
+        auto* data = new unsigned char[dataSize];
+
+        for (int32_t y = 0; y < *textureAsset->GetHeight(); y++)
+        {
+            for (int32_t x = 0; x < *textureAsset->GetWidth(); x++)
+            {
+
+                const unsigned char* pixelOffset = loadedData + (*textureAsset->GetNrComponents() * (y * (*textureAsset->GetWidth()) + x));
+                data[y * (*textureAsset->GetWidth()) + x] = pixelOffset[channelIndex];
+            }
+        }
+        textureAsset->SetTextureData(data);
+        *textureAsset->GetNrComponents() = 1;
+
+        std::string fileName = path.substr(0, path.find_last_of('.'));
+        const std::string fileEnding = path.substr(path.find_last_of('.'), path.size());
+        fileName += "_@" + std::to_string(channelIndex);
+        path = fileName + fileEnding;
+    }
+    else
+    {
+        textureAsset->SetTextureData(stbi_load(pathToUse.c_str(), textureAsset->GetWidth(), textureAsset->GetHeight(),
+                                               textureAsset->GetNrComponents(), 0));
+    }
+
     m_LoadedTextureAssets[path] = textureAsset;
 
     return textureAsset;
@@ -62,9 +90,11 @@ Ref<Shader> AssetManager::LoadShader(const std::string& path, ShaderType shaderT
     return shader;
 }
 
-std::vector<std::string> AssetManager::LoadMeshAndTextures(std::string& path, Ref<MeshAsset>& mesh, Ref<TextureAsset>& diffuseTexture,
-                                       Ref<TextureAsset>& specularTexture, Ref<TextureAsset>& normalTexture,
-                                       bool flipVerticalDiffuse, bool flipVerticalSpecular, bool flipVerticalNormal)
+std::vector<std::string> AssetManager::LoadMeshAndTextures(
+    std::string& path, Ref<MeshAsset>& mesh, Ref<TextureAsset>& diffuseTexture, Ref<TextureAsset>& normalTexture,
+    Ref<TextureAsset>& metallicTexture, Ref<TextureAsset>& roughnessTexture, Ref<TextureAsset>& aoTexture,
+    Ref<TextureAsset>& emissiveTexture, bool flipVerticalDiffuse, bool flipVerticalNormal, bool flipVerticalMetallic,
+    bool flipVerticalRoughness, bool flipVerticalAO, bool flipVerticalEmissive)
 {
     std::vector<std::string> returnPaths;
     std::string directory = path.substr(0, path.find_last_of('/'));
@@ -95,8 +125,11 @@ std::vector<std::string> AssetManager::LoadMeshAndTextures(std::string& path, Re
     }
 
     std::string diffusePath;
-    std::string specularPath;
     std::string normalPath;
+    std::string metallicPath;
+    std::string roughnessPath;
+    std::string aoPath;
+    std::string emissivePath;
     for (uint32_t i = 0; i < scene->mNumMaterials; i++)
     {
         const aiMaterial* material = scene->mMaterials[i];
@@ -108,14 +141,7 @@ std::vector<std::string> AssetManager::LoadMeshAndTextures(std::string& path, Re
             material->GetTexture(aiTextureType_DIFFUSE, 0, &diffuseFile);
             diffusePath = directory + '/' + diffuseFile.C_Str();
         }
-        // 2. specular map
-        if (material->GetTextureCount(aiTextureType_SPECULAR))
-        {
-            aiString specularFile;
-            material->GetTexture(aiTextureType_SPECULAR, 0, &specularFile);
-            specularPath = directory + '/' + specularFile.C_Str();
-        }
-        // 3. normal maps
+        // 2. normal maps
         if (material->GetTextureCount(aiTextureType_NORMALS))
         {
             aiString normalFile;
@@ -128,18 +154,56 @@ std::vector<std::string> AssetManager::LoadMeshAndTextures(std::string& path, Re
             material->GetTexture(aiTextureType_HEIGHT, 0, &normalFile);
             normalPath = directory + '/' + normalFile.C_Str();
         }
+        // 3. metallic map
+        if (material->GetTextureCount(aiTextureType_METALNESS))
+        {
+            aiString metallicFile;
+            material->GetTexture(aiTextureType_METALNESS, 0, &metallicFile);
+            metallicPath = directory + '/' + metallicFile.C_Str();
+        }
+        // 4. roughness map
+        if (material->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS))
+        {
+            aiString roughnessFile;
+            material->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessFile);
+            roughnessPath = directory + '/' + roughnessFile.C_Str();
+        }
+        // 4. AO map
+        if (material->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION))
+        {
+            aiString aoFile;
+            material->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoFile);
+            aoPath = directory + '/' + aoFile.C_Str();
+        }
+        // 5. Emissive map
+        if (material->GetTextureCount(aiTextureType_EMISSIVE))
+        {
+            aiString emissiveFile;
+            material->GetTexture(aiTextureType_EMISSIVE, 0, &emissiveFile);
+            emissivePath = directory + '/' + emissiveFile.C_Str();
+        }
     }
 
-    returnPaths.push_back(diffusePath);
-    returnPaths.push_back(specularPath);
-    returnPaths.push_back(normalPath);
-
+    bool metalRoughnessIsShared = metallicPath == roughnessPath;
     if (!diffusePath.empty())
         diffuseTexture = LoadTexture(diffusePath, flipVerticalDiffuse);
-    if (!specularPath.empty())
-        specularTexture = LoadTexture(specularPath, flipVerticalDiffuse);
     if (!normalPath.empty())
-        normalTexture = LoadTexture(normalPath, flipVerticalDiffuse);
+        normalTexture = LoadTexture(normalPath, flipVerticalNormal);
+    if (!metallicPath.empty())
+        metallicTexture = LoadTexture(metallicPath, flipVerticalMetallic, metalRoughnessIsShared, 2);
+    if (!roughnessPath.empty())
+        roughnessTexture = LoadTexture(roughnessPath, flipVerticalRoughness, metalRoughnessIsShared, 1);
+    if (!aoPath.empty())
+        aoTexture = LoadTexture(aoPath, flipVerticalAO);
+    if (!emissivePath.empty())
+        emissiveTexture = LoadTexture(emissivePath, flipVerticalEmissive);
+
+    returnPaths.push_back(diffusePath);
+    returnPaths.push_back(normalPath);
+    returnPaths.push_back(metallicPath);
+    returnPaths.push_back(roughnessPath);
+    returnPaths.push_back(aoPath);
+    returnPaths.push_back(emissivePath);
 
     return returnPaths;
 }
@@ -241,7 +305,7 @@ void AssetManager::loadDefaultMeshAndTextures()
     const Ref<MeshAsset> defaultMeshAsset = CreateRef<MeshAsset>(defaultMesh);
     m_LoadedMeshAssets["default"] = defaultMeshAsset;
 
-    const std::string defaultTexturePath("assets/textures/default.png");
+    std::string defaultTexturePath("assets/textures/default.png");
     const Ref<TextureAsset> defaultTexture = LoadTexture(defaultTexturePath, false);
     auto nodeHandle = m_LoadedTextureAssets.extract("assets/textures/default.png");
     nodeHandle.key() = "default";
