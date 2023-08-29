@@ -305,11 +305,26 @@ void AssetManager::loadDefaultMeshAndTextures()
     const Ref<MeshAsset> defaultMeshAsset = CreateRef<MeshAsset>(defaultMesh);
     m_LoadedMeshAssets["default"] = defaultMeshAsset;
 
+    //Default "Prototype" Texture
     std::string defaultTexturePath("assets/textures/default.png");
     const Ref<TextureAsset> defaultTexture = LoadTexture(defaultTexturePath, false);
     auto nodeHandle = m_LoadedTextureAssets.extract("assets/textures/default.png");
     nodeHandle.key() = "default";
     m_LoadedTextureAssets.insert(std::move(nodeHandle));
+
+    //White 1x1 Texture
+    std::string path("assets/textures/default_white.png");
+    const Ref<TextureAsset> whiteTextureAsset = LoadTexture(path, false);
+    auto nodeHandleWhite = m_LoadedTextureAssets.extract("assets/textures/default_white.png");
+    nodeHandleWhite.key() = "white";
+    m_LoadedTextureAssets.insert(std::move(nodeHandleWhite));
+
+    //Black 1x1 Texture
+    path = "assets/textures/default_black.png";
+    const Ref<TextureAsset> blackTextureAsset = LoadTexture(path, false);
+    auto nodeHandleBlack = m_LoadedTextureAssets.extract("assets/textures/default_black.png");
+    nodeHandleBlack.key() = "black";
+    m_LoadedTextureAssets.insert(std::move(nodeHandleBlack));
 }
 
 void AssetManager::processNode(const aiNode* node, const aiScene* scene, std::vector<Ref<SubMesh>>& subMeshes)

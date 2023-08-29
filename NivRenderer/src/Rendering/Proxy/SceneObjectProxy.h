@@ -16,12 +16,13 @@ public:
     void SetMaterial(const Ref<MaterialComponent>& material);
     void Bind() const;
     void Unbind() const;
-    bool HasDiffuseTexture() const;
-    bool HasSpecularTexture() const;
     bool HasNormalTexture() const;
     void BindDiffuseTexture(const int32_t slot) const;
-    void BindSpecularTexture(const int32_t slot) const;
     void BindNormalTexture(const int32_t slot) const;
+    void BindMetallicTexture(const int32_t slot) const;
+    void BindRoughnessTexture(const int32_t slot) const;
+    void BindAOTexture(const int32_t slot) const;
+    void BindEmissiveTexture(const int32_t slot) const;
 
     const uint32_t GetIndexCount() const { return m_IndexCount; }
     const uint32_t GetVerticesCount() const { return m_VerticesCount; }
@@ -29,11 +30,11 @@ public:
 
 private:
     glm::mat4 m_ModelMatrix;
-    uint32_t m_DiffuseTexture, m_SpecularTexture, m_NormalTexture;
+    uint32_t m_DiffuseTexture, m_NormalTexture, m_MetallicTexture, m_RoughnessTexture, m_AOTexture, m_EmissiveTexture;
 
     //TODO: Abstract
     uint32_t m_VertexArray, m_VertexBuffer, m_IndexBuffer;
     uint32_t m_IndexCount, m_VerticesCount;
 
-    void createTextureFromAsset(const Ref<TextureAsset>& textureAsset, uint32_t* textureId);
+    static void createTextureFromAsset(const Ref<TextureAsset>& textureAsset, uint32_t* textureId);
 };

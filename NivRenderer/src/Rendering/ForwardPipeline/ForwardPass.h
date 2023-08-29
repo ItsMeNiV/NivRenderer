@@ -67,28 +67,32 @@ public:
             objectProxy->Bind();
             m_PassShader->SetMat4("model", objectProxy->GetModelMatrix());
 
-            if (objectProxy->HasDiffuseTexture())
-            {
-                objectProxy->BindDiffuseTexture(0);
-                m_PassShader->SetTexture("diffuseTexture", 0);
-            }
-            if (objectProxy->HasSpecularTexture())
-            {
-                objectProxy->BindSpecularTexture(1);
-                m_PassShader->SetBool("hasSpecularTexture", true);
-                m_PassShader->SetTexture("specularTexture", 1);
-            }
-            else
-                m_PassShader->SetBool("hasSpecularTexture", false);
+            objectProxy->BindDiffuseTexture(0);
+            m_PassShader->SetTexture("diffuseTexture", 0);
+
             if (objectProxy->HasNormalTexture())
             {
-                objectProxy->BindNormalTexture(2);
+                objectProxy->BindNormalTexture(1);
                 m_PassShader->SetBool("hasNormalTexture", true);
-                m_PassShader->SetTexture("normalTexture", 2);
+                m_PassShader->SetTexture("normalTexture", 1);
             }
             else
+            {
                 m_PassShader->SetBool("hasNormalTexture", false);
-            
+            }
+
+            objectProxy->BindMetallicTexture(2);
+            m_PassShader->SetTexture("metallicTexture", 2);
+
+            objectProxy->BindRoughnessTexture(3);
+            m_PassShader->SetTexture("roughnessTexture", 3);
+
+            objectProxy->BindAOTexture(4);
+            m_PassShader->SetTexture("aoTexture", 4);
+
+            objectProxy->BindEmissiveTexture(5);
+            m_PassShader->SetTexture("emissiveTexture", 5);
+
 
             if (objectProxy->GetIndexCount())
                 glDrawElements(GL_TRIANGLES, objectProxy->GetIndexCount(), GL_UNSIGNED_INT, 0);

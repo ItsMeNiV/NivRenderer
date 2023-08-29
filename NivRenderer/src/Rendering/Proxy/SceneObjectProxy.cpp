@@ -1,6 +1,8 @@
 #include "Rendering/Proxy/SceneObjectProxy.h"
 
-SceneObjectProxy::SceneObjectProxy(uint32_t id): Proxy(id), m_DiffuseTexture(UINT32_MAX), m_SpecularTexture(UINT32_MAX), m_NormalTexture(UINT32_MAX)
+SceneObjectProxy::SceneObjectProxy(uint32_t id) :
+    Proxy(id), m_DiffuseTexture(UINT32_MAX), m_NormalTexture(UINT32_MAX), m_MetallicTexture(UINT32_MAX),
+    m_RoughnessTexture(UINT32_MAX), m_AOTexture(UINT32_MAX), m_EmissiveTexture(UINT32_MAX)
 {
     glGenVertexArrays(1, &m_VertexArray);
     glGenBuffers(1, &m_VertexBuffer);
@@ -74,17 +76,48 @@ void SceneObjectProxy::SetMaterial(const Ref<MaterialComponent>& material)
 {
     if (m_DiffuseTexture != UINT32_MAX)
         glDeleteTextures(1, &m_DiffuseTexture);
-    if (m_SpecularTexture != UINT32_MAX)
-        glDeleteTextures(1, &m_SpecularTexture);
     if (m_NormalTexture != UINT32_MAX)
         glDeleteTextures(1, &m_NormalTexture);
+    if (m_MetallicTexture != UINT32_MAX)
+        glDeleteTextures(1, &m_MetallicTexture);
+    if (m_RoughnessTexture != UINT32_MAX)
+        glDeleteTextures(1, &m_RoughnessTexture);
+    if (m_AOTexture != UINT32_MAX)
+        glDeleteTextures(1, &m_AOTexture);
+    if (m_EmissiveTexture != UINT32_MAX)
+        glDeleteTextures(1, &m_EmissiveTexture);
 
+    std::string whiteTexturePath("white");
+    const auto& whiteTexture = AssetManager::GetInstance().LoadTexture(whiteTexturePath, false);
+    std::string blackTexturePath("black");
+    const auto& blackTexture = AssetManager::GetInstance().LoadTexture(blackTexturePath, false);
     if (!material->GetDiffusePath().empty())
         createTextureFromAsset(material->GetDiffuseTextureAsset(), &m_DiffuseTexture);
-    if (!material->GetMetallicPath().empty())
-        createTextureFromAsset(material->GetMetallicTextureAsset(), &m_SpecularTexture);
+    else
+        createTextureFromAsset(whiteTexture, &m_DiffuseTexture);
+
     if (!material->GetNormalPath().empty())
         createTextureFromAsset(material->GetNormalTextureAsset(), &m_NormalTexture);
+
+    if (!material->GetMetallicPath().empty())
+        createTextureFromAsset(material->GetMetallicTextureAsset(), &m_MetallicTexture);
+    else
+        createTextureFromAsset(blackTexture, &m_MetallicTexture);
+
+    if (!material->GetRoughnessPath().empty())
+        createTextureFromAsset(material->GetRoughnessTextureAsset(), &m_RoughnessTexture);
+    else
+        createTextureFromAsset(blackTexture, &m_RoughnessTexture);
+
+    if (!material->GetAOPath().empty())
+        createTextureFromAsset(material->GetAOTextureAsset(), &m_AOTexture);
+    else
+        createTextureFromAsset(whiteTexture, &m_AOTexture);
+
+    if (!material->GetEmissivePath().empty())
+        createTextureFromAsset(material->GetEmissiveTextureAsset(), &m_EmissiveTexture);
+    else
+        createTextureFromAsset(blackTexture, &m_EmissiveTexture);
 }
 
 void SceneObjectProxy::Bind() const
@@ -101,16 +134,6 @@ void SceneObjectProxy::Unbind() const
     glBindVertexArray(0);
 }
 
-bool SceneObjectProxy::HasDiffuseTexture() const
-{
-    return m_DiffuseTexture != UINT32_MAX;
-}
-
-bool SceneObjectProxy::HasSpecularTexture() const
-{
-    return m_SpecularTexture != UINT32_MAX;
-}
-
 bool SceneObjectProxy::HasNormalTexture() const
 {
     return m_NormalTexture != UINT32_MAX;
@@ -122,16 +145,34 @@ void SceneObjectProxy::BindDiffuseTexture(const int32_t slot) const
     glBindTexture(GL_TEXTURE_2D, m_DiffuseTexture);
 }
 
-void SceneObjectProxy::BindSpecularTexture(const int32_t slot) const
-{
-    glActiveTexture(GL_TEXTURE0 + slot);
-    glBindTexture(GL_TEXTURE_2D, m_SpecularTexture);
-}
-
 void SceneObjectProxy::BindNormalTexture(const int32_t slot) const
 {
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, m_NormalTexture);
+}
+
+void SceneObjectProxy::BindMetallicTexture(const int32_t slot) const
+{
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, m_MetallicTexture);
+}
+
+void SceneObjectProxy::BindRoughnessTexture(const int32_t slot) const
+{
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, m_RoughnessTexture);
+}
+
+void SceneObjectProxy::BindAOTexture(const int32_t slot) const
+{
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, m_AOTexture);
+}
+
+void SceneObjectProxy::BindEmissiveTexture(const int32_t slot) const
+{
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, m_EmissiveTexture);
 }
 
 void SceneObjectProxy::createTextureFromAsset(const Ref<TextureAsset>& textureAsset, uint32_t* textureId)
