@@ -57,11 +57,11 @@ vec3 CalcDirLight(DirectionalLight light, vec3 N, vec3 V, vec3 fragPos, vec3 alb
     vec3 radiance = light.color;
 
     // Cook-Torrance BRDF
-    float NDF = DistributionGGX(N, H, roughness);   
+    float D = DistributionGGX(N, H, roughness);   
     float G   = GeometrySmith(N, V, L, roughness);      
     vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);
            
-    vec3 numerator    = NDF * G * F; 
+    vec3 numerator    = D * G * F; 
     float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
     vec3 specular = numerator / denominator;
         
@@ -93,11 +93,11 @@ vec3 CalcPointLight(PointLight light, vec3 N, vec3 V, vec3 fragPos, vec3 albedo,
     vec3 radiance = light.color * attenuation;
 
     // Cook-Torrance BRDF
-    float NDF = DistributionGGX(N, H, roughness);   
+    float D = DistributionGGX(N, H, roughness);   
     float G   = GeometrySmith(N, V, L, roughness);      
     vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);
            
-    vec3 numerator    = NDF * G * F; 
+    vec3 numerator    = D * G * F; 
     float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
     vec3 specular = numerator / denominator;
         
