@@ -1,18 +1,13 @@
 #include "ProxyManager.h"
-#include "Rendering/Proxy/SceneObjectProxy.h"
-#include "Rendering/Proxy/LightProxy.h"
-#include "Rendering/Proxy/CameraProxy.h"
-#include "Rendering/Proxy/SkyboxProxy.h"
+
 #include "Entity/ECSRegistry.h"
 #include "Entity/Components/MeshComponent.h"
 #include "Entity/Components/TransformComponent.h"
 
 ProxyManager::ProxyManager()
-    : m_Proxies()
-{
-}
+{}
 
-void ProxyManager::UpdateProxies(Ref<Scene> scene)
+void ProxyManager::UpdateProxies(const Ref<Scene>& scene)
 {
     //Lights
     for (uint32_t sceneLightId : scene->GetSceneLightIds())
@@ -21,10 +16,10 @@ void ProxyManager::UpdateProxies(Ref<Scene> scene)
         if (!lightObject->GetDirtyFlag())
             continue;
 
-        bool isDirectionalLight = std::dynamic_pointer_cast<DirectionalLightObject>(lightObject) != 0;
-        bool isPointLight = std::dynamic_pointer_cast<PointLightObject>(lightObject) != 0;
+        const bool isDirectionalLight = std::dynamic_pointer_cast<DirectionalLightObject>(lightObject) != nullptr;
+        const bool isPointLight = std::dynamic_pointer_cast<PointLightObject>(lightObject) != nullptr;
 
-        if (!m_Proxies.count(sceneLightId))
+        if (!m_Proxies.contains(sceneLightId))
         {
             Ref<Proxy> proxy;
             if(isDirectionalLight)
@@ -35,14 +30,14 @@ void ProxyManager::UpdateProxies(Ref<Scene> scene)
         }
         if (isDirectionalLight)
         {
-            auto dirLightObject = std::static_pointer_cast<DirectionalLightObject>(lightObject);
-            auto proxy = std::static_pointer_cast<DirectionalLightProxy>(m_Proxies[sceneLightId]);
+            const auto dirLightObject = std::static_pointer_cast<DirectionalLightObject>(lightObject);
+            const auto proxy = std::static_pointer_cast<DirectionalLightProxy>(m_Proxies[sceneLightId]);
             proxy->UpdateData(dirLightObject->GetLightColor(), dirLightObject->GetDirection());
         }
         else if (isPointLight)
         {
-            auto pointLightObject = std::static_pointer_cast<PointLightObject>(lightObject);
-            auto proxy = std::static_pointer_cast<PointLightProxy>(m_Proxies[sceneLightId]);
+            const auto pointLightObject = std::static_pointer_cast<PointLightObject>(lightObject);
+            const auto proxy = std::static_pointer_cast<PointLightProxy>(m_Proxies[sceneLightId]);
             proxy->UpdateData(pointLightObject->GetLightColor(), pointLightObject->GetPosition(), pointLightObject->GetStrength());
         }
         lightObject->SetDirtyFlag(false);
@@ -51,65 +46,132 @@ void ProxyManager::UpdateProxies(Ref<Scene> scene)
     //SceneObjects
     for (uint32_t sceneObjectId : scene->GetSceneObjectIds())
     {
-        auto sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId);
+        const auto sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId);
         if (!sceneObject->GetDirtyFlag())
             continue;
 
-        if (!m_Proxies.count(sceneObjectId))
-        {
-            Ref<SceneObjectProxy> proxy = CreateRef<SceneObjectProxy>(sceneObjectId);
-            m_Proxies[sceneObjectId] = proxy;
-        }
-        auto proxy = std::static_pointer_cast<SceneObjectProxy>(m_Proxies[sceneObjectId]);
-        auto transform = ECSRegistry::GetInstance().GetComponent<TransformComponent>(sceneObjectId);
+        // Mesh Proxy
         auto mesh = ECSRegistry::GetInstance().GetComponent<MeshComponent>(sceneObjectId);
-        auto material = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(sceneObjectId);
-        proxy->SetTransform(transform->GetPosition(), transform->GetScale(), transform->GetRotation());
-        proxy->SetMesh(mesh);
-        proxy->SetMaterial(material);
+        auto meshId = mesh->GetMeshAsset()->GetId();
+        Ref<MeshProxy> meshProxy;
+        if (!m_Proxies.contains(meshId))
+        {
+            meshProxy = CreateRef<MeshProxy>(meshId);
+            m_Proxies[meshId] = meshProxy;
+            meshProxy->CreateBuffers(mesh);
+        }
+        else
+        {
+            meshProxy = std::static_pointer_cast<MeshProxy>(m_Proxies[meshId]);
+        }
+
+        // Material / Texture Proxies
+        const auto material = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(sceneObjectId);
+        auto materialId = material->GetId();
+        Ref<MaterialProxy> materialProxy;
+        if (!m_Proxies.contains(materialId))
+        {
+            materialProxy = CreateRef<MaterialProxy>(materialId);
+            m_Proxies[materialId] = materialProxy;
+        }
+        else
+        {
+            materialProxy = std::static_pointer_cast<MaterialProxy>(m_Proxies[materialId]);
+        }
+        std::string whitePath("white");
+        auto whiteTextureProxy = AssetManager::GetInstance().LoadTexture(whitePath, false);
+        std::string blackPath("black");
+        auto blackTextureProxy = AssetManager::GetInstance().LoadTexture(blackPath, false);
+        setupMaterialProxy(material->GetDiffusePath(), materialProxy->GetDiffuseTexture(), material->GetDiffuseTextureAsset(), whiteTextureProxy);
+        setupMaterialProxy(material->GetNormalPath(), materialProxy->GetNormalTexture(), material->GetNormalTextureAsset(), nullptr);
+        setupMaterialProxy(material->GetMetallicPath(), materialProxy->GetMetallicTexture(), material->GetMetallicTextureAsset(), blackTextureProxy);
+        setupMaterialProxy(material->GetRoughnessPath(), materialProxy->GetRoughnessTexture(), material->GetRoughnessTextureAsset(), blackTextureProxy);
+        setupMaterialProxy(material->GetAOPath(), materialProxy->GetAOTexture(), material->GetAOTextureAsset(), whiteTextureProxy);
+        setupMaterialProxy(material->GetEmissivePath(), materialProxy->GetEmissiveTexture(), material->GetEmissiveTextureAsset(), blackTextureProxy);
+
+        // Scene Object Proxy
+        Ref<SceneObjectProxy> sceneObjectProxy;
+        if (!m_Proxies.contains(sceneObjectId))
+        {
+            sceneObjectProxy = CreateRef<SceneObjectProxy>(sceneObjectId);
+            m_Proxies[sceneObjectId] = sceneObjectProxy;
+        }
+        else
+        {
+            sceneObjectProxy = std::static_pointer_cast<SceneObjectProxy>(m_Proxies[sceneObjectId]);
+        }
+        const auto transform = ECSRegistry::GetInstance().GetComponent<TransformComponent>(sceneObjectId);
+        sceneObjectProxy->SetTransform(transform->GetPosition(), transform->GetScale(), transform->GetRotation());
+        sceneObjectProxy->SetMesh(meshProxy);
+        sceneObjectProxy->SetMaterial(materialProxy);
 
         sceneObject->SetDirtyFlag(false);
     }
 
     //Camera
-    if (!m_Proxies.count(scene->GetCameraId()))
+    Ref<CameraProxy> cameraProxy;
+    if (!m_Proxies.contains(scene->GetCameraId()))
     {
-        Ref<CameraProxy> proxy = CreateRef<CameraProxy>(scene->GetCameraId());
-        m_Proxies[scene->GetCameraId()] = proxy;
+        cameraProxy = CreateRef<CameraProxy>(scene->GetCameraId());
+        m_Proxies[scene->GetCameraId()] = cameraProxy;
     }
-    Ref<CameraProxy> proxy = std::static_pointer_cast<CameraProxy>(m_Proxies[scene->GetCameraId()]);
-    proxy->UpdateData(ECSRegistry::GetInstance().GetEntity<CameraObject>(scene->GetCameraId())->GetCameraPtr());
+    else
+    {
+        cameraProxy = std::static_pointer_cast<CameraProxy>(m_Proxies[scene->GetCameraId()]);
+    }
+    cameraProxy->UpdateData(ECSRegistry::GetInstance().GetEntity<CameraObject>(scene->GetCameraId())->GetCameraPtr());
 
     //Skybox
     if(scene->HasSkybox())
     {
-        uint32_t skyboxId = scene->GetSkyboxObjectId();
+        const uint32_t skyboxId = scene->GetSkyboxObjectId();
         auto skyboxObject = ECSRegistry::GetInstance().GetEntity<SkyboxObject>(skyboxId);
         if (skyboxObject->GetDirtyFlag())
         {
-            Ref<SkyboxProxy> proxy;
-            if (!m_Proxies.count(skyboxId))
+            Ref<SkyboxProxy> skyboxProxy;
+            if (!m_Proxies.contains(skyboxId))
             {
-                Ref<SkyboxProxy> proxy = CreateRef<SkyboxProxy>(skyboxId);
-                m_Proxies[skyboxId] = proxy;
+                skyboxProxy = CreateRef<SkyboxProxy>(skyboxId);
+                m_Proxies[skyboxId] = skyboxProxy;
             }
             else
             {
-                proxy = std::static_pointer_cast<SkyboxProxy>(m_Proxies[skyboxId]);
+                skyboxProxy = std::static_pointer_cast<SkyboxProxy>(m_Proxies[skyboxId]);
             }
 
             if (skyboxObject->HasAllTexturesSet())
-                proxy->SetTextures(skyboxObject->GetTextureAssets());
+                skyboxProxy->SetTextures(skyboxObject->GetTextureAssets());
 
             skyboxObject->SetDirtyFlag(false);
         }
     }
 }
 
-Ref<Proxy> ProxyManager::GetProxy(uint32_t id)
+Ref<Proxy> ProxyManager::GetProxy(const uint32_t id)
 {
-    if (m_Proxies.count(id))
+    if (m_Proxies.contains(id))
         return m_Proxies[id];
 
     return nullptr;
+}
+
+void ProxyManager::setupMaterialProxy(const std::string& assetPath, Ref<TextureProxy>& textureProxy,
+    const Ref<TextureAsset>& textureAsset, const Ref<TextureAsset>& alternativeTextureAsset)
+{
+    const Ref<TextureAsset> assetToUse = assetPath.empty() && alternativeTextureAsset ? alternativeTextureAsset : textureAsset;
+
+    if (assetToUse)
+    {
+        const uint32_t assetId = assetToUse->GetId();
+        if (!m_Proxies.contains(assetId))
+        {
+            textureProxy = CreateRef<TextureProxy>(assetId);
+            m_Proxies[assetId] = textureProxy;
+            textureProxy->CreateTextureFromAsset(assetToUse);
+        }
+        else
+        {
+            textureProxy = std::static_pointer_cast<TextureProxy>(m_Proxies[assetId]);
+        }   
+    }
 }

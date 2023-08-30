@@ -1,7 +1,7 @@
 #include "Entity/Components/MaterialComponent.h"
 
-MaterialComponent::MaterialComponent() :
-    Component("MaterialComponent"), m_DiffusePath("default"), m_FlipDiffuseTexture(false), m_FlipNormalTexture(false),
+MaterialComponent::MaterialComponent(const uint32_t id) :
+    Component(id, "MaterialComponent"), m_DiffusePath("default"), m_FlipDiffuseTexture(false), m_FlipNormalTexture(false),
     m_FlipMetallicTexture(false), m_FlipRoughnessTexture(false), m_FlipAOTexture(false), m_FlipEmissiveTexture(false)
 {
     reloadDiffuseTexture();

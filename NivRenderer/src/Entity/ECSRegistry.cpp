@@ -16,11 +16,6 @@ std::vector<Ref<Component>> ECSRegistry::GetAllComponents(uint32_t entityId)
 	return m_EntityComponentsMap[entityId].second;
 }
 
-uint32_t ECSRegistry::CreateNewEntityId()
-{
-	return m_NextEntityId++;
-}
-
 bool ECSRegistry::checkIfEntityExists(uint32_t entityId)
 {
 	return m_EntityComponentsMap.count(entityId);

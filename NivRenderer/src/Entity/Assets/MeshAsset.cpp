@@ -19,3 +19,8 @@ void MeshAsset::AddSubMeshes(const std::vector<Ref<SubMesh>>& meshes)
 {
     m_SubMeshes.insert(m_SubMeshes.end(), meshes.begin(), meshes.end());
 }
+
+const std::string& MeshAsset::GetPath()
+{
+    return m_Path;
+}

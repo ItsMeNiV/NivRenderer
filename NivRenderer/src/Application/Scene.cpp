@@ -6,7 +6,7 @@
 #include "Entity/Components/MaterialComponent.h"
 
 Scene::Scene()
-    : m_Id(ECSRegistry::GetInstance().CreateNewEntityId()), m_CameraId(UINT32_MAX), m_SkyboxId(UINT32_MAX)
+    : m_Id(IdManager::GetInstance().CreateNewId()), m_CameraId(UINT32_MAX), m_SkyboxId(UINT32_MAX)
 {
     m_SceneSettings.visualizeLights = false;
     m_SceneSettings.animateDirectionalLight = false;

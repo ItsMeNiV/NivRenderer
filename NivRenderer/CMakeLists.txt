@@ -104,6 +104,7 @@ set(INCLUDE_DIRS
 
 set(SRC_FILES
  "src/Base.h"
+ "src/IdManager.h"
  "src/NivRenderer.cpp" "src/NivRenderer.h"
  "src/Application/Event.h"
  "src/Application/Window/Window.cpp" "src/Application/Window/Window.h" 
@@ -117,6 +118,7 @@ set(SRC_FILES
  "src/Entity/ECSRegistry.cpp" "src/Entity/ECSRegistry.h"
  "src/Entity/Entity.h"
  "src/Entity/Component.h"
+ "src/Entity/Assets/Asset.h"
  "src/Entity/Assets/AssetManager.h" "src/Entity/Assets/AssetManager.cpp"
  "src/Entity/Assets/MeshAsset.h" "src/Entity/Assets/MeshAsset.cpp"
  "src/Entity/Assets/TextureAsset.h" "src/Entity/Assets/TextureAsset.cpp"
@@ -138,6 +140,9 @@ set(SRC_FILES
  "src/Rendering/Proxy/CameraProxy.h"
  "src/Rendering/Proxy/LightProxy.h"
  "src/Rendering/Proxy/SkyboxProxy.h"
+ "src/Rendering/Proxy/MeshProxy.h" "src/Rendering/Proxy/MeshProxy.cpp"
+ "src/Rendering/Proxy/TextureProxy.h" "src/Rendering/Proxy/TextureProxy.cpp"
+ "src/Rendering/Proxy/MaterialProxy.h" "src/Rendering/Proxy/MaterialProxy.cpp"
  "src/Rendering/ForwardPipeline/ForwardPass.h"
  "src/Rendering/OpenGL/VertexLayout.h"
 )

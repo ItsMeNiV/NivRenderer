@@ -6,6 +6,19 @@
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
 
+// Struct to associate a Modelpath with multiple Texture paths
+// TODO: Maybe redesign this so the Model doesn't need to know how many and which kind of Texture paths are needed per Model
+struct Model
+{
+    std::string meshPath;
+    std::string diffuseTexturePath;
+    std::string normalTexturePath;
+    std::string metallicTexturePath;
+    std::string roughnessTexturePath;
+    std::string aoTexturePath;
+    std::string emissiveTexturePath;
+};
+
 class AssetManager
 {
 public:
@@ -36,6 +49,7 @@ private:
     std::unordered_map<std::string, Ref<MeshAsset>> m_LoadedMeshAssets;
     std::unordered_map<std::string, Ref<TextureAsset>> m_LoadedTextureAssets;
     std::unordered_map<std::string, Ref<Shader>> m_LoadedShaders;
+    std::unordered_map<std::string, Model> m_LoadedModels;
 
     void loadDefaultMeshAndTextures();
     void processNode(const aiNode* node, const aiScene* scene, std::vector<Ref<SubMesh>>& subMeshes);

@@ -1,5 +1,6 @@
 #pragma once
 #include "Base.h"
+#include "Asset.h"
 
 struct MeshVertex
 {
@@ -26,16 +27,22 @@ private:
     std::vector<uint32_t> m_Indices;
 };
 
-class MeshAsset
+class MeshAsset : public Asset
 {
 public:
-    MeshAsset() = default;
-    MeshAsset(const Ref<SubMesh>& subMesh) { m_SubMeshes.push_back(subMesh); }
+    MeshAsset(const uint32_t id, const std::string& path) : Asset(id), m_Path(path) {}
+    MeshAsset(const uint32_t id, const std::string& path, const Ref<SubMesh>& subMesh) : Asset(id), m_Path(path)
+    {
+        m_SubMeshes.push_back(subMesh);
+    }
 
     const std::vector<Ref<SubMesh>>& GetSubMeshes() const;
     void AddSubMeshes(const std::vector<Ref<SubMesh>>& meshes);
 
+    const std::string& GetPath();
+
 private:
     std::vector<Ref<SubMesh>> m_SubMeshes;
+    std::string m_Path;
 
 };

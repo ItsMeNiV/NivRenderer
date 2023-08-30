@@ -11,9 +11,9 @@ Renderer::~Renderer()
 {
 }
 
-void Renderer::PrepareFrame()
+void Renderer::PrepareFrame() const
 {
-    Ref<Camera> cam = ECSRegistry::GetInstance().GetEntity<CameraObject>(m_ActiveScene->GetCameraId())->GetCameraPtr();
+    const Ref<Camera> cam = ECSRegistry::GetInstance().GetEntity<CameraObject>(m_ActiveScene->GetCameraId())->GetCameraPtr();
     if(m_ActiveScene->GetSceneSettings().renderResolution.x != cam->GetCameraWidth() ||
         m_ActiveScene->GetSceneSettings().renderResolution.y != cam->GetCameraHeight())
     {
@@ -32,7 +32,7 @@ void Renderer::PrepareFrame()
     m_ProxyManager->UpdateProxies(m_ActiveScene);
 }
 
-void Renderer::RenderScene()
+void Renderer::RenderScene() const
 {
     if (m_ActiveScene)
     {
@@ -44,7 +44,7 @@ void Renderer::RenderScene()
 
 }
 
-void Renderer::AnimateDirectionalLight()
+void Renderer::AnimateDirectionalLight() const
 {
     for(uint32_t lightId : m_ActiveScene->GetSceneLightIds())
     {

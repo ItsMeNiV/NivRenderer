@@ -1,7 +1,7 @@
 #include "Entity/Components/MeshComponent.h"
 
-MeshComponent::MeshComponent()
-    : Component("MeshComponent"), m_Path("default")
+MeshComponent::MeshComponent(const uint32_t id)
+    : Component(id, "MeshComponent"), m_Path("default")
 {
     reloadMesh();
 }

@@ -67,12 +67,12 @@ public:
             objectProxy->Bind();
             m_PassShader->SetMat4("model", objectProxy->GetModelMatrix());
 
-            objectProxy->BindDiffuseTexture(0);
+            objectProxy->GetMaterialProxy()->BindDiffuseTexture(0);
             m_PassShader->SetTexture("diffuseTexture", 0);
 
-            if (objectProxy->HasNormalTexture())
+            if (objectProxy->GetMaterialProxy()->HasNormalTexture())
             {
-                objectProxy->BindNormalTexture(1);
+                objectProxy->GetMaterialProxy()->BindNormalTexture(1);
                 m_PassShader->SetBool("hasNormalTexture", true);
                 m_PassShader->SetTexture("normalTexture", 1);
             }
@@ -81,23 +81,23 @@ public:
                 m_PassShader->SetBool("hasNormalTexture", false);
             }
 
-            objectProxy->BindMetallicTexture(2);
+            objectProxy->GetMaterialProxy()->BindMetallicTexture(2);
             m_PassShader->SetTexture("metallicTexture", 2);
 
-            objectProxy->BindRoughnessTexture(3);
+            objectProxy->GetMaterialProxy()->BindRoughnessTexture(3);
             m_PassShader->SetTexture("roughnessTexture", 3);
 
-            objectProxy->BindAOTexture(4);
+            objectProxy->GetMaterialProxy()->BindAOTexture(4);
             m_PassShader->SetTexture("aoTexture", 4);
 
-            objectProxy->BindEmissiveTexture(5);
+            objectProxy->GetMaterialProxy()->BindEmissiveTexture(5);
             m_PassShader->SetTexture("emissiveTexture", 5);
 
-
-            if (objectProxy->GetIndexCount())
-                glDrawElements(GL_TRIANGLES, objectProxy->GetIndexCount(), GL_UNSIGNED_INT, 0);
+            auto& meshProxy = objectProxy->GetMeshProxy();
+            if (meshProxy->GetIndexCount())
+                glDrawElements(GL_TRIANGLES, meshProxy->GetIndexCount(), GL_UNSIGNED_INT, 0);
             else
-                glDrawArrays(GL_TRIANGLES, 0, objectProxy->GetVerticesCount());
+                glDrawArrays(GL_TRIANGLES, 0, meshProxy->GetVerticesCount());
         }
 
         if (scene->GetSceneSettings().visualizeLights && pointLightIndex)

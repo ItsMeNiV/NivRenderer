@@ -6,7 +6,7 @@
 class MeshComponent : public Component
 {
 public:
-    MeshComponent();
+    MeshComponent(const uint32_t id);
 	~MeshComponent() = default;
 
     Ref<MeshAsset>& GetMeshAsset();

@@ -1,7 +1,7 @@
 #include "Entity/Assets/TextureAsset.h"
 
-TextureAsset::TextureAsset(const std::string& path, bool flipVertical) :
-    m_TextureData(nullptr), m_FlipVertical(flipVertical), m_Width(0), m_Height(0), m_NrComponents(0), m_Path(path)
+TextureAsset::TextureAsset(const uint32_t id, const std::string& path, bool flipVertical) :
+    Asset(id), m_TextureData(nullptr), m_FlipVertical(flipVertical), m_Width(0), m_Height(0), m_NrComponents(0), m_Path(path)
 {
 }
 

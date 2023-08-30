@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Entity/Entity.h"
 #include "Entity/Component.h"
+#include "IdManager.h"
 
 class ECSRegistry
 {
@@ -19,8 +20,6 @@ public:
 	void RemoveEntity(uint32_t entityId);
 	std::vector<Ref<Component>> GetAllComponents(uint32_t entityId);
 
-	uint32_t CreateNewEntityId();
-
 	template<typename T>
 	void AddComponent(uint32_t entityId)
 	{
@@ -30,7 +29,7 @@ public:
 			return;
 		}
 
-		Ref<T> component = CreateRef<T>();
+		Ref<T> component = CreateRef<T>(IdManager::GetInstance().CreateNewId());
 
 		m_EntityComponentsMap[entityId].second.push_back(component);
 	}
@@ -40,7 +39,7 @@ public:
 	{
 		static_assert(std::is_base_of_v<Entity, T>);
 
-		Ref<T> entity = CreateRef<T>(CreateNewEntityId());
+		Ref<T> entity = CreateRef<T>(IdManager::GetInstance().CreateNewId());
 		m_EntityComponentsMap[entity->GetId()].first = entity;
 		m_EntityComponentsMap[entity->GetId()].second = std::vector<Ref<Component>>();
 

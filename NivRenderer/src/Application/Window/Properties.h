@@ -60,7 +60,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
 		//Model-Path
         ImGui::InputText("Model Path", sceneObject->GetModelPath(), 0, InputTextCallback, sceneObject->GetModelPath());
         ImGui::PushID("Reload##Model");
-        if (ImGui::Button("Reload"))
+        if (ImGui::Button("Reload") && !sceneObject->GetModelPath()->empty())
         {
             *sceneObject->GetModelPath() = std::regex_replace(*sceneObject->GetModelPath(), std::regex("\\\\"), "\/");
             sceneObject->LoadMeshAndMaterial();
@@ -148,7 +148,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
         else if (skyboxObject)
         {
             ImGui::InputText("Texture folder", skyboxObject->GetTextureFolder(), 0, InputTextCallback, skyboxObject->GetTextureFolder());
-            if (ImGui::Button("Populate Texture Paths"))
+            if (ImGui::Button("Populate Texture Paths") && !skyboxObject->GetTextureFolder()->empty())
             {
                 *skyboxObject->GetTextureFolder() =
                     std::regex_replace(*skyboxObject->GetTextureFolder(), std::regex("\\\\"), "\/");

@@ -1,4 +1,5 @@
 #include "AssetManager.h"
+#include "IdManager.h"
 
 
 AssetManager::AssetManager()
@@ -26,7 +27,7 @@ Ref<MeshAsset> AssetManager::LoadMesh(const std::string& path)
     }
     processNode(scene->mRootNode, scene, subMeshes);
 
-    Ref<MeshAsset> meshAsset = CreateRef<MeshAsset>();
+    Ref<MeshAsset> meshAsset = CreateRef<MeshAsset>(IdManager::GetInstance().CreateNewId(), path);
     meshAsset->AddSubMeshes(subMeshes);
     m_LoadedMeshAssets[path] = meshAsset;
 
@@ -41,7 +42,7 @@ Ref<TextureAsset> AssetManager::LoadTexture(std::string& path, bool flipVertical
 
     std::string pathToUse = textureExists ? m_LoadedTextureAssets[path]->GetPath() : path;
 
-    Ref<TextureAsset> textureAsset = CreateRef<TextureAsset>(pathToUse, flipVertical);
+    Ref<TextureAsset> textureAsset = CreateRef<TextureAsset>(IdManager::GetInstance().CreateNewId(), pathToUse, flipVertical);
 
     stbi_set_flip_vertically_on_load(textureAsset->GetFlipVertical());
     if (loadOnlyOneChannel)
@@ -97,6 +98,36 @@ std::vector<std::string> AssetManager::LoadMeshAndTextures(
     bool flipVerticalRoughness, bool flipVerticalAO, bool flipVerticalEmissive)
 {
     std::vector<std::string> returnPaths;
+
+    if (m_LoadedModels.contains(path))
+    {
+        auto& m = m_LoadedModels[path];
+        mesh = m_LoadedMeshAssets[path];
+
+        if (!m.diffuseTexturePath.empty())
+            diffuseTexture = LoadTexture(m.diffuseTexturePath, flipVerticalDiffuse);
+        if (!m.normalTexturePath.empty())
+            normalTexture = LoadTexture(m.normalTexturePath, flipVerticalNormal);
+        if (!m.metallicTexturePath.empty())
+            metallicTexture = LoadTexture(m.metallicTexturePath, flipVerticalMetallic);
+        if (!m.roughnessTexturePath.empty())
+            roughnessTexture = LoadTexture(m.roughnessTexturePath, flipVerticalRoughness);
+        if (!m.aoTexturePath.empty())
+            aoTexture = LoadTexture(m.aoTexturePath, flipVerticalAO);
+        if (!m.emissiveTexturePath.empty())
+            emissiveTexture = LoadTexture(m.emissiveTexturePath, flipVerticalEmissive);
+
+        returnPaths.push_back(m.meshPath);
+        returnPaths.push_back(m.diffuseTexturePath);
+        returnPaths.push_back(m.normalTexturePath);
+        returnPaths.push_back(m.metallicTexturePath);
+        returnPaths.push_back(m.roughnessTexturePath);
+        returnPaths.push_back(m.aoTexturePath);
+        returnPaths.push_back(m.emissiveTexturePath);
+
+        return returnPaths;
+    }
+
     std::string directory = path.substr(0, path.find_last_of('/'));
 
     const aiScene* scene = m_Importer->ReadFile(
@@ -107,22 +138,14 @@ std::vector<std::string> AssetManager::LoadMeshAndTextures(
         return returnPaths;
     }
 
-    if (m_LoadedMeshAssets.contains(path))
-    {
-        mesh = m_LoadedMeshAssets[path];
-        returnPaths.push_back(path);
-    }
-    else
-    {
-        Ref<MeshAsset> newMesh = CreateRef<MeshAsset>();
-        std::vector<Ref<SubMesh>> subMeshes;
-        processNode(scene->mRootNode, scene, subMeshes);
+    Ref<MeshAsset> newMesh = CreateRef<MeshAsset>(IdManager::GetInstance().CreateNewId(), path);
+    std::vector<Ref<SubMesh>> subMeshes;
+    processNode(scene->mRootNode, scene, subMeshes);
 
-        newMesh->AddSubMeshes(subMeshes);
-        m_LoadedMeshAssets[path] = newMesh;
-        mesh = newMesh;
-        returnPaths.push_back(path);
-    }
+    newMesh->AddSubMeshes(subMeshes);
+    m_LoadedMeshAssets[path] = newMesh;
+    mesh = newMesh;
+    returnPaths.push_back(path);
 
     std::string diffusePath;
     std::string normalPath;
@@ -204,6 +227,8 @@ std::vector<std::string> AssetManager::LoadMeshAndTextures(
     returnPaths.push_back(roughnessPath);
     returnPaths.push_back(aoPath);
     returnPaths.push_back(emissivePath);
+
+    m_LoadedModels[path] = {path, diffusePath, normalPath, metallicPath, roughnessPath, aoPath, emissivePath};
 
     return returnPaths;
 }
@@ -300,10 +325,11 @@ void AssetManager::loadDefaultMeshAndTextures()
 
     std::vector<uint32_t> defaultIndices;
 
+    const std::string defaultMeshPath = std::string("default");
     const Ref<SubMesh> defaultMesh = CreateRef<SubMesh>(defaultVertices, defaultIndices);
     subMeshes.push_back(defaultMesh);
-    const Ref<MeshAsset> defaultMeshAsset = CreateRef<MeshAsset>(defaultMesh);
-    m_LoadedMeshAssets["default"] = defaultMeshAsset;
+    const Ref<MeshAsset> defaultMeshAsset = CreateRef<MeshAsset>(IdManager::GetInstance().CreateNewId(), defaultMeshPath, defaultMesh);
+    m_LoadedMeshAssets[defaultMeshPath] = defaultMeshAsset;
 
     //Default "Prototype" Texture
     std::string defaultTexturePath("assets/textures/default.png");

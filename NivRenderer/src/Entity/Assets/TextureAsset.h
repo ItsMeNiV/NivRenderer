@@ -1,12 +1,12 @@
 #pragma once
 #include "Base.h"
-
+#include "Asset.h"
 #include "stb_image.h"
 
-class TextureAsset
+class TextureAsset : public Asset
 {
 public:
-    TextureAsset(const std::string& path, bool flipVertical);
+    TextureAsset(const uint32_t id, const std::string& path, bool flipVertical);
 
     ~TextureAsset();
 

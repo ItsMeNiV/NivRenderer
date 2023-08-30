@@ -6,7 +6,7 @@
 class MaterialComponent : public Component
 {
 public:
-    MaterialComponent();
+    MaterialComponent(const uint32_t id);
     ~MaterialComponent() = default;
 
     std::vector<std::pair<std::string, ComponentProperty>> GetComponentProperties() override;
