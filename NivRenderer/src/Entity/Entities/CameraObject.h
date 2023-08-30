@@ -10,10 +10,17 @@ public:
 	{
 	}
 
-	virtual ~CameraObject() = default;
+    ~CameraObject() override = default;
+
+    std::vector<std::pair<std::string, EntityProperty>> GetEntityProperties() override
+    {
+        std::vector<std::pair<std::string, EntityProperty>> returnVector;
+        return returnVector;
+    }
 
 	void SetCameraPtr(const Ref<Camera> cameraPtr) { m_CameraPtr = cameraPtr; }
 	const Ref<Camera>& GetCameraPtr() const { return m_CameraPtr; }
+    
 
 private:
 	Ref<Camera> m_CameraPtr;

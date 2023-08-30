@@ -6,7 +6,7 @@
 class SkyboxObject : public Entity
 {
 public:
-    SkyboxObject(uint32_t id) : Entity(id, std::string("Skybox")), m_FlipTextures(false) {}
+    SkyboxObject(uint32_t id);
 
     void SetTexturePathsFromFolder();
     void LoadTextures();
@@ -16,6 +16,8 @@ public:
     bool* GetFlipTextures() { return &m_FlipTextures; }
     std::array<Ref<TextureAsset>, 6>& GetTextureAssets() { return m_TextureAssets; }
     bool HasAllTexturesSet();
+
+    std::vector<std::pair<std::string, EntityProperty>> GetEntityProperties() override;
 
 private:
     std::string m_TextureFolder;

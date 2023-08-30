@@ -1,5 +1,14 @@
 #pragma once
 #include "Base.h"
+#include "Component.h"
+#include "PropertyType.h"
+
+struct EntityProperty
+{
+    NivRenderer::PropertyType type;
+    void* valuePtr;
+    std::function<void()> callback;
+};
 
 class Entity
 {
@@ -18,6 +27,8 @@ public:
 			return e->GetId() == childId;
 		}));
 	}
+
+	virtual std::vector<std::pair<std::string, EntityProperty>> GetEntityProperties() = 0;
 
 	const uint32_t GetId() const { return m_EntityId; }
 	std::string* const GetEntityName() { return &m_EntityName; }

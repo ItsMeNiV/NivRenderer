@@ -44,14 +44,6 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
 		ImGui::End();
 		return;
 	}
-    if (selectedSceneObject == scene->GetId())
-    {
-        ImGui::SeparatorText("General Scene Settings");
-        ImGui::Checkbox("Visualize Lights", &scene->GetSceneSettings().visualizeLights);
-        ImGui::Checkbox("Animate Directional Light", &scene->GetSceneSettings().animateDirectionalLight);
-        ImGui::InputInt2("Render resolution", glm::value_ptr(scene->GetSceneSettings().renderResolution));
-        ImGui::InputInt("Sample count", reinterpret_cast<int32_t*>(&scene->GetSceneSettings().sampleCount));
-    }
 
     if (const Ref<SceneObject> sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(selectedSceneObject))
 	{
@@ -84,14 +76,30 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
 						wasEdited = ImGui::InputFloat(label, static_cast<float*>(it.second.valuePtr));
                         ImGui::Spacing();
 						break;
+                    case NivRenderer::PropertyType::FLOAT2:
+                        wasEdited = ImGui::InputFloat2(label, static_cast<float*>(it.second.valuePtr));
+                        ImGui::Spacing();
+                        break;
 					case NivRenderer::PropertyType::FLOAT3:
                         wasEdited = ImGui::InputFloat3(label, static_cast<float*>(it.second.valuePtr));
                         ImGui::Spacing();
 						break;
+                    case NivRenderer::PropertyType::COLOR:
+                        ImGui::ColorEdit3(label, static_cast<float*>(it.second.valuePtr));
+                        ImGui::Spacing();
+                        break;
 					case NivRenderer::PropertyType::INT:
                         wasEdited = ImGui::InputInt(label, static_cast<int*>(it.second.valuePtr));
                         ImGui::Spacing();
 						break;
+                    case NivRenderer::PropertyType::INT2:
+                        ImGui::InputInt2(label, static_cast<int*>(it.second.valuePtr));
+                        ImGui::Spacing();
+                        break;
+                    case NivRenderer::PropertyType::SLIDER:
+                        wasEdited = ImGui::SliderInt(label, static_cast<int*>(it.second.valuePtr), 1, 100);
+                        ImGui::Spacing();
+                        break;
 					case NivRenderer::PropertyType::PATH:
 					{
                             auto* inputString = static_cast<std::string*>(it.second.valuePtr);
@@ -104,10 +112,32 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
                                 wasEdited = true;
                             }
                             ImGui::PopID();
+                            ImGui::Spacing();
                             break;   
 					}
+                    case NivRenderer::PropertyType::STRING:
+					{
+                            auto* inputString = static_cast<std::string*>(it.second.valuePtr);
+                            ImGui::InputText(label, inputString, 0, InputTextCallback, (void*)inputString);
+                            ImGui::Spacing();
+                            break;   
+					}
+                    case NivRenderer::PropertyType::BUTTON:
+                        ImGui::PushID((it.first + std::string("##") + std::string(component->GetName())).c_str());
+                        if (ImGui::Button(it.first.c_str()))
+                        {
+                            it.second.callback();
+                            wasEdited = true;
+                        }
+                        ImGui::PopID();
+                        ImGui::Spacing();
+                        break;
 					case NivRenderer::PropertyType::BOOL:
                         wasEdited = ImGui::Checkbox(it.first.c_str(), static_cast<bool*>(it.second.valuePtr));
+                        ImGui::Spacing();
+                        break;
+                    case NivRenderer::PropertyType::SEPARATORTEXT:
+                        ImGui::SeparatorText(it.first.c_str());
                         ImGui::Spacing();
                         break;
 					}
@@ -120,59 +150,92 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
 	}
 	else
 	{
-        const Ref<DirectionalLightObject> directionalLightObject = ECSRegistry::GetInstance().GetEntity<DirectionalLightObject>(selectedSceneObject);
-        const Ref<PointLightObject> pointLightObject = ECSRegistry::GetInstance().GetEntity<PointLightObject>(selectedSceneObject);
-        const Ref<SkyboxObject> skyboxObject = ECSRegistry::GetInstance().GetEntity<SkyboxObject>(selectedSceneObject);
+        const Ref<Entity> selectedEntity = ECSRegistry::GetInstance().GetEntity<Entity>(selectedSceneObject);
+        std::vector<std::pair<std::string, EntityProperty>> entityProperties;
+        if (selectedSceneObject == scene->GetId())
+            entityProperties = scene->GetEntityProperties();
+        else
+            entityProperties = selectedEntity->GetEntityProperties();
 
-		if (directionalLightObject)
-		{
-			bool wasEdited = false;
-			wasEdited = ImGui::ColorEdit3("Light Color", glm::value_ptr(directionalLightObject->GetLightColor()));
-			wasEdited |= ImGui::InputFloat3("Light Direction", glm::value_ptr(directionalLightObject->GetDirection()));
-
-			if (wasEdited)
-				directionalLightObject->SetDirtyFlag(true);
-		}
-        else if (pointLightObject)
+        for (auto& it : entityProperties)
         {
             bool wasEdited = false;
-            wasEdited = ImGui::ColorEdit3("Light Color", glm::value_ptr(pointLightObject->GetLightColor()));
-            wasEdited |= ImGui::InputFloat3("Light Position", glm::value_ptr(pointLightObject->GetPosition()));
-            int32_t strengthInput = pointLightObject->GetStrength();
-            wasEdited |= ImGui::SliderInt("Light Strength", &strengthInput, 1, 100);
-            pointLightObject->SetStrength(std::min(std::max(strengthInput, 1), 100));
-
-            if (wasEdited)
-				pointLightObject->SetDirtyFlag(true);
-        }
-        else if (skyboxObject)
-        {
-            ImGui::InputText("Texture folder", skyboxObject->GetTextureFolder(), 0, InputTextCallback, skyboxObject->GetTextureFolder());
-            if (ImGui::Button("Populate Texture Paths") && !skyboxObject->GetTextureFolder()->empty())
+            const char* label = it.first.c_str();
+            std::string entityName(selectedEntity ? selectedEntity->GetEntityName()->c_str() : "UNKNOWN");
+            switch (it.second.type)
             {
-                *skyboxObject->GetTextureFolder() =
-                    std::regex_replace(*skyboxObject->GetTextureFolder(), std::regex("\\\\"), "\/");
-                skyboxObject->SetTexturePathsFromFolder();
-                skyboxObject->SetDirtyFlag(true);
+            case NivRenderer::PropertyType::FLOAT:
+                wasEdited = ImGui::InputFloat(label, static_cast<float*>(it.second.valuePtr));
+                ImGui::Spacing();
+                break;
+            case NivRenderer::PropertyType::FLOAT2:
+                wasEdited = ImGui::InputFloat2(label, static_cast<float*>(it.second.valuePtr));
+                ImGui::Spacing();
+                break;
+            case NivRenderer::PropertyType::FLOAT3:
+                wasEdited = ImGui::InputFloat3(label, static_cast<float*>(it.second.valuePtr));
+                ImGui::Spacing();
+                break;
+            case NivRenderer::PropertyType::COLOR:
+                ImGui::ColorEdit3(label, static_cast<float*>(it.second.valuePtr));
+                ImGui::Spacing();
+                break;
+            case NivRenderer::PropertyType::INT:
+                wasEdited = ImGui::InputInt(label, static_cast<int*>(it.second.valuePtr));
+                ImGui::Spacing();
+                break;
+            case NivRenderer::PropertyType::INT2:
+                ImGui::InputInt2(label, static_cast<int*>(it.second.valuePtr));
+                ImGui::Spacing();
+                break;
+            case NivRenderer::PropertyType::SLIDER:
+                wasEdited = ImGui::SliderInt(label, static_cast<int*>(it.second.valuePtr), 1, 100);
+                ImGui::Spacing();
+                break;
+            case NivRenderer::PropertyType::PATH:
+                {
+                    auto* inputString = static_cast<std::string*>(it.second.valuePtr);
+                    ImGui::InputText(label, inputString, 0, InputTextCallback, (void*)inputString);
+                    ImGui::PushID((std::string("Reload") + it.first).c_str());
+                    if (ImGui::Button("Reload"))
+                    {
+                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                        it.second.callback();
+                        wasEdited = true;
+                    }
+                    ImGui::PopID();
+                    ImGui::Spacing();
+                    break;
+                }
+            case NivRenderer::PropertyType::STRING:
+                {
+                    auto* inputString = static_cast<std::string*>(it.second.valuePtr);
+                    ImGui::InputText(label, inputString, 0, InputTextCallback, (void*)inputString);
+                    ImGui::Spacing();
+                    break;
+                }
+            case NivRenderer::PropertyType::BUTTON:
+                ImGui::PushID((it.first + std::string("##") + entityName).c_str());
+                if (ImGui::Button(it.first.c_str()))
+                {
+                    it.second.callback();
+                    wasEdited = true;
+                }
+                ImGui::PopID();
+                ImGui::Spacing();
+                break;
+            case NivRenderer::PropertyType::BOOL:
+                wasEdited = ImGui::Checkbox(it.first.c_str(), static_cast<bool*>(it.second.valuePtr));
+                ImGui::Spacing();
+                break;
+            case NivRenderer::PropertyType::SEPARATORTEXT:
+                ImGui::SeparatorText(it.first.c_str());
+                ImGui::Spacing();
+                break;
             }
 
-            uint8_t i = 1;
-            for (auto& path : skyboxObject->GetTexturePaths())
-            {
-                std::string label = std::string("Texture path[") + std::to_string(i) + "]";
-                ImGui::InputText(label.c_str(), &path, 0, InputTextCallback, &path);
-                i++;
-            }
-            ImGui::PushID("Reload##Skybox");
-            if (ImGui::Button("Reload"))
-            {
-                for (auto& path : skyboxObject->GetTexturePaths())
-                    path = std::regex_replace(path, std::regex("\\\\"), "\/");
-                skyboxObject->LoadTextures();
-                skyboxObject->SetDirtyFlag(true);
-            }
-            ImGui::PopID();
-            ImGui::Checkbox("Flip Textures", static_cast<bool*>(skyboxObject->GetFlipTextures()));
+            if (wasEdited && selectedEntity)
+                selectedEntity->SetDirtyFlag(true);
         }
 	}
 

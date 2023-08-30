@@ -118,6 +118,7 @@ set(SRC_FILES
  "src/Entity/ECSRegistry.cpp" "src/Entity/ECSRegistry.h"
  "src/Entity/Entity.h"
  "src/Entity/Component.h"
+ "src/Entity/PropertyType.h"
  "src/Entity/Assets/Asset.h"
  "src/Entity/Assets/AssetManager.h" "src/Entity/Assets/AssetManager.cpp"
  "src/Entity/Assets/MeshAsset.h" "src/Entity/Assets/MeshAsset.cpp"

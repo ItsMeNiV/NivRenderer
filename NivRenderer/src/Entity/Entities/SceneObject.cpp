@@ -38,3 +38,10 @@ void SceneObject::LoadMeshAndMaterial()
         material->GetEmissivePath() = meshAndTexturePaths[6];
     }
 }
+
+std::vector<std::pair<std::string, EntityProperty>> SceneObject::GetEntityProperties()
+{
+    std::vector<std::pair<std::string, EntityProperty>> returnVector;
+
+    return returnVector;
+}

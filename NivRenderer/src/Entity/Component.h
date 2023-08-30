@@ -1,18 +1,6 @@
 #pragma once
 #include "Base.h"
-
-namespace NivRenderer
-{
-    enum PropertyType
-    {
-        FLOAT3,
-        FLOAT,
-        INT,
-        STRING,
-        PATH,
-        BOOL
-    };
-}
+#include "PropertyType.h"
 
 struct ComponentProperty
 {

@@ -10,6 +10,7 @@ struct SceneSettings
     bool visualizeLights;
     bool animateDirectionalLight;
     glm::ivec2 renderResolution;
+    glm::ivec2 tempRenderResolution;
     uint32_t sampleCount;
 };
 
@@ -37,6 +38,8 @@ public:
     SceneSettings& GetSceneSettings() { return m_SceneSettings; }
     const bool HasDirectionalLight() const { return m_HasDirectionalLight; }
     const bool HasSkybox() const { return m_HasSkybox; }
+
+    std::vector<std::pair<std::string, EntityProperty>> GetEntityProperties();
 
 private:
     uint32_t m_Id;
