@@ -2,13 +2,6 @@
 #include "Base.h"
 #include "PropertyType.h"
 
-struct ComponentProperty
-{
-    NivRenderer::PropertyType type;
-	void* valuePtr;
-	std::function<void()> callback;
-};
-
 class Component
 {
 public:
@@ -17,7 +10,7 @@ public:
 
 	const char* GetName() const { return m_Name; }
     const uint32_t& GetId() const { return m_Id; }
-	virtual std::vector<std::pair<std::string, ComponentProperty>> GetComponentProperties() = 0;
+	virtual std::vector<std::pair<std::string, NivRenderer::Property>> GetComponentProperties() = 0;
 
 private:
     uint32_t m_Id;

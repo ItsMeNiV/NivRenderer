@@ -39,9 +39,9 @@ void SceneObject::LoadMeshAndMaterial()
     }
 }
 
-std::vector<std::pair<std::string, EntityProperty>> SceneObject::GetEntityProperties()
+std::vector<std::pair<std::string, NivRenderer::Property>> SceneObject::GetEntityProperties()
 {
-    std::vector<std::pair<std::string, EntityProperty>> returnVector;
+    std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
 
     return returnVector;
 }

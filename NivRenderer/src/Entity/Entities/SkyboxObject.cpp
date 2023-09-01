@@ -65,9 +65,9 @@ bool SkyboxObject::HasAllTexturesSet()
     return true;
 }
 
-std::vector<std::pair<std::string, EntityProperty>> SkyboxObject::GetEntityProperties()
+std::vector<std::pair<std::string, NivRenderer::Property>> SkyboxObject::GetEntityProperties()
 {
-    std::vector<std::pair<std::string, EntityProperty>> returnVector;
+    std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
     returnVector.push_back({"Texture folder", {NivRenderer::PropertyType::PATH, &m_TextureFolder, [this]()
     {
         m_TextureFolder = std::regex_replace(m_TextureFolder, std::regex("\\\\"), "\/");

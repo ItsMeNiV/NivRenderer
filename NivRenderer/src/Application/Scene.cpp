@@ -106,9 +106,9 @@ uint32_t Scene::AddCamera(const Ref<Camera> cameraPtr)
     return object->GetId();
 }
 
-std::vector<std::pair<std::string, EntityProperty>> Scene::GetEntityProperties()
+std::vector<std::pair<std::string, NivRenderer::Property>> Scene::GetEntityProperties()
 {
-    std::vector<std::pair<std::string, EntityProperty>> returnVector;
+    std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
 
     returnVector.push_back({"General Scene Settings", {NivRenderer::PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
     returnVector.push_back({"Visualize Lights", {NivRenderer::PropertyType::BOOL, &m_SceneSettings.visualizeLights, [this]() {}}});

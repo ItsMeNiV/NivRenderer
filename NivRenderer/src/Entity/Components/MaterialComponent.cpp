@@ -7,9 +7,9 @@ MaterialComponent::MaterialComponent(const uint32_t id) :
     reloadDiffuseTexture();
 }
 
-std::vector<std::pair<std::string, ComponentProperty>> MaterialComponent::GetComponentProperties()
+std::vector<std::pair<std::string, NivRenderer::Property>> MaterialComponent::GetComponentProperties()
 {
-    std::vector<std::pair<std::string, ComponentProperty>> returnVector;
+    std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
 
     returnVector.push_back({"Diffuse Path", {NivRenderer::PropertyType::PATH, &m_DiffusePath, [this]() { reloadDiffuseTexture(); }}});
     returnVector.push_back({"Flip Diffuse Texture", {NivRenderer::PropertyType::BOOL, &m_FlipDiffuseTexture, []() {return; }}});

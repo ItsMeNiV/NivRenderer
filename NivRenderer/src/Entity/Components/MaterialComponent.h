@@ -9,7 +9,7 @@ public:
     MaterialComponent(const uint32_t id);
     ~MaterialComponent() = default;
 
-    std::vector<std::pair<std::string, ComponentProperty>> GetComponentProperties() override;
+    std::vector<std::pair<std::string, NivRenderer::Property>> GetComponentProperties() override;
 
     std::string& GetDiffusePath() { return m_DiffusePath; }
     std::string& GetNormalPath() { return m_NormalPath; }

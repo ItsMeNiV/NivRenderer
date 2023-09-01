@@ -17,4 +17,11 @@ namespace NivRenderer
         SEPARATORTEXT,
         BUTTON
     };
+
+    struct Property
+    {
+        NivRenderer::PropertyType type;
+        void* valuePtr;
+        std::function<void()> callback;
+    };
 }

@@ -12,9 +12,9 @@ public:
 
     ~CameraObject() override = default;
 
-    std::vector<std::pair<std::string, EntityProperty>> GetEntityProperties() override
+    std::vector<std::pair<std::string, NivRenderer::Property>> GetEntityProperties() override
     {
-        std::vector<std::pair<std::string, EntityProperty>> returnVector;
+        std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
         return returnVector;
     }
 

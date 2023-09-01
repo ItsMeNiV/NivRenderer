@@ -17,7 +17,7 @@ public:
     std::array<Ref<TextureAsset>, 6>& GetTextureAssets() { return m_TextureAssets; }
     bool HasAllTexturesSet();
 
-    std::vector<std::pair<std::string, EntityProperty>> GetEntityProperties() override;
+    std::vector<std::pair<std::string, NivRenderer::Property>> GetEntityProperties() override;
 
 private:
     std::string m_TextureFolder;

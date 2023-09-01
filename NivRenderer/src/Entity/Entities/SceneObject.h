@@ -10,7 +10,7 @@ public:
 	std::string *GetModelPath() { return &m_ModelPath; }
     void LoadMeshAndMaterial();
 
-    std::vector<std::pair<std::string, EntityProperty>> GetEntityProperties() override;
+    std::vector<std::pair<std::string, NivRenderer::Property>> GetEntityProperties() override;
 
 private:
     std::string m_ModelPath;

@@ -12,7 +12,7 @@ public:
     Ref<MeshAsset>& GetMeshAsset();
     std::string& GetPath();
 
-    std::vector<std::pair<std::string, ComponentProperty>> GetComponentProperties() override;
+    std::vector<std::pair<std::string, NivRenderer::Property>> GetComponentProperties() override;
 
 private:
 	std::string m_Path;

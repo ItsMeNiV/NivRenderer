@@ -39,7 +39,7 @@ public:
     const bool HasDirectionalLight() const { return m_HasDirectionalLight; }
     const bool HasSkybox() const { return m_HasSkybox; }
 
-    std::vector<std::pair<std::string, EntityProperty>> GetEntityProperties();
+    std::vector<std::pair<std::string, NivRenderer::Property>> GetEntityProperties();
 
 private:
     uint32_t m_Id;

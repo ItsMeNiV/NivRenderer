@@ -28,9 +28,9 @@ public:
 	void SetDirection(glm::vec3& direction) { m_Direction = direction; }
 	glm::vec3& GetDirection() { return m_Direction; }
 
-	std::vector<std::pair<std::string, EntityProperty>> GetEntityProperties() override
+	std::vector<std::pair<std::string, NivRenderer::Property>> GetEntityProperties() override
     {
-        std::vector<std::pair<std::string, EntityProperty>> returnVector;
+        std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
         returnVector.push_back({"Light Color",{NivRenderer::PropertyType::COLOR, glm::value_ptr(m_LightColor), [this]() {}}});
         returnVector.push_back({"Light Direction",{NivRenderer::PropertyType::FLOAT3, glm::value_ptr(m_Direction), [this]() {}}});
 
@@ -55,9 +55,9 @@ public:
 	void SetStrength(uint32_t strength) { m_Strength = strength; }
 	uint32_t& GetStrength() { return m_Strength; }
 
-	std::vector<std::pair<std::string, EntityProperty>> GetEntityProperties() override
+	std::vector<std::pair<std::string, NivRenderer::Property>> GetEntityProperties() override
     {
-        std::vector<std::pair<std::string, EntityProperty>> returnVector;
+        std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
         returnVector.push_back({"Light Color", {NivRenderer::PropertyType::COLOR, glm::value_ptr(m_LightColor), [this]() {}}});
         returnVector.push_back({"Light Position", {NivRenderer::PropertyType::FLOAT3, glm::value_ptr(m_Position), [this]() {}}});
         returnVector.push_back({"Light Strength", {NivRenderer::PropertyType::SLIDER, &m_Strength, [this]() {}}});
