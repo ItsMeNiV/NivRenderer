@@ -43,5 +43,8 @@ std::vector<std::pair<std::string, NivRenderer::Property>> SceneObject::GetEntit
 {
     std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
 
+    returnVector.push_back({"Model Name", {NivRenderer::PropertyType::STRING, &m_EntityName, [this](){}}});
+    returnVector.push_back({"Model Path", {NivRenderer::PropertyType::PATH, &m_ModelPath, [this]() { LoadMeshAndMaterial(); }}});
+
     return returnVector;
 }

@@ -4,6 +4,7 @@
 #include "Entity/Entities/SceneObject.h"
 #include "Entity/Components/TransformComponent.h"
 #include "Rendering/ForwardPipeline/ForwardPass.h"
+#include "Application/Util/Instrumentor.h"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
@@ -41,6 +42,7 @@ void Application::Run()
 {
 	while (!m_Window->ShouldClose())
 	{
+        PROFILE_FUNCTION()
 		m_Window->PollEvents();
 		m_Window->PrepareFrame();
 

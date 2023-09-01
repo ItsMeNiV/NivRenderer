@@ -126,7 +126,7 @@ void Window::RenderImGui(Ref<Scene> scene)
 		ImGui::DockBuilderGetNode(dock_id_props)->LocalFlags |= ImGuiDockNodeFlags_NoWindowMenuButton | ImGuiDockNodeFlags_NoCloseButton;
 
 		ImGui::DockBuilderDockWindow("Render", dock_main_id);
-		ImGui::DockBuilderDockWindow("Scene Hierarchy", dock_id_scene);
+		ImGui::DockBuilderDockWindow("Active Scene", dock_id_scene);
 		ImGui::DockBuilderDockWindow("Properties", dock_id_props);
 		ImGui::DockBuilderFinish(dockspace_id);
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "imgui.h"
+#include "Application/Util/Instrumentor.h"
 
 inline void displaySceneObjectContextMenu(const Ref<Scene>& scene, const uint32_t sceneObjectId, int32_t& selectedObjectId, const bool allowDelete)
 {
@@ -115,59 +116,76 @@ inline void BuildSceneHierarchy(const Ref<Scene> &scene, int32_t& selectedSceneO
     if (selectedSceneObjectId == scene->GetId())
         sceneNodeFlags |= ImGuiTreeNodeFlags_Selected;
 
-	ImGui::Begin("Scene Hierarchy", 0, ImGuiWindowFlags_NoCollapse);
-    bool sceneOpen = ImGui::TreeNodeEx("Scene", sceneNodeFlags);
-    if (ImGui::IsItemClicked())
-        selectedSceneObjectId = scene->GetId();
-	displaySceneObjectContextMenu(scene, -1, selectedSceneObjectId, false);
-	if(sceneOpen)
-	{
-		//Lights
-		bool lightOpen = ImGui::TreeNodeEx("Lights", ImGuiTreeNodeFlags_DefaultOpen);
-		displaySceneLightContextMenu(scene, -1, selectedSceneObjectId, false);
-		if (lightOpen)
-		{
-			int32_t selectedObject = selectedSceneObjectId;
-			for (uint32_t sceneLightId : scene->GetSceneLightIds())
-				displaySceneLight(scene, sceneLightId, selectedObject);
-			selectedSceneObjectId = selectedObject;
-			ImGui::TreePop();
-		}
-
-		//Skybox
-        if (scene->HasSkybox())
+	ImGui::Begin("Active Scene", 0, ImGuiWindowFlags_NoCollapse);
+    if(ImGui::BeginTabBar("Active Scene TabBar"))
+    {
+        if(ImGui::BeginTabItem("Scene Hierarchy"))
         {
-            uint32_t skyboxId = scene->GetSkyboxObjectId();
-            ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-            Ref<SkyboxObject> skyboxObject = ECSRegistry::GetInstance().GetEntity<SkyboxObject>(skyboxId);
-
-            if (selectedSceneObjectId == skyboxId)
-                nodeFlags |= ImGuiTreeNodeFlags_Selected;
-
-            ImGui::TreeNodeEx(skyboxObject->GetEntityName()->c_str(), nodeFlags);
+            bool sceneOpen = ImGui::TreeNodeEx("Scene", sceneNodeFlags);
             if (ImGui::IsItemClicked())
-                selectedSceneObjectId = skyboxId;
-            ImGui::PushID(skyboxId);
-            if (ImGui::BeginPopupContextItem("Context Menu"))
-            {
-                if (ImGui::MenuItem("Delete"))
+                selectedSceneObjectId = scene->GetId();
+	        displaySceneObjectContextMenu(scene, -1, selectedSceneObjectId, false);
+	        if(sceneOpen)
+	        {
+		        //Lights
+		        bool lightOpen = ImGui::TreeNodeEx("Lights", ImGuiTreeNodeFlags_DefaultOpen);
+		        displaySceneLightContextMenu(scene, -1, selectedSceneObjectId, false);
+		        if (lightOpen)
+		        {
+			        int32_t selectedObject = selectedSceneObjectId;
+			        for (uint32_t sceneLightId : scene->GetSceneLightIds())
+				        displaySceneLight(scene, sceneLightId, selectedObject);
+			        selectedSceneObjectId = selectedObject;
+			        ImGui::TreePop();
+		        }
+
+		        //Skybox
+                if (scene->HasSkybox())
                 {
-                    scene->RemoveSkyboxObject();
-                    if (skyboxId == selectedSceneObjectId)
-                        selectedSceneObjectId = -1;
+                    uint32_t skyboxId = scene->GetSkyboxObjectId();
+                    ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                    Ref<SkyboxObject> skyboxObject = ECSRegistry::GetInstance().GetEntity<SkyboxObject>(skyboxId);
+
+                    if (selectedSceneObjectId == skyboxId)
+                        nodeFlags |= ImGuiTreeNodeFlags_Selected;
+
+                    ImGui::TreeNodeEx(skyboxObject->GetEntityName()->c_str(), nodeFlags);
+                    if (ImGui::IsItemClicked())
+                        selectedSceneObjectId = skyboxId;
+                    ImGui::PushID(skyboxId);
+                    if (ImGui::BeginPopupContextItem("Context Menu"))
+                    {
+                        if (ImGui::MenuItem("Delete"))
+                        {
+                            scene->RemoveSkyboxObject();
+                            if (skyboxId == selectedSceneObjectId)
+                                selectedSceneObjectId = -1;
+                        }
+
+                        ImGui::EndPopup();
+                    }
+                    ImGui::PopID();
                 }
 
-                ImGui::EndPopup();
-            }
-            ImGui::PopID();
+		        //SceneObjects
+		        int32_t selectedObject = selectedSceneObjectId;
+		        for (uint32_t sceneObjectId : scene->GetSceneObjectIds())
+			        displaySceneObject(scene, sceneObjectId, selectedObject);
+		        selectedSceneObjectId = selectedObject;
+		        ImGui::TreePop();
+	        }
+            ImGui::EndTabItem();
         }
-
-		//SceneObjects
-		int32_t selectedObject = selectedSceneObjectId;
-		for (uint32_t sceneObjectId : scene->GetSceneObjectIds())
-			displaySceneObject(scene, sceneObjectId, selectedObject);
-		selectedSceneObjectId = selectedObject;
-		ImGui::TreePop();
-	}
+        if(ImGui::BeginTabItem("Performance"))
+        {
+            ImGui::SeparatorText("Performance");
+            for (auto& it : Instrumentor::GetInstance().GetTimings())
+            {
+                ImGui::Text(std::format("{}: {}microseconds", it.first, std::to_string(it.second)).c_str());
+            }
+            ImGui::EndTabItem();   
+        }
+        ImGui::EndTabBar();
+    }
 	ImGui::End();
 }

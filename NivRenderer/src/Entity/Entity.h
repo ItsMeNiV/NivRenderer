@@ -37,9 +37,11 @@ protected:
 	{}
 	virtual ~Entity() {}
 
+protected:
+    std::string m_EntityName;
+
 private:
 	uint32_t m_EntityId;
-	std::string m_EntityName;
 	bool m_DirtyFlag;
 
 	int32_t m_ParentEntityId;

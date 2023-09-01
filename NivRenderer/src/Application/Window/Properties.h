@@ -55,7 +55,7 @@ bool displayProperty(std::pair<std::string, NivRenderer::Property>& property, st
         ImGui::Spacing();
         break;
     case NivRenderer::PropertyType::COLOR:
-        ImGui::ColorEdit3(label, static_cast<float*>(property.second.valuePtr));
+        wasEdited = ImGui::ColorEdit3(label, static_cast<float*>(property.second.valuePtr));
         ImGui::Spacing();
         break;
     case NivRenderer::PropertyType::INT:
@@ -127,19 +127,11 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
 
     if (const Ref<SceneObject> sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(selectedSceneObject))
 	{
-		ImGui::SeparatorText(sceneObject->GetEntityName()->c_str());
-
-		//Model-Path
-        ImGui::InputText("Model Path", sceneObject->GetModelPath(), 0, InputTextCallback, sceneObject->GetModelPath());
-        ImGui::PushID("Reload##Model");
-        if (ImGui::Button("Reload") && !sceneObject->GetModelPath()->empty())
+        for (auto& it : sceneObject->GetEntityProperties())
         {
-            *sceneObject->GetModelPath() = std::regex_replace(*sceneObject->GetModelPath(), std::regex("\\\\"), "\/");
-            sceneObject->LoadMeshAndMaterial();
-            sceneObject->SetDirtyFlag(true);
+            if (displayProperty(it, *sceneObject->GetEntityName()))
+                sceneObject->SetDirtyFlag(true);
         }
-        ImGui::PopID();
-        ImGui::Spacing();
 
         const std::vector<Ref<Component>> components = ECSRegistry::GetInstance().GetAllComponents(selectedSceneObject);
 		for (const auto& component : components)

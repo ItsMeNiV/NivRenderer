@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "Entity/ECSRegistry.h"
+#include "Application/Util/Instrumentor.h"
 
 Renderer::Renderer(Ref<Window> window)
 	: m_ActiveWindow(window), m_ActiveScene(nullptr), m_ActiveRenderPipeline(nullptr), m_ProxyManager(CreateScope<ProxyManager>())
@@ -13,6 +14,7 @@ Renderer::~Renderer()
 
 void Renderer::PrepareFrame() const
 {
+    PROFILE_FUNCTION()
     const Ref<Camera> cam = ECSRegistry::GetInstance().GetEntity<CameraObject>(m_ActiveScene->GetCameraId())->GetCameraPtr();
     if(m_ActiveScene->GetSceneSettings().renderResolution.x != cam->GetCameraWidth() ||
         m_ActiveScene->GetSceneSettings().renderResolution.y != cam->GetCameraHeight())
@@ -34,6 +36,7 @@ void Renderer::PrepareFrame() const
 
 void Renderer::RenderScene() const
 {
+    PROFILE_FUNCTION()
     if (m_ActiveScene)
     {
         auto& outputFramebuffer = m_ActiveRenderPipeline->Run(m_ActiveScene, *m_ProxyManager);

@@ -11,16 +11,27 @@ std::vector<std::pair<std::string, NivRenderer::Property>> MaterialComponent::Ge
 {
     std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
 
+    returnVector.push_back({"Diffuse", {NivRenderer::PropertyType::SEPARATORTEXT, nullptr, [this](){}}});
     returnVector.push_back({"Diffuse Path", {NivRenderer::PropertyType::PATH, &m_DiffusePath, [this]() { reloadDiffuseTexture(); }}});
     returnVector.push_back({"Flip Diffuse Texture", {NivRenderer::PropertyType::BOOL, &m_FlipDiffuseTexture, []() {return; }}});
+
+    returnVector.push_back({"Normal", {NivRenderer::PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
     returnVector.push_back({"Normal Path", {NivRenderer::PropertyType::PATH, &m_NormalPath, [this]() { reloadNormalTexture(); }}});
     returnVector.push_back({"Flip Normal Texture", {NivRenderer::PropertyType::BOOL, &m_FlipNormalTexture, []() { return; }}});
+
+    returnVector.push_back({"Metallic", {NivRenderer::PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
     returnVector.push_back({"Metallic Path", {NivRenderer::PropertyType::PATH, &m_MetallicPath,[this]() { reloadMetallicTexture(); }}});
     returnVector.push_back({"Flip Metallic Texture", {NivRenderer::PropertyType::BOOL, &m_FlipMetallicTexture, []() { return; }}});
+
+    returnVector.push_back({"Roughness", {NivRenderer::PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
     returnVector.push_back({"Roughness Path", {NivRenderer::PropertyType::PATH, &m_RoughnessPath, [this]() { reloadRoughnessTexture(); }}});
     returnVector.push_back({"Flip Roughness Texture", {NivRenderer::PropertyType::BOOL, &m_FlipRoughnessTexture, []() { return; }}});
+
+    returnVector.push_back({"AO", {NivRenderer::PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
     returnVector.push_back({"AO Path", {NivRenderer::PropertyType::PATH, &m_AOPath, [this]() { reloadAOTexture(); }}});
     returnVector.push_back({"Flip AO Texture", {NivRenderer::PropertyType::BOOL, &m_FlipAOTexture, []() { return; }}});
+
+    returnVector.push_back({"Emissive", {NivRenderer::PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
     returnVector.push_back({"Emissive Path", {NivRenderer::PropertyType::PATH, &m_EmissivePath, [this]() { reloadEmissiveTexture(); }}});
     returnVector.push_back({"Flip Emissive Texture", {NivRenderer::PropertyType::BOOL, &m_FlipEmissiveTexture, []() { return; }}});
 
