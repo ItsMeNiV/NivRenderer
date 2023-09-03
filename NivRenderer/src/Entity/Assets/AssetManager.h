@@ -1,5 +1,6 @@
 #pragma once
 #include "Base.h"
+#include "MaterialAsset.h"
 #include "Entity/Assets/MeshAsset.h"
 #include "Entity/Assets/TextureAsset.h"
 #include "assimp/Importer.hpp"
@@ -42,6 +43,8 @@ public:
                                                  bool flipVerticalMetallic,
                                                  bool flipVerticalRoughness, bool flipVerticalAO, bool flipVerticalEmissive);
 
+    const std::unordered_map<uint32_t, Ref<MaterialAsset>>& GetLoadedMaterials() { return m_LoadedMaterialAssets; }
+
 private:
     AssetManager();
 
@@ -50,6 +53,7 @@ private:
     std::unordered_map<std::string, Ref<TextureAsset>> m_LoadedTextureAssets;
     std::unordered_map<std::string, Ref<Shader>> m_LoadedShaders;
     std::unordered_map<std::string, Model> m_LoadedModels;
+    std::unordered_map<uint32_t, Ref<MaterialAsset>> m_LoadedMaterialAssets;
 
     void loadDefaultMeshAndTextures();
     void processNode(const aiNode* node, const aiScene* scene, std::vector<Ref<SubMesh>>& subMeshes);

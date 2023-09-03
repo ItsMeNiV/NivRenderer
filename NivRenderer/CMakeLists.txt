@@ -124,6 +124,7 @@ set(SRC_FILES
  "src/Entity/Assets/AssetManager.h" "src/Entity/Assets/AssetManager.cpp"
  "src/Entity/Assets/MeshAsset.h" "src/Entity/Assets/MeshAsset.cpp"
  "src/Entity/Assets/TextureAsset.h" "src/Entity/Assets/TextureAsset.cpp"
+ "src/Entity/Assets/MaterialAsset.h" "src/Entity/Assets/MaterialAsset.cpp"
  "src/Entity/Components/TransformComponent.h"
  "src/Entity/Components/MeshComponent.h" "src/Entity/Components/MeshComponent.cpp"
  "src/Entity/Components/MaterialComponent.h" "src/Entity/Components/MaterialComponent.cpp"

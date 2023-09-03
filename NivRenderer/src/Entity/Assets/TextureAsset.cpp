@@ -7,7 +7,7 @@ TextureAsset::TextureAsset(const uint32_t id, const std::string& path, bool flip
 
 TextureAsset::~TextureAsset()
 {
-    stbi_image_free(m_TextureData);
+    delete[] m_TextureData;
 }
 
 unsigned char* TextureAsset::GetTextureData() const
@@ -15,9 +15,12 @@ unsigned char* TextureAsset::GetTextureData() const
     return m_TextureData;
 }
 
-void TextureAsset::SetTextureData(unsigned char* const textureData)
+void TextureAsset::SetTextureData(const unsigned char* const textureData)
 {
-    m_TextureData = textureData;
+    delete[] m_TextureData;
+    const size_t dataSize = sizeof(unsigned char) * m_Width * m_Height * m_NrComponents;
+    m_TextureData = new unsigned char[dataSize];
+    memcpy(m_TextureData, textureData, dataSize);
 }
 
 const bool& TextureAsset::GetFlipVertical() const

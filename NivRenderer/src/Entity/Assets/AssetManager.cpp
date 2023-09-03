@@ -1,6 +1,6 @@
 #include "AssetManager.h"
 #include "IdManager.h"
-
+#include "stb_image.h"
 
 AssetManager::AssetManager()
 {
@@ -47,8 +47,8 @@ Ref<TextureAsset> AssetManager::LoadTexture(std::string& path, bool flipVertical
     stbi_set_flip_vertically_on_load(textureAsset->GetFlipVertical());
     if (loadOnlyOneChannel)
     {
-        const unsigned char* loadedData = stbi_load(pathToUse.c_str(), textureAsset->GetWidth(), textureAsset->GetHeight(), textureAsset->GetNrComponents(), 0);
-        const uint32_t dataSize = (*textureAsset->GetWidth()) * (*textureAsset->GetHeight());
+        unsigned char* loadedData = stbi_load(pathToUse.c_str(), textureAsset->GetWidth(), textureAsset->GetHeight(), textureAsset->GetNrComponents(), 0);
+        const size_t dataSize = (*textureAsset->GetWidth()) * (*textureAsset->GetHeight());
         auto* data = new unsigned char[dataSize];
 
         for (int32_t y = 0; y < *textureAsset->GetHeight(); y++)
@@ -56,12 +56,15 @@ Ref<TextureAsset> AssetManager::LoadTexture(std::string& path, bool flipVertical
             for (int32_t x = 0; x < *textureAsset->GetWidth(); x++)
             {
 
-                const unsigned char* pixelOffset = loadedData + (*textureAsset->GetNrComponents() * (y * (*textureAsset->GetWidth()) + x));
+                const unsigned char* pixelOffset = *textureAsset->GetNrComponents() * (y * *textureAsset->GetWidth() + x) + loadedData;
                 data[y * (*textureAsset->GetWidth()) + x] = pixelOffset[channelIndex];
             }
         }
-        textureAsset->SetTextureData(data);
         *textureAsset->GetNrComponents() = 1;
+        textureAsset->SetTextureData(data);
+
+        stbi_image_free(loadedData);
+        delete[] data;
 
         std::string fileName = path.substr(0, path.find_last_of('.'));
         const std::string fileEnding = path.substr(path.find_last_of('.'), path.size());
@@ -333,11 +336,15 @@ void AssetManager::loadDefaultMeshAndTextures()
 
     //Default "Prototype" Texture
     std::string defaultTexturePath("assets/textures/default.png");
-    const Ref<TextureAsset> defaultTexture = LoadTexture(defaultTexturePath, false);
+    const Ref<TextureAsset> defaultTextureAsset = LoadTexture(defaultTexturePath, false);
     auto nodeHandle = m_LoadedTextureAssets.extract("assets/textures/default.png");
     nodeHandle.key() = "default";
     m_LoadedTextureAssets.insert(std::move(nodeHandle));
-
+    const Ref<MaterialAsset> defaultMaterial = CreateRef<MaterialAsset>("Default");
+    defaultMaterial->GetDiffusePath() = "default";
+    defaultMaterial->GetDiffuseTextureAsset() = defaultTextureAsset;
+    m_LoadedMaterialAssets[defaultMaterial->GetId()] = defaultMaterial;
+ 
     //White 1x1 Texture
     std::string path("assets/textures/default_white.png");
     const Ref<TextureAsset> whiteTextureAsset = LoadTexture(path, false);
