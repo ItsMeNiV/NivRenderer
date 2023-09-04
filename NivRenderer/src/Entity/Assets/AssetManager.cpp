@@ -1,4 +1,7 @@
 #include "AssetManager.h"
+
+#include <ranges>
+
 #include "IdManager.h"
 #include "stb_image.h"
 
@@ -94,146 +97,168 @@ Ref<Shader> AssetManager::LoadShader(const std::string& path, ShaderType shaderT
     return shader;
 }
 
-std::vector<std::string> AssetManager::LoadMeshAndTextures(
-    std::string& path, Ref<MeshAsset>& mesh, Ref<TextureAsset>& diffuseTexture, Ref<TextureAsset>& normalTexture,
-    Ref<TextureAsset>& metallicTexture, Ref<TextureAsset>& roughnessTexture, Ref<TextureAsset>& aoTexture,
-    Ref<TextureAsset>& emissiveTexture, bool flipVerticalDiffuse, bool flipVerticalNormal, bool flipVerticalMetallic,
-    bool flipVerticalRoughness, bool flipVerticalAO, bool flipVerticalEmissive)
+Model* AssetManager::LoadMeshAndTextures(std::string& path, Ref<MeshAsset>& mesh)
 {
-    std::vector<std::string> returnPaths;
-
     if (m_LoadedModels.contains(path))
     {
-        auto& m = m_LoadedModels[path];
         mesh = m_LoadedMeshAssets[path];
-
-        if (!m.diffuseTexturePath.empty())
-            diffuseTexture = LoadTexture(m.diffuseTexturePath, flipVerticalDiffuse);
-        if (!m.normalTexturePath.empty())
-            normalTexture = LoadTexture(m.normalTexturePath, flipVerticalNormal);
-        if (!m.metallicTexturePath.empty())
-            metallicTexture = LoadTexture(m.metallicTexturePath, flipVerticalMetallic);
-        if (!m.roughnessTexturePath.empty())
-            roughnessTexture = LoadTexture(m.roughnessTexturePath, flipVerticalRoughness);
-        if (!m.aoTexturePath.empty())
-            aoTexture = LoadTexture(m.aoTexturePath, flipVerticalAO);
-        if (!m.emissiveTexturePath.empty())
-            emissiveTexture = LoadTexture(m.emissiveTexturePath, flipVerticalEmissive);
-
-        returnPaths.push_back(m.meshPath);
-        returnPaths.push_back(m.diffuseTexturePath);
-        returnPaths.push_back(m.normalTexturePath);
-        returnPaths.push_back(m.metallicTexturePath);
-        returnPaths.push_back(m.roughnessTexturePath);
-        returnPaths.push_back(m.aoTexturePath);
-        returnPaths.push_back(m.emissiveTexturePath);
-
-        return returnPaths;
+        return &m_LoadedModels[path];
     }
 
-    std::string directory = path.substr(0, path.find_last_of('/'));
+    const std::string directory = path.substr(0, path.find_last_of('/'));
 
     const aiScene* scene = m_Importer->ReadFile(
         path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         SPDLOG_DEBUG(std::string("ERROR::ASSIMP::") + m_Importer->GetErrorString());
-        return returnPaths;
+
+        return nullptr;
     }
 
-    Ref<MeshAsset> newMesh = CreateRef<MeshAsset>(IdManager::GetInstance().CreateNewId(), path);
+    const Ref<MeshAsset> newMesh = CreateRef<MeshAsset>(IdManager::GetInstance().CreateNewId(), path);
     std::vector<Ref<SubMesh>> subMeshes;
     processNode(scene->mRootNode, scene, subMeshes);
 
     newMesh->AddSubMeshes(subMeshes);
     m_LoadedMeshAssets[path] = newMesh;
     mesh = newMesh;
-    returnPaths.push_back(path);
 
-    std::string diffusePath;
-    std::string normalPath;
-    std::string metallicPath;
-    std::string roughnessPath;
-    std::string aoPath;
-    std::string emissivePath;
+    const Ref<MaterialAsset> materialAsset = CreateRef<MaterialAsset>(IdManager::GetInstance().CreateNewId(), (path + std::to_string(newMesh->GetId())).c_str());
+    auto& diffusePath = materialAsset->GetDiffusePath();
+    auto& normalPath = materialAsset->GetNormalPath();
+    auto& metallicPath = materialAsset->GetMetallicPath();
+    auto& roughnessPath = materialAsset->GetRoughnessPath();
+    auto& aoPath = materialAsset->GetAOPath();
+    auto& emissivePath = materialAsset->GetEmissivePath();
     for (uint32_t i = 0; i < scene->mNumMaterials; i++)
     {
-        const aiMaterial* material = scene->mMaterials[i];
+        const aiMaterial* aiMaterial = scene->mMaterials[i];
 
         // 1. diffuse map
-        if (material->GetTextureCount(aiTextureType_DIFFUSE))
+        if (aiMaterial->GetTextureCount(aiTextureType_DIFFUSE))
         {
             aiString diffuseFile;
-            material->GetTexture(aiTextureType_DIFFUSE, 0, &diffuseFile);
+            aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &diffuseFile);
             diffusePath = directory + '/' + diffuseFile.C_Str();
         }
         // 2. normal maps
-        if (material->GetTextureCount(aiTextureType_NORMALS))
+        if (aiMaterial->GetTextureCount(aiTextureType_NORMALS))
         {
             aiString normalFile;
-            material->GetTexture(aiTextureType_NORMALS, 0, &normalFile);
+            aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &normalFile);
             normalPath = directory + '/' + normalFile.C_Str();
         }
-        else if (material->GetTextureCount(aiTextureType_HEIGHT))
+        else if (aiMaterial->GetTextureCount(aiTextureType_HEIGHT))
         {
             aiString normalFile;
-            material->GetTexture(aiTextureType_HEIGHT, 0, &normalFile);
+            aiMaterial->GetTexture(aiTextureType_HEIGHT, 0, &normalFile);
             normalPath = directory + '/' + normalFile.C_Str();
         }
         // 3. metallic map
-        if (material->GetTextureCount(aiTextureType_METALNESS))
+        if (aiMaterial->GetTextureCount(aiTextureType_METALNESS))
         {
             aiString metallicFile;
-            material->GetTexture(aiTextureType_METALNESS, 0, &metallicFile);
+            aiMaterial->GetTexture(aiTextureType_METALNESS, 0, &metallicFile);
             metallicPath = directory + '/' + metallicFile.C_Str();
         }
         // 4. roughness map
-        if (material->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS))
+        if (aiMaterial->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS))
         {
             aiString roughnessFile;
-            material->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessFile);
+            aiMaterial->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessFile);
             roughnessPath = directory + '/' + roughnessFile.C_Str();
         }
         // 4. AO map
-        if (material->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION))
+        if (aiMaterial->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION))
         {
             aiString aoFile;
-            material->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoFile);
+            aiMaterial->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoFile);
             aoPath = directory + '/' + aoFile.C_Str();
         }
         // 5. Emissive map
-        if (material->GetTextureCount(aiTextureType_EMISSIVE))
+        if (aiMaterial->GetTextureCount(aiTextureType_EMISSIVE))
         {
             aiString emissiveFile;
-            material->GetTexture(aiTextureType_EMISSIVE, 0, &emissiveFile);
+            aiMaterial->GetTexture(aiTextureType_EMISSIVE, 0, &emissiveFile);
             emissivePath = directory + '/' + emissiveFile.C_Str();
         }
     }
 
-    bool metalRoughnessIsShared = metallicPath == roughnessPath;
+    const bool metalRoughnessIsShared = metallicPath == roughnessPath;
     if (!diffusePath.empty())
-        diffuseTexture = LoadTexture(diffusePath, flipVerticalDiffuse);
+        materialAsset->GetDiffuseTextureAsset() = LoadTexture(diffusePath, materialAsset->GetFlipDiffuseTexture());
     if (!normalPath.empty())
-        normalTexture = LoadTexture(normalPath, flipVerticalNormal);
+        materialAsset->GetNormalTextureAsset() = LoadTexture(normalPath, materialAsset->GetFlipNormalTexture());
     if (!metallicPath.empty())
-        metallicTexture = LoadTexture(metallicPath, flipVerticalMetallic, metalRoughnessIsShared, 2);
+        materialAsset->GetMetallicTextureAsset() = LoadTexture(metallicPath, materialAsset->GetFlipMetallicTexture(), metalRoughnessIsShared, 2);
     if (!roughnessPath.empty())
-        roughnessTexture = LoadTexture(roughnessPath, flipVerticalRoughness, metalRoughnessIsShared, 1);
+        materialAsset->GetRoughnessTextureAsset() = LoadTexture(roughnessPath, materialAsset->GetFlipRoughnessTexture(), metalRoughnessIsShared, 1);
     if (!aoPath.empty())
-        aoTexture = LoadTexture(aoPath, flipVerticalAO);
+        materialAsset->GetAOTextureAsset() = LoadTexture(aoPath, materialAsset->GetFlipAOTexture());
     if (!emissivePath.empty())
-        emissiveTexture = LoadTexture(emissivePath, flipVerticalEmissive);
+        materialAsset->GetEmissiveTextureAsset() = LoadTexture(emissivePath, materialAsset->GetFlipEmissiveTexture());
 
-    returnPaths.push_back(diffusePath);
-    returnPaths.push_back(normalPath);
-    returnPaths.push_back(metallicPath);
-    returnPaths.push_back(roughnessPath);
-    returnPaths.push_back(aoPath);
-    returnPaths.push_back(emissivePath);
+    m_LoadedMaterialAssets[materialAsset->GetId()] = materialAsset;
+    m_LoadedModels[path] = {path, materialAsset};
 
-    m_LoadedModels[path] = {path, diffusePath, normalPath, metallicPath, roughnessPath, aoPath, emissivePath};
+    return &m_LoadedModels[path];
+}
 
-    return returnPaths;
+Model* AssetManager::GetModel(const char* path)
+{
+    if (m_LoadedModels.contains(path))
+        return &m_LoadedModels[path];
+
+    return nullptr;
+}
+
+Ref<MaterialAsset> AssetManager::GetMaterial(const char* name)
+{
+    for (auto& asset : m_LoadedMaterialAssets | std::views::values)
+    {
+        if (asset->GetName() == name)
+            return asset;
+    }
+
+    return nullptr;
+}
+
+Ref<MaterialAsset> AssetManager::GetMaterial(uint32_t id)
+{
+    if (m_LoadedMaterialAssets.contains(id))
+        return m_LoadedMaterialAssets[id];
+
+    return nullptr;
+}
+
+Ref<MaterialAsset> AssetManager::CreateMaterial()
+{
+    const Ref<MaterialAsset> newMaterial = CreateRef<MaterialAsset>(IdManager::GetInstance().CreateNewId(), "New Material");
+    newMaterial->GetDiffusePath() = "default";
+    newMaterial->GetDiffuseTextureAsset() = m_LoadedTextureAssets["default"];
+    m_LoadedMaterialAssets[newMaterial->GetId()] = newMaterial;
+
+    return m_LoadedMaterialAssets[newMaterial->GetId()];
+}
+
+void AssetManager::RemoveMaterial(uint32_t id)
+{
+    m_LoadedMaterialAssets.erase(id);
+}
+
+std::vector<uint32_t> AssetManager::GetMaterialIds(bool includeDefault) const
+{
+    std::vector<uint32_t> returnVector;
+    for (auto& it : m_LoadedMaterialAssets)
+    {
+        if (!includeDefault && it.second->GetName() == "Default")
+            continue;
+
+        returnVector.push_back(it.first);
+    }
+
+    return returnVector;
 }
 
 void AssetManager::loadDefaultMeshAndTextures()
@@ -340,7 +365,7 @@ void AssetManager::loadDefaultMeshAndTextures()
     auto nodeHandle = m_LoadedTextureAssets.extract("assets/textures/default.png");
     nodeHandle.key() = "default";
     m_LoadedTextureAssets.insert(std::move(nodeHandle));
-    const Ref<MaterialAsset> defaultMaterial = CreateRef<MaterialAsset>("Default");
+    const Ref<MaterialAsset> defaultMaterial = CreateRef<MaterialAsset>(IdManager::GetInstance().CreateNewId(), "Default");
     defaultMaterial->GetDiffusePath() = "default";
     defaultMaterial->GetDiffuseTextureAsset() = defaultTextureAsset;
     m_LoadedMaterialAssets[defaultMaterial->GetId()] = defaultMaterial;

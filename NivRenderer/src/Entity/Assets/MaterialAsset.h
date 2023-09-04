@@ -8,6 +8,11 @@ class MaterialAsset : public Asset
 {
 public:
     MaterialAsset(uint32_t id, const char* name);
+    ~MaterialAsset() override = default;
+
+    std::string& GetName() { return m_Name; }
+    bool GetDirtyFlag() const { return m_DirtyFlag; }
+    void SetDirtyFlag(bool dirtyFlag) { m_DirtyFlag = dirtyFlag; }
 
     std::string& GetDiffusePath() { return m_DiffusePath; }
     std::string& GetNormalPath() { return m_NormalPath; }
@@ -28,8 +33,12 @@ public:
     bool& GetFlipAOTexture() { return m_FlipAOTexture; }
     bool& GetFlipEmissiveTexture() { return m_FlipEmissiveTexture; }
 
+    std::vector<std::pair<std::string, NivRenderer::Property>> GetAssetProperties() override;
+
 private:
     std::string m_Name;
+    bool m_DirtyFlag;
+
     // Diffuse/Albedo
     std::string m_DiffusePath;
     Ref<TextureAsset> m_DiffuseTextureAsset;

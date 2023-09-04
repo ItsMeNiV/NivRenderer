@@ -1,6 +1,7 @@
 #pragma once
 #include "Base.h"
 #include "Asset.h"
+#include "Entity/PropertyType.h"
 
 class TextureAsset : public Asset
 {
@@ -16,6 +17,8 @@ public:
     int* GetHeight();
     int* GetNrComponents();
     const std::string& GetPath();
+
+    std::vector<std::pair<std::string, NivRenderer::Property>> GetAssetProperties() override;
 
 private:
     unsigned char* m_TextureData;

@@ -1,6 +1,7 @@
 #pragma once
 #include "Base.h"
 #include "Asset.h"
+#include "Entity/PropertyType.h"
 
 struct MeshVertex
 {
@@ -40,6 +41,12 @@ public:
     void AddSubMeshes(const std::vector<Ref<SubMesh>>& meshes);
 
     const std::string& GetPath();
+
+    std::vector<std::pair<std::string, NivRenderer::Property>> GetAssetProperties() override
+    {
+        std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
+        return returnVector;
+    }
 
 private:
     std::vector<Ref<SubMesh>> m_SubMeshes;

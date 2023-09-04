@@ -7,17 +7,14 @@
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
 
-// Struct to associate a Modelpath with multiple Texture paths
-// TODO: Maybe redesign this so the Model doesn't need to know how many and which kind of Texture paths are needed per Model
+// Struct to associate a Modelpath with Material
 struct Model
 {
+    Model() : meshPath(""), material(nullptr) {}
+    Model(std::string& path, const Ref<MaterialAsset>& materialAsset) : meshPath(path), material(materialAsset) {}
+
     std::string meshPath;
-    std::string diffuseTexturePath;
-    std::string normalTexturePath;
-    std::string metallicTexturePath;
-    std::string roughnessTexturePath;
-    std::string aoTexturePath;
-    std::string emissiveTexturePath;
+    Ref<MaterialAsset> material;
 };
 
 class AssetManager
@@ -35,15 +32,13 @@ public:
     Ref<MeshAsset> LoadMesh(const std::string& path);
     Ref<TextureAsset> LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel = false, int channelIndex = 0);
     Ref<Shader> LoadShader(const std::string& path, ShaderType shaderType);
-    std::vector<std::string> LoadMeshAndTextures(std::string& path, Ref<MeshAsset>& mesh,
-                                                 Ref<TextureAsset>& diffuseTexture, Ref<TextureAsset>& normalTexture,
-                                                 Ref<TextureAsset>& metallicTexture, Ref<TextureAsset>& roughnessTexture, Ref<TextureAsset>& aoTexture,
-                                                 Ref<TextureAsset>& emissiveTexture,
-                                                 bool flipVerticalDiffuse, bool flipVerticalNormal,
-                                                 bool flipVerticalMetallic,
-                                                 bool flipVerticalRoughness, bool flipVerticalAO, bool flipVerticalEmissive);
-
-    const std::unordered_map<uint32_t, Ref<MaterialAsset>>& GetLoadedMaterials() { return m_LoadedMaterialAssets; }
+    Model* LoadMeshAndTextures(std::string& path, Ref<MeshAsset>& mesh);
+    Model* GetModel(const char* path);
+    Ref<MaterialAsset> GetMaterial(const char* name);
+    Ref<MaterialAsset> GetMaterial(uint32_t id);
+    Ref<MaterialAsset> CreateMaterial();
+    void RemoveMaterial(uint32_t id);
+    std::vector<uint32_t> GetMaterialIds(bool includeDefault) const;
 
 private:
     AssetManager();

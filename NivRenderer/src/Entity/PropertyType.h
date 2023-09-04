@@ -15,7 +15,8 @@ namespace NivRenderer
         PATH,
         BOOL,
         SEPARATORTEXT,
-        BUTTON
+        BUTTON,
+        MATERIALDROPDOWN
     };
 
     struct Property

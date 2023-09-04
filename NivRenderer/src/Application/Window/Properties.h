@@ -110,6 +110,25 @@ bool displayProperty(std::pair<std::string, NivRenderer::Property>& property, st
         ImGui::SeparatorText(property.first.c_str());
         ImGui::Spacing();
         break;
+    case NivRenderer::PropertyType::MATERIALDROPDOWN:
+    {
+        auto* materialAsset = static_cast<Ref<MaterialAsset>*>(property.second.valuePtr);
+        if (ImGui::BeginCombo("Material", (*materialAsset)->GetName().c_str()))
+        {
+            for (const uint32_t materialId : AssetManager::GetInstance().GetMaterialIds(true))
+            {
+                const bool isSelected = (*materialAsset)->GetId() == materialId;
+                const auto currentMaterial = AssetManager::GetInstance().GetMaterial(materialId);
+                if (ImGui::Selectable(currentMaterial->GetName().c_str(), isSelected))
+                {
+                    *materialAsset = currentMaterial;
+                    wasEdited = true;
+                }
+            }
+            ImGui::EndCombo();
+        }
+        break;   
+    }
     }
 
     return wasEdited;
@@ -149,9 +168,12 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
 	}
 	else
 	{
+        const auto materialAsset = AssetManager::GetInstance().GetMaterial(selectedSceneObject);
         const Ref<Entity> selectedEntity = ECSRegistry::GetInstance().GetEntity<Entity>(selectedSceneObject);
         std::vector<std::pair<std::string, NivRenderer::Property>> entityProperties;
-        if (selectedSceneObject == scene->GetId())
+        if (materialAsset)
+            entityProperties = materialAsset->GetAssetProperties();
+        else if (selectedSceneObject == scene->GetId())
             entityProperties = scene->GetEntityProperties();
         else
             entityProperties = selectedEntity->GetEntityProperties();
@@ -159,8 +181,13 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
 
         for (auto& it : entityProperties)
         {
-            if (displayProperty(it, entityName) && selectedEntity)
-                selectedEntity->SetDirtyFlag(true);
+            if (displayProperty(it, entityName))
+            {
+                if (selectedEntity)
+                    selectedEntity->SetDirtyFlag(true);
+                else if (materialAsset)
+                    materialAsset->SetDirtyFlag(true);
+            }
         }
 	}
 

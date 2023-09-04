@@ -43,6 +43,43 @@ void ProxyManager::UpdateProxies(const Ref<Scene>& scene)
         lightObject->SetDirtyFlag(false);
     }
 
+    // Material
+    for (const uint32_t materialId : AssetManager::GetInstance().GetMaterialIds(true))
+    {
+        const auto materialAsset = AssetManager::GetInstance().GetMaterial(materialId);
+        if (!materialAsset->GetDirtyFlag())
+            continue;
+
+        Ref<MaterialProxy> materialProxy;
+        if (!m_Proxies.contains(materialId))
+        {
+            materialProxy = CreateRef<MaterialProxy>(materialId);
+            m_Proxies[materialId] = materialProxy;
+        }
+        else
+        {
+            materialProxy = std::static_pointer_cast<MaterialProxy>(m_Proxies[materialId]);
+        }
+        std::string whitePath("white");
+        auto whiteTextureProxy = AssetManager::GetInstance().LoadTexture(whitePath, false);
+        std::string blackPath("black");
+        auto blackTextureProxy = AssetManager::GetInstance().LoadTexture(blackPath, false);
+        setupMaterialProxy(materialAsset->GetDiffusePath(), materialProxy->GetDiffuseTexture(),
+                           materialAsset->GetDiffuseTextureAsset(), whiteTextureProxy);
+        setupMaterialProxy(materialAsset->GetNormalPath(), materialProxy->GetNormalTexture(),
+                           materialAsset->GetNormalTextureAsset(), nullptr);
+        setupMaterialProxy(materialAsset->GetMetallicPath(), materialProxy->GetMetallicTexture(),
+                           materialAsset->GetMetallicTextureAsset(), blackTextureProxy);
+        setupMaterialProxy(materialAsset->GetRoughnessPath(), materialProxy->GetRoughnessTexture(),
+                           materialAsset->GetRoughnessTextureAsset(), blackTextureProxy);
+        setupMaterialProxy(materialAsset->GetAOPath(), materialProxy->GetAOTexture(),
+                           materialAsset->GetAOTextureAsset(), whiteTextureProxy);
+        setupMaterialProxy(materialAsset->GetEmissivePath(), materialProxy->GetEmissiveTexture(),
+                           materialAsset->GetEmissiveTextureAsset(), blackTextureProxy);
+
+        materialAsset->SetDirtyFlag(false);
+    }
+
     //SceneObjects
     for (uint32_t sceneObjectId : scene->GetSceneObjectIds())
     {
@@ -65,30 +102,6 @@ void ProxyManager::UpdateProxies(const Ref<Scene>& scene)
             meshProxy = std::static_pointer_cast<MeshProxy>(m_Proxies[meshId]);
         }
 
-        // Material / Texture Proxies
-        const auto material = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(sceneObjectId);
-        auto materialId = material->GetId();
-        Ref<MaterialProxy> materialProxy;
-        if (!m_Proxies.contains(materialId))
-        {
-            materialProxy = CreateRef<MaterialProxy>(materialId);
-            m_Proxies[materialId] = materialProxy;
-        }
-        else
-        {
-            materialProxy = std::static_pointer_cast<MaterialProxy>(m_Proxies[materialId]);
-        }
-        std::string whitePath("white");
-        auto whiteTextureProxy = AssetManager::GetInstance().LoadTexture(whitePath, false);
-        std::string blackPath("black");
-        auto blackTextureProxy = AssetManager::GetInstance().LoadTexture(blackPath, false);
-        setupMaterialProxy(material->GetDiffusePath(), materialProxy->GetDiffuseTexture(), material->GetDiffuseTextureAsset(), whiteTextureProxy);
-        setupMaterialProxy(material->GetNormalPath(), materialProxy->GetNormalTexture(), material->GetNormalTextureAsset(), nullptr);
-        setupMaterialProxy(material->GetMetallicPath(), materialProxy->GetMetallicTexture(), material->GetMetallicTextureAsset(), blackTextureProxy);
-        setupMaterialProxy(material->GetRoughnessPath(), materialProxy->GetRoughnessTexture(), material->GetRoughnessTextureAsset(), blackTextureProxy);
-        setupMaterialProxy(material->GetAOPath(), materialProxy->GetAOTexture(), material->GetAOTextureAsset(), whiteTextureProxy);
-        setupMaterialProxy(material->GetEmissivePath(), materialProxy->GetEmissiveTexture(), material->GetEmissiveTextureAsset(), blackTextureProxy);
-
         // Scene Object Proxy
         Ref<SceneObjectProxy> sceneObjectProxy;
         if (!m_Proxies.contains(sceneObjectId))
@@ -103,6 +116,8 @@ void ProxyManager::UpdateProxies(const Ref<Scene>& scene)
         const auto transform = ECSRegistry::GetInstance().GetComponent<TransformComponent>(sceneObjectId);
         sceneObjectProxy->SetTransform(transform->GetPosition(), transform->GetScale(), transform->GetRotation());
         sceneObjectProxy->SetMesh(meshProxy);
+        const auto materialComponent = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(sceneObjectId);
+        const auto materialProxy = std::static_pointer_cast<MaterialProxy>(m_Proxies[materialComponent->GetMaterialAsset()->GetId()]);
         sceneObjectProxy->SetMaterial(materialProxy);
 
         sceneObject->SetDirtyFlag(false);

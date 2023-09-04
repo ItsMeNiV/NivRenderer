@@ -1,6 +1,7 @@
 #pragma once
 #include "imgui.h"
 #include "Application/Util/Instrumentor.h"
+#include "Entity/Assets/AssetManager.h"
 
 inline void displaySceneObjectContextMenu(const Ref<Scene>& scene, const uint32_t sceneObjectId, int32_t& selectedObjectId, const bool allowDelete)
 {
@@ -56,17 +57,38 @@ inline void displaySceneLightContextMenu(const Ref<Scene> &scene, const uint32_t
 	}
 }
 
+inline void displayMaterialAssetContextMenu(const Ref<Scene>& scene, const uint32_t sceneObjectId,
+                                          int32_t& selectedObjectId, const bool allowDelete)
+{
+    if (ImGui::BeginPopupContextItem("Context Menu"))
+    {
+        if (!allowDelete && ImGui::MenuItem("Add Material"))
+        {
+            scene->AddMaterialAsset();
+        }
+
+        if (allowDelete && ImGui::MenuItem("Delete"))
+        {
+            scene->RemoveMaterialAsset(sceneObjectId);
+            if (sceneObjectId == selectedObjectId)
+                selectedObjectId = -1;
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
 inline void displaySceneObject(const Ref<Scene> &scene, const uint32_t& sceneObjectId, int32_t& selectedObjectId)
 {
 	ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow;
-	Ref<SceneObject> sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId);
+    const Ref<SceneObject> sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId);
 
 	if (selectedObjectId == sceneObjectId)
 		nodeFlags |= ImGuiTreeNodeFlags_Selected;
 
 	if (!sceneObject->GetChildEntities().empty())
 	{
-		bool nodeOpen = ImGui::TreeNodeEx(sceneObject->GetEntityName()->c_str(), nodeFlags);
+        const bool nodeOpen = ImGui::TreeNodeEx(sceneObject->GetEntityName()->c_str(), nodeFlags);
 		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
 			selectedObjectId = sceneObject->GetId();
 		ImGui::PushID(sceneObjectId);
@@ -74,8 +96,7 @@ inline void displaySceneObject(const Ref<Scene> &scene, const uint32_t& sceneObj
 		ImGui::PopID();
 		if (nodeOpen)
 		{
-			auto childEntities = sceneObject->GetChildEntities();
-			for (Ref<Entity> entity : childEntities)
+            for (const Ref<Entity> entity : sceneObject->GetChildEntities())
 			{
 				displaySceneObject(scene, entity->GetId(), selectedObjectId);
 			}
@@ -97,7 +118,7 @@ inline void displaySceneObject(const Ref<Scene> &scene, const uint32_t& sceneObj
 inline void displaySceneLight(const Ref<Scene> &scene, const uint32_t& sceneLightId, int32_t& selectedObjectId)
 {
 	ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-	Ref<LightObject> lightObject = ECSRegistry::GetInstance().GetEntity<LightObject>(sceneLightId);
+    const Ref<LightObject> lightObject = ECSRegistry::GetInstance().GetEntity<LightObject>(sceneLightId);
 
 	if (selectedObjectId == sceneLightId)
 		nodeFlags |= ImGuiTreeNodeFlags_Selected;
@@ -108,6 +129,22 @@ inline void displaySceneLight(const Ref<Scene> &scene, const uint32_t& sceneLigh
 	ImGui::PushID(sceneLightId);
 	displaySceneLightContextMenu(scene, sceneLightId, selectedObjectId, true);
 	ImGui::PopID();
+}
+
+inline void displayMaterialAsset(const Ref<Scene>& scene, const uint32_t& sceneAssetId, int32_t& selectedObjectId)
+{
+    ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    const Ref<MaterialAsset> materialAsset = AssetManager::GetInstance().GetMaterial(sceneAssetId);
+
+    if (selectedObjectId == sceneAssetId)
+        nodeFlags |= ImGuiTreeNodeFlags_Selected;
+
+    ImGui::TreeNodeEx(materialAsset->GetName().c_str(), nodeFlags);
+    if (ImGui::IsItemClicked())
+        selectedObjectId = materialAsset->GetId();
+    ImGui::PushID(sceneAssetId);
+    displayMaterialAssetContextMenu(scene, sceneAssetId, selectedObjectId, true);
+    ImGui::PopID();
 }
 
 inline void BuildSceneHierarchy(const Ref<Scene> &scene, int32_t& selectedSceneObjectId)
@@ -121,14 +158,14 @@ inline void BuildSceneHierarchy(const Ref<Scene> &scene, int32_t& selectedSceneO
     {
         if(ImGui::BeginTabItem("Scene Hierarchy"))
         {
-            bool sceneOpen = ImGui::TreeNodeEx("Scene", sceneNodeFlags);
+            const bool sceneOpen = ImGui::TreeNodeEx("Scene", sceneNodeFlags);
             if (ImGui::IsItemClicked())
                 selectedSceneObjectId = scene->GetId();
 	        displaySceneObjectContextMenu(scene, -1, selectedSceneObjectId, false);
 	        if(sceneOpen)
 	        {
 		        //Lights
-		        bool lightOpen = ImGui::TreeNodeEx("Lights", ImGuiTreeNodeFlags_DefaultOpen);
+                const bool lightOpen = ImGui::TreeNodeEx("Lights", ImGuiTreeNodeFlags_DefaultOpen);
 		        displaySceneLightContextMenu(scene, -1, selectedSceneObjectId, false);
 		        if (lightOpen)
 		        {
@@ -142,9 +179,9 @@ inline void BuildSceneHierarchy(const Ref<Scene> &scene, int32_t& selectedSceneO
 		        //Skybox
                 if (scene->HasSkybox())
                 {
-                    uint32_t skyboxId = scene->GetSkyboxObjectId();
+                    const uint32_t skyboxId = scene->GetSkyboxObjectId();
                     ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-                    Ref<SkyboxObject> skyboxObject = ECSRegistry::GetInstance().GetEntity<SkyboxObject>(skyboxId);
+                    const Ref<SkyboxObject> skyboxObject = ECSRegistry::GetInstance().GetEntity<SkyboxObject>(skyboxId);
 
                     if (selectedSceneObjectId == skyboxId)
                         nodeFlags |= ImGuiTreeNodeFlags_Selected;
@@ -174,6 +211,20 @@ inline void BuildSceneHierarchy(const Ref<Scene> &scene, int32_t& selectedSceneO
 		        selectedSceneObjectId = selectedObject;
 		        ImGui::TreePop();
 	        }
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Assets"))
+        {
+            const bool assetsOpen = ImGui::TreeNodeEx("Materials", sceneNodeFlags);
+            displayMaterialAssetContextMenu(scene, -1, selectedSceneObjectId, false);
+            if (assetsOpen)
+            {
+                int32_t selectedObject = selectedSceneObjectId;
+                for (uint32_t assetId : AssetManager::GetInstance().GetMaterialIds(false))
+                    displayMaterialAsset(scene, assetId, selectedObject);
+                selectedSceneObjectId = selectedObject;
+                ImGui::TreePop();   
+            }
             ImGui::EndTabItem();
         }
         if(ImGui::BeginTabItem("Performance"))

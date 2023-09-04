@@ -27,12 +27,14 @@ Scene::~Scene()
 
 uint32_t Scene::AddSceneObject(int32_t parentObjectId)
 {
+    AssetManager& am = AssetManager::GetInstance(); //Create Instance first so the default stuff is loaded on Startup
     const Ref<SceneObject> object = ECSRegistry::GetInstance().CreateEntity<SceneObject>(parentObjectId);
     if(parentObjectId == -1)
         m_SceneObjectIds.push_back(object->GetId());
     ECSRegistry::GetInstance().AddComponent<TransformComponent>(object->GetId());
     ECSRegistry::GetInstance().AddComponent<MeshComponent>(object->GetId());
     ECSRegistry::GetInstance().AddComponent<MaterialComponent>(object->GetId());
+    ECSRegistry::GetInstance().GetComponent<MaterialComponent>(object->GetId())->GetMaterialAsset() = am.GetMaterial("Default");
     return object->GetId();
 }
 
@@ -87,6 +89,12 @@ uint32_t Scene::AddSkybox()
     return 0;
 }
 
+uint32_t Scene::AddMaterialAsset()
+{
+    const Ref<MaterialAsset> materialAsset = AssetManager::GetInstance().CreateMaterial();
+    return materialAsset->GetId();
+}
+
 void Scene::RemoveSceneLight(uint32_t sceneLightId)
 {
     if (ECSRegistry::GetInstance().GetEntity<DirectionalLightObject>(sceneLightId))
@@ -94,8 +102,29 @@ void Scene::RemoveSceneLight(uint32_t sceneLightId)
 
     ECSRegistry::GetInstance().RemoveEntity(sceneLightId);
 
-    if (std::find(m_SceneLightIds.begin(), m_SceneLightIds.end(), sceneLightId) != m_SceneLightIds.end())
-        m_SceneLightIds.erase(std::remove(m_SceneLightIds.begin(), m_SceneLightIds.end(), sceneLightId));
+    if (std::ranges::find(m_SceneLightIds, sceneLightId) != m_SceneLightIds.end())
+        m_SceneLightIds.erase(std::ranges::remove(m_SceneLightIds, sceneLightId).begin());
+}
+
+void Scene::RemoveMaterialAsset(uint32_t materialAssetId)
+{
+    //Remove Material from all SceneObjects that use it (Set Material back to Default)
+    const auto defaultMaterial = AssetManager::GetInstance().GetMaterial("Default");
+    for(const uint32_t sceneObjectId : m_SceneObjectIds)
+    {
+        const auto sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId);
+        const auto materialComponent = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(sceneObjectId);
+        if (materialComponent->GetMaterialAsset()->GetId() != materialAssetId)
+            continue;
+
+        materialComponent->GetMaterialAsset() = defaultMaterial;
+        if (Model* model = AssetManager::GetInstance().GetModel(sceneObject->GetModelPath()->c_str()))
+            model->material = defaultMaterial;
+        sceneObject->SetDirtyFlag(true);
+    }
+
+    //Remove Material itsself
+    AssetManager::GetInstance().RemoveMaterial(materialAssetId);
 }
 
 uint32_t Scene::AddCamera(const Ref<Camera> cameraPtr)
