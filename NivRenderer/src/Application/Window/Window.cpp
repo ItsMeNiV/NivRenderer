@@ -44,6 +44,7 @@ void Window::CreateRenderContext()
         SPDLOG_DEBUG("Failed to initialize GLAD");
 	}
 	glfwSwapInterval(0); // Disable vsync
+    glEnable(GL_CULL_FACE);
 	glViewport(0, 0, m_Width, m_Height);
 
 	glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -71,7 +72,7 @@ void Window::CreateRenderContext()
 	ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
 	ImGui_ImplOpenGL3_Init("#version 460");
 	ImGui::GetIO().ConfigFlags = ImGuiConfigFlags_DockingEnable;
-	m_MainFramebuffer = CreateScope<Framebuffer>(GetWidth(), GetHeight());
+	m_MainFramebuffer = CreateScope<Framebuffer>(GetWidth(), GetHeight(), FramebufferAttachmentType::DEPTH_STENCIL_COLOR);
 }
 
 bool Window::ShouldClose()
@@ -161,7 +162,7 @@ void Window::UpdateFramebuffer(uint32_t width, uint32_t height)
 	if (m_MainFramebuffer->GetWidth() != width || m_MainFramebuffer->GetHeight() != height)
 	{
 		m_MainFramebuffer = nullptr;
-		m_MainFramebuffer = CreateScope<Framebuffer>(width, height);
+        m_MainFramebuffer = CreateScope<Framebuffer>(width, height, FramebufferAttachmentType::DEPTH_STENCIL_COLOR);
 		glViewport(0, 0, width, height);
 	}
 }

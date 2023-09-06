@@ -8,28 +8,28 @@
 class RenderPass
 {
 public:
-    RenderPass(Ref<Shader> passShader, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount, Ref<Framebuffer> inputFramebuffer = 0) :
-        m_PassShader(passShader),
+    RenderPass(const Ref<Shader>& passShader, const uint32_t resolutionWidth, const uint32_t resolutionHeight, const uint32_t sampleCount, const Ref<Framebuffer>& inputFramebuffer = nullptr) :
         m_InputFramebuffer(inputFramebuffer),
-        m_OutputFramebuffer(CreateRef<Framebuffer>(resolutionWidth, resolutionHeight, sampleCount)),
-        m_SampleCount(sampleCount), m_RenderResolution(resolutionWidth, resolutionHeight)
+        m_OutputFramebuffer(CreateRef<Framebuffer>(resolutionWidth, resolutionHeight, FramebufferAttachmentType::DEPTH_STENCIL_COLOR, sampleCount)),
+        m_PassShader(passShader),
+        m_RenderResolution(resolutionWidth, resolutionHeight), m_SampleCount(sampleCount)
     {}
 
-    virtual void Run(Ref<Scene> scene, ProxyManager& proxyManager) = 0;
+    virtual void Run(const Ref<Scene>& scene, ProxyManager& proxyManager) = 0;
 
-    const Ref<Framebuffer> GetOutputFramebuffer() const { return m_OutputFramebuffer; }
-    uint32_t GetSampleCount() { return m_SampleCount; }
+    const Ref<Framebuffer>& GetOutputFramebuffer() const { return m_OutputFramebuffer; }
+    uint32_t GetSampleCount() const { return m_SampleCount; }
 
-    void RecompilePassShader() { m_PassShader->RecompileFromSource(); }
+    void RecompilePassShader() const { m_PassShader->RecompileFromSource(); }
     void UpdateResolution(uint32_t width, uint32_t height)
     {
-        m_OutputFramebuffer = CreateRef<Framebuffer>(width, height, m_SampleCount);
+        m_OutputFramebuffer = CreateRef<Framebuffer>(width, height, FramebufferAttachmentType::DEPTH_STENCIL_COLOR, m_SampleCount);
         m_RenderResolution = {width, height};
     }
     void UpdateSampleCount(uint32_t sampleCount)
     {
         m_SampleCount = sampleCount;
-        m_OutputFramebuffer = CreateRef<Framebuffer>(m_RenderResolution.x, m_RenderResolution.y, m_SampleCount);
+        m_OutputFramebuffer = CreateRef<Framebuffer>(m_RenderResolution.x, m_RenderResolution.y, FramebufferAttachmentType::DEPTH_STENCIL_COLOR, m_SampleCount);
     }
 
 protected:

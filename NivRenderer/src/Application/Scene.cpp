@@ -12,6 +12,8 @@ Scene::Scene()
     m_SceneSettings.animateDirectionalLight = false;
     m_SceneSettings.renderResolution = {1920, 1080};
     m_SceneSettings.tempRenderResolution = {1920, 1080};
+    m_SceneSettings.shadowmapResolution = {1024, 1024};
+    m_SceneSettings.tempShadowmapResolution = {1024, 1024};
     m_SceneSettings.sampleCount = 4;
     m_HasDirectionalLight = false;
     m_HasSkybox = false;
@@ -135,18 +137,20 @@ uint32_t Scene::AddCamera(const Ref<Camera> cameraPtr)
     return object->GetId();
 }
 
-std::vector<std::pair<std::string, NivRenderer::Property>> Scene::GetEntityProperties()
+std::vector<std::pair<std::string, Property>> Scene::GetEntityProperties()
 {
-    std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
+    std::vector<std::pair<std::string, Property>> returnVector;
 
-    returnVector.push_back({"General Scene Settings", {NivRenderer::PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
-    returnVector.push_back({"Visualize Lights", {NivRenderer::PropertyType::BOOL, &m_SceneSettings.visualizeLights, [this]() {}}});
-    returnVector.push_back({"Animate Directional Light", {NivRenderer::PropertyType::BOOL, &m_SceneSettings.animateDirectionalLight, [this]() {}}});
-    returnVector.push_back({"Render resolution", {NivRenderer::PropertyType::INT2, glm::value_ptr(m_SceneSettings.tempRenderResolution), [this]() {}}});
-    returnVector.push_back({"Apply resolution", {NivRenderer::PropertyType::BUTTON, nullptr, [this]() {
+    returnVector.push_back({"General Scene Settings", {PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
+    returnVector.push_back({"Visualize Lights", {PropertyType::BOOL, &m_SceneSettings.visualizeLights, [this]() {}}});
+    returnVector.push_back({"Animate Directional Light", {PropertyType::BOOL, &m_SceneSettings.animateDirectionalLight, [this]() {}}});
+    returnVector.push_back({"Render Resolution", {PropertyType::INT2, glm::value_ptr(m_SceneSettings.tempRenderResolution), [this]() {}}});
+    returnVector.push_back({"Shadowmap Resolution",{PropertyType::INT2, glm::value_ptr(m_SceneSettings.tempShadowmapResolution), [this]() {}}});
+    returnVector.push_back({"Apply resolution", {PropertyType::BUTTON, nullptr, [this]() {
         m_SceneSettings.renderResolution = m_SceneSettings.tempRenderResolution;
+        m_SceneSettings.shadowmapResolution = m_SceneSettings.tempShadowmapResolution;
     }}});
-    returnVector.push_back({"Sample count", {NivRenderer::PropertyType::INT, &m_SceneSettings.sampleCount, [this]() {}}});
+    returnVector.push_back({"Sample count", {PropertyType::INT, &m_SceneSettings.sampleCount, [this]() {}}});
 
     return returnVector;
 }

@@ -13,16 +13,19 @@ layout (location = 4) in vec3 vertBitangent;
 out vec2 v_TextureCoords;
 out vec3 v_Normal;
 out vec3 v_FragPos;
+out vec4 v_FragPosLightSpace;
 out mat3 v_TBN;
 
 uniform mat4 model;
 uniform mat4 viewProjection;
+uniform mat4 lightSpaceMatrix;
 
 void main()
 {
     v_TextureCoords = vertTextureCoords;
     v_Normal = mat3(transpose(inverse(model))) * vertNormal;
     v_FragPos = vec3(model * vec4(vertPosition, 1.0));
+    v_FragPosLightSpace = lightSpaceMatrix * vec4(v_FragPos, 1.0);
     vec3 T = normalize(vec3(model * vec4(vertTangent, 0.0)));
     vec3 B = normalize(vec3(model * vec4(vertBitangent, 0.0)));
     vec3 N = normalize(vec3(model * vec4(vertNormal, 0.0)));
@@ -45,6 +48,7 @@ const float PI = 3.14159265359;
 in vec2 v_TextureCoords;
 in vec3 v_Normal;
 in vec3 v_FragPos;
+in vec4 v_FragPosLightSpace;
 in mat3 v_TBN;
 
 out vec4 FragColor;
@@ -66,6 +70,8 @@ uniform DirectionalLight directionalLight;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform bool hasDirectionalLight;
 uniform int amountPointLights;
+uniform bool hasShadowMap;
+uniform sampler2D shadowMap;
 //============================
 
 #else
@@ -77,9 +83,13 @@ uniform DirectionalLight directionalLight;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform bool hasDirectionalLight;
 uniform int amountPointLights;
+uniform bool hasShadowMap;
+uniform sampler2D shadowMap;
 uniform bool hasSpecularTexture;
 uniform bool hasNormalTexture;
 #endif
+
+bool calculateShadow(vec4 fragPosLightSpace);
 
 void main()
 {
@@ -107,15 +117,18 @@ void main()
 
     vec3 Lo = vec3(0.0);
 
-    if(hasDirectionalLight)
-        Lo += CalcDirLight(directionalLight, N, V, v_FragPos, albedo, metallic, roughness, emissive, F0);
+    bool fragmentInShadow = hasShadowMap && calculateShadow(v_FragPosLightSpace);
 
+    if(!fragmentInShadow)
+    {
+        if(hasDirectionalLight)
+            Lo += CalcDirLight(directionalLight, N, V, v_FragPos, albedo, metallic, roughness, emissive, F0);
+    }
     for(int i = 0; i < amountPointLights; i++)
         Lo += CalcPointLight(pointLights[i], N, V, v_FragPos, albedo, metallic, roughness, emissive, F0);
-
     vec3 ambient = vec3(0.02) * albedo;
     
-    vec3 color = (Lo + ambient) * ao;
+    vec3 color = (Lo + ambient) * pow(ao,2);
 
     // HDR tonemapping
     color = color / (color + vec3(1.0));
@@ -137,6 +150,7 @@ void main()
     }
     vec3 viewDir = normalize(viewPos - v_FragPos);
 
+    bool fragmentInShadow = hasShadowMap && calculateShadow(v_FragPosLightSpace);
     vec3 result = vec3(0.0, 0.0, 0.0);
     if(hasDirectionalLight)
         result += CalcDirLight(directionalLight, normal, viewDir, diffuseTexture, hasSpecularTexture, specularTexture, v_TextureCoords);
@@ -146,6 +160,22 @@ void main()
 
     FragColor = vec4(result, 1.0);
 #endif
+}
+
+bool calculateShadow(vec4 fragPosLightSpace)
+{
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+
+    float closestDepth = texture(shadowMap, projCoords.xy).r;
+    float currentDepth = projCoords.z;
+
+    if(projCoords.z > 1.0)
+        return false;
+
+    float bias = 0.005;
+
+    return currentDepth - bias > closestDepth;
 }
 
 #endif

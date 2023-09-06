@@ -1,12 +1,19 @@
 #pragma once
 #include "Base.h"
 
-//TODO: Refactor
+//TODO: Refactor - Use this class also in Proxies
 enum TextureType
 {
 	TEXTURE_2D = GL_TEXTURE_2D,
 	TEXTURE_2D_MULTI = GL_TEXTURE_2D_MULTISAMPLE,
 	TEXTURE_CUBEMAP = GL_TEXTURE_CUBE_MAP
+};
+enum InternalFormat
+{
+    RGB = GL_RGB,
+	RGBA = GL_RGBA,
+	R = GL_R,
+	DEPTH = GL_DEPTH_COMPONENT
 };
 
 class Texture
@@ -14,7 +21,7 @@ class Texture
 public:
 	Texture(std::string&& path, bool flipVertically = false);
 	Texture(std::vector<std::string> paths, bool flipVertically = false);
-	Texture(int width, int height, int sampleCount = 1);
+    Texture(const int width, const int height, const InternalFormat internalFormat = InternalFormat::RGB, const int sampleCount = 1);
 	~Texture();
 
 	void ActivateForSlot(uint32_t slot);

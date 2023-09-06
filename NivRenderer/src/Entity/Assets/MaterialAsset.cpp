@@ -55,35 +55,35 @@ void MaterialAsset::reloadEmissiveTexture()
     m_EmissiveTextureAsset = AssetManager::GetInstance().LoadTexture(m_EmissivePath, m_FlipEmissiveTexture);
 }
 
-std::vector<std::pair<std::string, NivRenderer::Property>> MaterialAsset::GetAssetProperties()
+std::vector<std::pair<std::string, Property>> MaterialAsset::GetAssetProperties()
 {
-    std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
+    std::vector<std::pair<std::string, Property>> returnVector;
 
-    returnVector.push_back({"Name", {NivRenderer::PropertyType::STRING, &m_Name, [](){}}});
+    returnVector.push_back({"Name", {PropertyType::STRING, &m_Name, [](){}}});
 
-    returnVector.push_back({"Diffuse", {NivRenderer::PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
-    returnVector.push_back({"Diffuse Path", {NivRenderer::PropertyType::PATH, &m_DiffusePath, [this]() { reloadDiffuseTexture(); }}});
-    returnVector.push_back({"Flip Diffuse Texture", {NivRenderer::PropertyType::BOOL, &m_FlipDiffuseTexture, []() {}}});
+    returnVector.push_back({"Diffuse", {PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
+    returnVector.push_back({"Diffuse Path", {PropertyType::PATH, &m_DiffusePath, [this]() { reloadDiffuseTexture(); }}});
+    returnVector.push_back({"Flip Diffuse Texture", {PropertyType::BOOL, &m_FlipDiffuseTexture, []() {}}});
 
-    returnVector.push_back({"Normal", {NivRenderer::PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
-    returnVector.push_back({"Normal Path", {NivRenderer::PropertyType::PATH, &m_NormalPath, [this]() { reloadNormalTexture(); }}});
-    returnVector.push_back({"Flip Normal Texture", {NivRenderer::PropertyType::BOOL, &m_FlipNormalTexture, []() {}}});
+    returnVector.push_back({"Normal", {PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
+    returnVector.push_back({"Normal Path", {PropertyType::PATH, &m_NormalPath, [this]() { reloadNormalTexture(); }}});
+    returnVector.push_back({"Flip Normal Texture", {PropertyType::BOOL, &m_FlipNormalTexture, []() {}}});
 
-    returnVector.push_back({"Metallic", {NivRenderer::PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
-    returnVector.push_back({"Metallic Path", {NivRenderer::PropertyType::PATH, &m_MetallicPath, [this]() { reloadMetallicTexture(); }}});
-    returnVector.push_back({"Flip Metallic Texture", {NivRenderer::PropertyType::BOOL, &m_FlipMetallicTexture, []() {}}});
+    returnVector.push_back({"Metallic", {PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
+    returnVector.push_back({"Metallic Path", {PropertyType::PATH, &m_MetallicPath, [this]() { reloadMetallicTexture(); }}});
+    returnVector.push_back({"Flip Metallic Texture", {PropertyType::BOOL, &m_FlipMetallicTexture, []() {}}});
 
-    returnVector.push_back({"Roughness", {NivRenderer::PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
-    returnVector.push_back({"Roughness Path", {NivRenderer::PropertyType::PATH, &m_RoughnessPath, [this]() { reloadRoughnessTexture(); }}});
-    returnVector.push_back({"Flip Roughness Texture", {NivRenderer::PropertyType::BOOL, &m_FlipRoughnessTexture, []() {}}});
+    returnVector.push_back({"Roughness", {PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
+    returnVector.push_back({"Roughness Path", {PropertyType::PATH, &m_RoughnessPath, [this]() { reloadRoughnessTexture(); }}});
+    returnVector.push_back({"Flip Roughness Texture", {PropertyType::BOOL, &m_FlipRoughnessTexture, []() {}}});
 
-    returnVector.push_back({"AO", {NivRenderer::PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
-    returnVector.push_back({"AO Path", {NivRenderer::PropertyType::PATH, &m_AOPath, [this]() { reloadAOTexture(); }}});
-    returnVector.push_back({"Flip AO Texture", {NivRenderer::PropertyType::BOOL, &m_FlipAOTexture, []() {}}});
+    returnVector.push_back({"AO", {PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
+    returnVector.push_back({"AO Path", {PropertyType::PATH, &m_AOPath, [this]() { reloadAOTexture(); }}});
+    returnVector.push_back({"Flip AO Texture", {PropertyType::BOOL, &m_FlipAOTexture, []() {}}});
 
-    returnVector.push_back({"Emissive", {NivRenderer::PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
-    returnVector.push_back({"Emissive Path", {NivRenderer::PropertyType::PATH, &m_EmissivePath, [this]() { reloadEmissiveTexture(); }}});
-    returnVector.push_back({"Flip Emissive Texture", {NivRenderer::PropertyType::BOOL, &m_FlipEmissiveTexture, []() {}}});
+    returnVector.push_back({"Emissive", {PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
+    returnVector.push_back({"Emissive Path", {PropertyType::PATH, &m_EmissivePath, [this]() { reloadEmissiveTexture(); }}});
+    returnVector.push_back({"Flip Emissive Texture", {PropertyType::BOOL, &m_FlipEmissiveTexture, []() {}}});
 
     return returnVector;
 }

@@ -16,11 +16,11 @@ std::string& MeshComponent::GetPath()
     return m_Path;
 }
 
-std::vector<std::pair<std::string, NivRenderer::Property>> MeshComponent::GetComponentProperties()
+std::vector<std::pair<std::string, Property>> MeshComponent::GetComponentProperties()
 {
-    std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
+    std::vector<std::pair<std::string, Property>> returnVector;
 
-    returnVector.push_back({"Path", {NivRenderer::PropertyType::PATH, &m_Path, [this]() { reloadMesh(); }}});
+    returnVector.push_back({"Path", {PropertyType::PATH, &m_Path, [this]() { reloadMesh(); }}});
 
     return returnVector;
 }

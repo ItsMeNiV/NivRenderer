@@ -11,6 +11,8 @@ struct SceneSettings
     bool animateDirectionalLight;
     glm::ivec2 renderResolution;
     glm::ivec2 tempRenderResolution;
+    glm::ivec2 shadowmapResolution;
+    glm::ivec2 tempShadowmapResolution;
     uint32_t sampleCount;
 };
 
@@ -41,7 +43,7 @@ public:
     const bool HasDirectionalLight() const { return m_HasDirectionalLight; }
     const bool HasSkybox() const { return m_HasSkybox; }
 
-    std::vector<std::pair<std::string, NivRenderer::Property>> GetEntityProperties();
+    std::vector<std::pair<std::string, Property>> GetEntityProperties();
 
 private:
     uint32_t m_Id;

@@ -1,7 +1,7 @@
 #pragma once
 #include "Base.h"
 #include "Entity/PropertyType.h"
-#include "Entity/Assets/Asset.h"
+#include "Entity/Asset.h"
 #include "Entity/Assets/TextureAsset.h"
 
 class MaterialAsset : public Asset
@@ -33,7 +33,7 @@ public:
     bool& GetFlipAOTexture() { return m_FlipAOTexture; }
     bool& GetFlipEmissiveTexture() { return m_FlipEmissiveTexture; }
 
-    std::vector<std::pair<std::string, NivRenderer::Property>> GetAssetProperties() override;
+    std::vector<std::pair<std::string, Property>> GetAssetProperties() override;
 
 private:
     std::string m_Name;

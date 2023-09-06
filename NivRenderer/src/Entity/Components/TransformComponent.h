@@ -12,13 +12,13 @@ public:
 	~TransformComponent()
 	{}
 
-    std::vector<std::pair<std::string, NivRenderer::Property>> GetComponentProperties() override
+    std::vector<std::pair<std::string, Property>> GetComponentProperties() override
 	{
-        std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
+        std::vector<std::pair<std::string, Property>> returnVector;
 
-        returnVector.push_back({"Position", {NivRenderer::PropertyType::FLOAT3, glm::value_ptr(m_Position)}});;
-        returnVector.push_back({"Scale", {NivRenderer::PropertyType::FLOAT3, glm::value_ptr(m_Scale)}});
-        returnVector.push_back({"Rotation", {NivRenderer::PropertyType::FLOAT3, glm::value_ptr(m_Rotation)}});
+        returnVector.push_back({"Position", {PropertyType::FLOAT3, glm::value_ptr(m_Position)}});;
+        returnVector.push_back({"Scale", {PropertyType::FLOAT3, glm::value_ptr(m_Scale)}});
+        returnVector.push_back({"Rotation", {PropertyType::FLOAT3, glm::value_ptr(m_Rotation)}});
 
         return returnVector;
 	}

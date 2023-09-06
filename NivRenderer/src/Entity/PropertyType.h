@@ -1,28 +1,25 @@
 #pragma once
 
-namespace NivRenderer
+enum class PropertyType
 {
-    enum PropertyType
-    {
-        FLOAT3,
-        FLOAT2,
-        FLOAT,
-        COLOR,
-        INT,
-        INT2,
-        SLIDER,
-        STRING,
-        PATH,
-        BOOL,
-        SEPARATORTEXT,
-        BUTTON,
-        MATERIALDROPDOWN
-    };
+    FLOAT3,
+    FLOAT2,
+    FLOAT,
+    COLOR,
+    INT,
+    INT2,
+    SLIDER,
+    STRING,
+    PATH,
+    BOOL,
+    SEPARATORTEXT,
+    BUTTON,
+    MATERIALDROPDOWN
+};
 
-    struct Property
-    {
-        NivRenderer::PropertyType type;
-        void* valuePtr;
-        std::function<void()> callback;
-    };
-}
+struct Property
+{
+    PropertyType type;
+    void* valuePtr;
+    std::function<void()> callback;
+};

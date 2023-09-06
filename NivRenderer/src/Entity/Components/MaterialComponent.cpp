@@ -6,11 +6,11 @@ MaterialComponent::MaterialComponent(const uint32_t id) :
     
 }
 
-std::vector<std::pair<std::string, NivRenderer::Property>> MaterialComponent::GetComponentProperties()
+std::vector<std::pair<std::string, Property>> MaterialComponent::GetComponentProperties()
 {
-    std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
+    std::vector<std::pair<std::string, Property>> returnVector;
 
-    returnVector.push_back({"Material", {NivRenderer::PropertyType::MATERIALDROPDOWN, &m_MaterialAsset, []() {}}});
+    returnVector.push_back({"Material", {PropertyType::MATERIALDROPDOWN, &m_MaterialAsset, []() {}}});
 
     return returnVector;
 }

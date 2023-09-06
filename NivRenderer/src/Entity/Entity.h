@@ -21,7 +21,7 @@ public:
 		}));
 	}
 
-	virtual std::vector<std::pair<std::string, NivRenderer::Property>> GetEntityProperties() = 0;
+	virtual std::vector<std::pair<std::string, Property>> GetEntityProperties() = 0;
 
 	const uint32_t GetId() const { return m_EntityId; }
 	std::string* const GetEntityName() { return &m_EntityName; }

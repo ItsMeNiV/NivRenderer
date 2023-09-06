@@ -48,8 +48,8 @@ const std::string& TextureAsset::GetPath()
     return m_Path;
 }
 
-std::vector<std::pair<std::string, NivRenderer::Property>> TextureAsset::GetAssetProperties()
+std::vector<std::pair<std::string, Property>> TextureAsset::GetAssetProperties()
 {
-    std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
+    std::vector<std::pair<std::string, Property>> returnVector;
     return returnVector;
 }

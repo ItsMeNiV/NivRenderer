@@ -9,7 +9,8 @@ Framebuffer& RenderPipeline::Run(Ref<Scene> scene, ProxyManager& proxyManager)
 {
     if (!m_OutputFramebuffer)
     {
-        m_OutputFramebuffer = CreateScope<Framebuffer>(m_ResolutionWidth, m_ResolutionHeight);
+        m_OutputFramebuffer = CreateScope<Framebuffer>(m_ResolutionWidth, m_ResolutionHeight,
+                                                       FramebufferAttachmentType::DEPTH_STENCIL_COLOR);
     }
 
     for (auto currentPass : m_RenderPasses)
@@ -52,7 +53,7 @@ void RenderPipeline::RecompileShaders()
 
 void RenderPipeline::UpdateResolution(uint32_t width, uint32_t height)
 {
-    m_OutputFramebuffer = CreateScope<Framebuffer>(width, height);
+    m_OutputFramebuffer = CreateScope<Framebuffer>(width, height, FramebufferAttachmentType::DEPTH_STENCIL_COLOR);
     for (auto currentPass : m_RenderPasses)
     {
         currentPass->UpdateResolution(width, height);

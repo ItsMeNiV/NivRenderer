@@ -65,7 +65,7 @@ Texture::Texture(std::vector<std::string> paths, bool flipVertically)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 }
 
-Texture::Texture(int width, int height, int sampleCount)
+Texture::Texture(const int width, const int height, const InternalFormat internalFormat, const int sampleCount)
     : m_TextureType(sampleCount > 1 ? TextureType::TEXTURE_2D_MULTI : TextureType::TEXTURE_2D), m_TextureId(UINT_MAX)
 {
     glGenTextures(1, &m_TextureId);
@@ -73,11 +73,18 @@ Texture::Texture(int width, int height, int sampleCount)
     if (sampleCount > 1)
         glTexImage2DMultisample(m_TextureType, sampleCount, GL_RGBA16F, width, height, GL_TRUE);
     else
-        glTexImage2D(m_TextureType, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_INT, NULL);
+        glTexImage2D(m_TextureType, 0, internalFormat, width, height, 0, internalFormat, internalFormat == DEPTH ? GL_FLOAT : GL_UNSIGNED_INT, NULL);
     glTexParameteri(m_TextureType, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(m_TextureType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(m_TextureType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(m_TextureType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    if (internalFormat == DEPTH)
+    {
+        glTexParameteri(m_TextureType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(m_TextureType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        constexpr float borderColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);  
+    }
     glBindTexture(m_TextureType, 0);
 }
 

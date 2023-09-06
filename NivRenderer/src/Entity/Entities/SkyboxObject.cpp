@@ -65,10 +65,10 @@ bool SkyboxObject::HasAllTexturesSet()
     return true;
 }
 
-std::vector<std::pair<std::string, NivRenderer::Property>> SkyboxObject::GetEntityProperties()
+std::vector<std::pair<std::string, Property>> SkyboxObject::GetEntityProperties()
 {
-    std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
-    returnVector.push_back({"Texture folder", {NivRenderer::PropertyType::PATH, &m_TextureFolder, [this]()
+    std::vector<std::pair<std::string, Property>> returnVector;
+    returnVector.push_back({"Texture folder", {PropertyType::PATH, &m_TextureFolder, [this]()
     {
         m_TextureFolder = std::regex_replace(m_TextureFolder, std::regex("\\\\"), "\/");
         SetTexturePathsFromFolder(); 
@@ -77,11 +77,11 @@ std::vector<std::pair<std::string, NivRenderer::Property>> SkyboxObject::GetEnti
     for (auto& path : m_TexturePaths)
     {
         std::string label = std::string("Texture path[") + std::to_string(i) + "]";
-        returnVector.push_back({label.c_str(), {NivRenderer::PropertyType::STRING, &m_TexturePaths[i-1], [this]() {}}});
+        returnVector.push_back({label.c_str(), {PropertyType::STRING, &m_TexturePaths[i-1], [this]() {}}});
         i++;
     }
-    returnVector.push_back({"Reload Textures", {NivRenderer::PropertyType::BUTTON, nullptr, [this]() { LoadTextures(); }}});
-    returnVector.push_back({"Flip Textures", {NivRenderer::PropertyType::BOOL, &m_FlipTextures, [this]() {}}});
+    returnVector.push_back({"Reload Textures", {PropertyType::BUTTON, nullptr, [this]() { LoadTextures(); }}});
+    returnVector.push_back({"Flip Textures", {PropertyType::BOOL, &m_FlipTextures, [this]() {}}});
 
     return returnVector;
 }

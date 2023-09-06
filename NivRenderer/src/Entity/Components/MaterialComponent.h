@@ -9,7 +9,7 @@ public:
     MaterialComponent(const uint32_t id);
     ~MaterialComponent() override = default;
 
-    std::vector<std::pair<std::string, NivRenderer::Property>> GetComponentProperties() override;
+    std::vector<std::pair<std::string, Property>> GetComponentProperties() override;
 
     Ref<MaterialAsset>& GetMaterialAsset() { return m_MaterialAsset; }
 

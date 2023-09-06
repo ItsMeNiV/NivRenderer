@@ -2,25 +2,30 @@
 #include "Base.h"
 #include "Rendering/OpenGL/Texture.h"
 
-//TODO: Refactor
+enum class FramebufferAttachmentType
+{
+    DEPTH_STENCIL_COLOR,
+	DEPTH_ONLY
+};
+
 class Framebuffer
 {
 public:
-	Framebuffer(int width, int height, int sampleCount = 1);
+    Framebuffer(const int width, const int height, const FramebufferAttachmentType attachmentType, const int sampleCount = 1);
 	~Framebuffer();
 
-	void Bind();
-	void Unbind();
+	void Bind() const;
+	void Unbind() const;
 
-	void BlitFramebuffer(unsigned int targetFramebuffer, int targetWidth, int targetHeight);
+	void BlitFramebuffer(const unsigned int targetFramebuffer, const int targetWidth, const int targetHeight) const;
 
-	const Ref<Texture> GetTextureColorBuffer() { return m_TextureColorBuffer; }
-	const int GetWidth() { return m_CurrentWidth; }
-	const int GetHeight() { return m_CurrentHeight; }
-	const unsigned int GetId() { return m_FrameBuffer; }
+    Ref<Texture> GetTextureAttachment() { return m_TextureAttachment; }
+	int GetWidth() const { return m_CurrentWidth; }
+	int GetHeight() const { return m_CurrentHeight; }
+	unsigned int GetId() const { return m_FrameBuffer; }
 
 private:
 	unsigned int m_FrameBuffer, m_RenderBuffer;
-	Ref<Texture> m_TextureColorBuffer;
+	Ref<Texture> m_TextureAttachment;
 	int m_CurrentWidth, m_CurrentHeight;
 };

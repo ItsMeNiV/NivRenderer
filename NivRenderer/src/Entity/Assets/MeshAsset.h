@@ -1,6 +1,6 @@
 #pragma once
 #include "Base.h"
-#include "Asset.h"
+#include "Entity/Asset.h"
 #include "Entity/PropertyType.h"
 
 struct MeshVertex
@@ -42,9 +42,9 @@ public:
 
     const std::string& GetPath();
 
-    std::vector<std::pair<std::string, NivRenderer::Property>> GetAssetProperties() override
+    std::vector<std::pair<std::string, Property>> GetAssetProperties() override
     {
-        std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
+        std::vector<std::pair<std::string, Property>> returnVector;
         return returnVector;
     }
 

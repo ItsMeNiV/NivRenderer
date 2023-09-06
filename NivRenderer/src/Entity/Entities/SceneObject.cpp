@@ -19,12 +19,12 @@ void SceneObject::LoadMeshAndMaterial()
     materialComponent->GetMaterialAsset() = model->material;
 }
 
-std::vector<std::pair<std::string, NivRenderer::Property>> SceneObject::GetEntityProperties()
+std::vector<std::pair<std::string, Property>> SceneObject::GetEntityProperties()
 {
-    std::vector<std::pair<std::string, NivRenderer::Property>> returnVector;
+    std::vector<std::pair<std::string, Property>> returnVector;
 
-    returnVector.push_back({"Model Name", {NivRenderer::PropertyType::STRING, &m_EntityName, [this](){}}});
-    returnVector.push_back({"Model Path", {NivRenderer::PropertyType::PATH, &m_ModelPath, [this]() { LoadMeshAndMaterial(); }}});
+    returnVector.push_back({"Model Name", {PropertyType::STRING, &m_EntityName, [this](){}}});
+    returnVector.push_back({"Model Path", {PropertyType::PATH, &m_ModelPath, [this]() { LoadMeshAndMaterial(); }}});
 
     return returnVector;
 }

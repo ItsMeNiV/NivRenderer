@@ -35,42 +35,42 @@ static int InputTextCallback(ImGuiInputTextCallbackData* data)
 	return 0;
 }
 
-bool displayProperty(std::pair<std::string, NivRenderer::Property>& property, std::string& name)
+bool displayProperty(std::pair<std::string, Property>& property, std::string& name)
 {
     bool wasEdited = false;
     const char* label = property.first.c_str();
 
     switch (property.second.type)
     {
-    case NivRenderer::PropertyType::FLOAT:
+    case PropertyType::FLOAT:
         wasEdited = ImGui::InputFloat(label, static_cast<float*>(property.second.valuePtr));
         ImGui::Spacing();
         break;
-    case NivRenderer::PropertyType::FLOAT2:
+    case PropertyType::FLOAT2:
         wasEdited = ImGui::InputFloat2(label, static_cast<float*>(property.second.valuePtr));
         ImGui::Spacing();
         break;
-    case NivRenderer::PropertyType::FLOAT3:
+    case PropertyType::FLOAT3:
         wasEdited = ImGui::InputFloat3(label, static_cast<float*>(property.second.valuePtr));
         ImGui::Spacing();
         break;
-    case NivRenderer::PropertyType::COLOR:
+    case PropertyType::COLOR:
         wasEdited = ImGui::ColorEdit3(label, static_cast<float*>(property.second.valuePtr));
         ImGui::Spacing();
         break;
-    case NivRenderer::PropertyType::INT:
+    case PropertyType::INT:
         wasEdited = ImGui::InputInt(label, static_cast<int*>(property.second.valuePtr));
         ImGui::Spacing();
         break;
-    case NivRenderer::PropertyType::INT2:
+    case PropertyType::INT2:
         ImGui::InputInt2(label, static_cast<int*>(property.second.valuePtr));
         ImGui::Spacing();
         break;
-    case NivRenderer::PropertyType::SLIDER:
+    case PropertyType::SLIDER:
         wasEdited = ImGui::SliderInt(label, static_cast<int*>(property.second.valuePtr), 1, 100);
         ImGui::Spacing();
         break;
-    case NivRenderer::PropertyType::PATH:
+    case PropertyType::PATH:
         {
             auto* inputString = static_cast<std::string*>(property.second.valuePtr);
             ImGui::InputText(label, inputString, 0, InputTextCallback, (void*)inputString);
@@ -85,14 +85,14 @@ bool displayProperty(std::pair<std::string, NivRenderer::Property>& property, st
             ImGui::Spacing();
             break;
         }
-    case NivRenderer::PropertyType::STRING:
+    case PropertyType::STRING:
         {
             auto* inputString = static_cast<std::string*>(property.second.valuePtr);
             ImGui::InputText(label, inputString, 0, InputTextCallback, (void*)inputString);
             ImGui::Spacing();
             break;
         }
-    case NivRenderer::PropertyType::BUTTON:
+    case PropertyType::BUTTON:
         ImGui::PushID((property.first + std::string("##") + name).c_str());
         if (ImGui::Button(property.first.c_str()))
         {
@@ -102,15 +102,15 @@ bool displayProperty(std::pair<std::string, NivRenderer::Property>& property, st
         ImGui::PopID();
         ImGui::Spacing();
         break;
-    case NivRenderer::PropertyType::BOOL:
+    case PropertyType::BOOL:
         wasEdited = ImGui::Checkbox(property.first.c_str(), static_cast<bool*>(property.second.valuePtr));
         ImGui::Spacing();
         break;
-    case NivRenderer::PropertyType::SEPARATORTEXT:
+    case PropertyType::SEPARATORTEXT:
         ImGui::SeparatorText(property.first.c_str());
         ImGui::Spacing();
         break;
-    case NivRenderer::PropertyType::MATERIALDROPDOWN:
+    case PropertyType::MATERIALDROPDOWN:
     {
         auto* materialAsset = static_cast<Ref<MaterialAsset>*>(property.second.valuePtr);
         if (ImGui::BeginCombo("Material", (*materialAsset)->GetName().c_str()))
@@ -170,7 +170,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
 	{
         const auto materialAsset = AssetManager::GetInstance().GetMaterial(selectedSceneObject);
         const Ref<Entity> selectedEntity = ECSRegistry::GetInstance().GetEntity<Entity>(selectedSceneObject);
-        std::vector<std::pair<std::string, NivRenderer::Property>> entityProperties;
+        std::vector<std::pair<std::string, Property>> entityProperties;
         if (materialAsset)
             entityProperties = materialAsset->GetAssetProperties();
         else if (selectedSceneObject == scene->GetId())
