@@ -106,11 +106,11 @@ void main()
     }
     vec3 V = normalize(viewPos - v_FragPos);
 
-    vec3 albedo = pow(texture(diffuseTexture, v_TextureCoords).rgb, vec3(2.2));
+    vec3 albedo = pow(texture(diffuseTexture, v_TextureCoords).rgb, vec3(2.2)); // sRGB->RGB
     float metallic = texture(metallicTexture, v_TextureCoords).r;
     float roughness = texture(roughnessTexture, v_TextureCoords).r;
     float ao = texture(aoTexture, v_TextureCoords).r;
-    vec3 emissive = texture(emissiveTexture, v_TextureCoords).rgb;
+    vec3 emissive = pow(texture(emissiveTexture, v_TextureCoords).rgb, vec3(2.2)); // sRGB->RGB
 
     vec3 F0 = vec3(0.04); 
     F0 = mix(F0, albedo, metallic);

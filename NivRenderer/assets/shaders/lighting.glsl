@@ -61,9 +61,7 @@ vec3 CalcDirLight(DirectionalLight light, vec3 N, vec3 V, vec3 fragPos, vec3 alb
     vec3 kD = 1.0 - kS;
     vec3 specularBRDF = (D * G * F) / 4 * NdotL * NdotV + 0.0001;
 
-    vec3 fLambert = vec3(0.0);
-    if(metallic < 0.1)
-        fLambert = albedo;
+    vec3 fLambert = mix(albedo, vec3(0.0), metallic);
 
     vec3 diffuseBRDF = kD * fLambert / PI;
 
@@ -92,7 +90,7 @@ vec3 CalcPointLight(PointLight light, vec3 N, vec3 V, vec3 fragPos, vec3 albedo,
     vec3 kD = 1.0 - kS;
     vec3 specularBRDF = (D * G * F) / 4 * NdotL * NdotV + 0.0001;
 
-    vec3 fLambert = albedo;
+    vec3 fLambert = mix(albedo, vec3(0.0), metallic);
 
     vec3 diffuseBRDF = kD * fLambert / PI;
 
