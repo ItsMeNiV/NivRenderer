@@ -23,6 +23,7 @@ public:
     ~Scene();
 
     uint32_t AddSceneObject(int32_t parentObjectId = -1);
+    uint32_t AddEmptySceneObject(int32_t parentObjectId = -1);
     void RemoveSceneObject(uint32_t sceneObjectId);
     void RemoveSkyboxObject();
     void RemoveSceneLight(uint32_t sceneLightId);

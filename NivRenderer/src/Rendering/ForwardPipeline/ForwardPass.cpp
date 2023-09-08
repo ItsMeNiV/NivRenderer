@@ -32,13 +32,11 @@ void ForwardPass::Run(const Ref<Scene>& scene, ProxyManager& proxyManager)
             m_ShadowmapFramebuffer->Bind();
             glViewport(0, 0, m_ShadowmapFramebuffer->GetWidth(), m_ShadowmapFramebuffer->GetHeight());
             glClear(GL_DEPTH_BUFFER_BIT);
-            for (const uint32_t sceneObjectId : scene->GetSceneObjectIds())
+            for (const auto& sceneObjectProxy : proxyManager.GetSceneObjectsToRender(scene))
             {
-                const Ref<SceneObjectProxy> objectProxy =
-                    std::static_pointer_cast<SceneObjectProxy>(proxyManager.GetProxy(sceneObjectId));
-                objectProxy->Bind();
-                m_ShadowmapShader->SetMat4("model", objectProxy->GetModelMatrix());
-                const auto& meshProxy = objectProxy->GetMeshProxy();
+                sceneObjectProxy->Bind();
+                m_ShadowmapShader->SetMat4("model", sceneObjectProxy->GetModelMatrix());
+                const auto& meshProxy = sceneObjectProxy->GetMeshProxy();
                 if (meshProxy->GetIndexCount())
                     glDrawElements(GL_TRIANGLES, meshProxy->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
                 else
@@ -104,18 +102,18 @@ void ForwardPass::Run(const Ref<Scene>& scene, ProxyManager& proxyManager)
     m_PassShader->SetBool("hasDirectionalLight", hasDirectionalLight);
     m_PassShader->SetInt("amountPointLights", pointLightIndex);
 
-    for (uint32_t id : scene->GetSceneObjectIds())
+    for (const auto& sceneObjectProxy : proxyManager.GetSceneObjectsToRender(scene))
     {
-        const Ref<SceneObjectProxy> objectProxy = std::static_pointer_cast<SceneObjectProxy>(proxyManager.GetProxy(id));
-        objectProxy->Bind();
-        m_PassShader->SetMat4("model", objectProxy->GetModelMatrix());
 
-        objectProxy->GetMaterialProxy()->BindDiffuseTexture(0);
+        sceneObjectProxy->Bind();
+        m_PassShader->SetMat4("model", sceneObjectProxy->GetModelMatrix());
+
+        sceneObjectProxy->GetMaterialProxy()->BindDiffuseTexture(0);
         m_PassShader->SetTexture("diffuseTexture", 0);
 
-        if (objectProxy->GetMaterialProxy()->HasNormalTexture())
+        if (sceneObjectProxy->GetMaterialProxy()->HasNormalTexture())
         {
-            objectProxy->GetMaterialProxy()->BindNormalTexture(1);
+            sceneObjectProxy->GetMaterialProxy()->BindNormalTexture(1);
             m_PassShader->SetBool("hasNormalTexture", true);
             m_PassShader->SetTexture("normalTexture", 1);
         }
@@ -124,19 +122,19 @@ void ForwardPass::Run(const Ref<Scene>& scene, ProxyManager& proxyManager)
             m_PassShader->SetBool("hasNormalTexture", false);
         }
 
-        objectProxy->GetMaterialProxy()->BindMetallicTexture(2);
+        sceneObjectProxy->GetMaterialProxy()->BindMetallicTexture(2);
         m_PassShader->SetTexture("metallicTexture", 2);
 
-        objectProxy->GetMaterialProxy()->BindRoughnessTexture(3);
+        sceneObjectProxy->GetMaterialProxy()->BindRoughnessTexture(3);
         m_PassShader->SetTexture("roughnessTexture", 3);
 
-        objectProxy->GetMaterialProxy()->BindAOTexture(4);
+        sceneObjectProxy->GetMaterialProxy()->BindAOTexture(4);
         m_PassShader->SetTexture("aoTexture", 4);
 
-        objectProxy->GetMaterialProxy()->BindEmissiveTexture(5);
+        sceneObjectProxy->GetMaterialProxy()->BindEmissiveTexture(5);
         m_PassShader->SetTexture("emissiveTexture", 5);
 
-        auto& meshProxy = objectProxy->GetMeshProxy();
+        auto& meshProxy = sceneObjectProxy->GetMeshProxy();
         if (meshProxy->GetIndexCount())
             glDrawElements(GL_TRIANGLES, meshProxy->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
         else

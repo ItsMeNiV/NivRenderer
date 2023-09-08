@@ -40,6 +40,15 @@ uint32_t Scene::AddSceneObject(int32_t parentObjectId)
     return object->GetId();
 }
 
+uint32_t Scene::AddEmptySceneObject(int32_t parentObjectId)
+{
+    AssetManager& am = AssetManager::GetInstance(); // Create Instance first so the default stuff is loaded on Startup
+    const Ref<SceneObject> object = ECSRegistry::GetInstance().CreateEntity<SceneObject>(parentObjectId);
+    if (parentObjectId == -1)
+        m_SceneObjectIds.push_back(object->GetId());
+    return object->GetId();
+}
+
 void Scene::RemoveSceneObject(uint32_t sceneObjectId)
 {
     Ref<Entity> object = ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId);

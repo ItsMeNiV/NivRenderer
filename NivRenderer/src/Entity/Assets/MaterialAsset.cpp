@@ -4,7 +4,7 @@
 MaterialAsset::MaterialAsset(uint32_t id, const char* name) :
     Asset(id), m_Name(name), m_DiffusePath("default"),
     m_FlipDiffuseTexture(false), m_FlipNormalTexture(false), m_FlipMetallicTexture(false),
-    m_FlipRoughnessTexture(false), m_FlipAOTexture(false), m_FlipEmissiveTexture(false)
+    m_FlipRoughnessTexture(false), m_FlipAOTexture(false), m_FlipEmissiveTexture(false), m_DirtyFlag(true)
 {}
 
 void MaterialAsset::reloadDiffuseTexture()

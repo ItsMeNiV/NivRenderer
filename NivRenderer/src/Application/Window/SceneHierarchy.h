@@ -11,6 +11,10 @@ inline void displaySceneObjectContextMenu(const Ref<Scene>& scene, const uint32_
 		{
 			scene->AddSceneObject(sceneObjectId);
 		}
+        if (ImGui::MenuItem("Add empty SceneObject"))
+        {
+            scene->AddEmptySceneObject(sceneObjectId);
+        }
 
 		if (allowDelete && ImGui::MenuItem("Delete"))
 		{
