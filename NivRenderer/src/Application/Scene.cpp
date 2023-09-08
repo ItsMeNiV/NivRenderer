@@ -129,8 +129,18 @@ void Scene::RemoveMaterialAsset(uint32_t materialAssetId)
             continue;
 
         materialComponent->GetMaterialAsset() = defaultMaterial;
-        if (Model* model = AssetManager::GetInstance().GetModel(sceneObject->GetModelPath()->c_str()))
-            model->material = defaultMaterial;
+        if (Model* model = AssetManager::GetInstance().GetModel(*sceneObject->GetModelPath()))
+        {
+            auto& subModels = model->subModels;
+            while (!subModels.empty())
+            {
+                for (auto& subModel : subModels)
+                {
+                    if (subModel.material->GetId() == materialAssetId)
+                        subModel.material = defaultMaterial;
+                }
+            }
+        }
         sceneObject->SetDirtyFlag(true);
     }
 

@@ -12,35 +12,16 @@ struct MeshVertex
     glm::vec3 Bitangent;
 };
 
-class SubMesh
-{
-public:
-    SubMesh(const std::vector<MeshVertex>& vertices, const std::vector<uint32_t>& indices) :
-        m_Vertices(vertices), m_Indices(indices)
-    {
-    }
-
-    const std::vector<MeshVertex>& GetVertices() const;
-    const std::vector<uint32_t>& GetIndices() const;
-
-private:
-    std::vector<MeshVertex> m_Vertices;
-    std::vector<uint32_t> m_Indices;
-};
-
 class MeshAsset : public Asset
 {
 public:
-    MeshAsset(const uint32_t id, const std::string& path) : Asset(id), m_Path(path) {}
-    MeshAsset(const uint32_t id, const std::string& path, const Ref<SubMesh>& subMesh) : Asset(id), m_Path(path)
-    {
-        m_SubMeshes.push_back(subMesh);
-    }
-
-    const std::vector<Ref<SubMesh>>& GetSubMeshes() const;
-    void AddSubMeshes(const std::vector<Ref<SubMesh>>& meshes);
+    MeshAsset(const uint32_t id, const std::string& path, const std::vector<MeshVertex>& vertices, const std::vector<uint32_t>& indices) :
+        Asset(id), m_Path(path), m_Vertices(vertices), m_Indices(indices)
+    {}
 
     const std::string& GetPath();
+    const std::vector<MeshVertex>& GetVertices() const;
+    const std::vector<uint32_t>& GetIndices() const;
 
     std::vector<std::pair<std::string, Property>> GetAssetProperties() override
     {
@@ -49,7 +30,7 @@ public:
     }
 
 private:
-    std::vector<Ref<SubMesh>> m_SubMeshes;
     std::string m_Path;
-
+    std::vector<MeshVertex> m_Vertices;
+    std::vector<uint32_t> m_Indices;
 };

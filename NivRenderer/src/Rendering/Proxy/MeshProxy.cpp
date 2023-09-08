@@ -19,22 +19,9 @@ void MeshProxy::CreateBuffers(const Ref<MeshComponent>& mesh)
 {
     glBindVertexArray(m_VertexArray);
 
-    std::vector<MeshVertex> vertices;
-    std::vector<uint32_t> indices;
+    const auto& vertices = mesh->GetMeshAsset()->GetVertices();
+    const auto& indices = mesh->GetMeshAsset()->GetIndices();
 
-    for (auto& m : mesh->GetMeshAsset()->GetSubMeshes())
-    {
-        const uint32_t vertCount = vertices.size();
-        auto& verts = m->GetVertices();
-        auto inds = m->GetIndices();
-        if (vertCount > 0)
-        {
-            for (auto& i : inds)
-                i += vertCount;
-        }
-        vertices.insert(vertices.end(), verts.begin(), verts.end());
-        indices.insert(indices.end(), inds.begin(), inds.end());
-    }
     m_IndexCount = indices.size();
     m_VerticesCount = vertices.size();
 

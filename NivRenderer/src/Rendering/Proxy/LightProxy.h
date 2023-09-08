@@ -14,20 +14,7 @@ public:
 
             glBindVertexArray(m_VertexArray);
 
-            std::vector<MeshVertex> vertices;
-
-            for (auto& m : AssetManager::GetInstance().LoadMesh("default")->GetSubMeshes())
-            {
-                uint32_t vertCount = vertices.size();
-                auto& verts = m->GetVertices();
-                auto inds = m->GetIndices();
-                if (vertCount > 0)
-                {
-                    for (auto& i : inds)
-                        i += vertCount;
-                }
-                vertices.insert(vertices.end(), verts.begin(), verts.end());
-            }
+            const auto& vertices = AssetManager::GetInstance().LoadMesh("default")->GetVertices();
             m_VerticesCount = vertices.size();
 
             glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);

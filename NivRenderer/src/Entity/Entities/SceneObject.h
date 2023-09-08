@@ -1,6 +1,7 @@
 #pragma once
 #include "Base.h"
 #include "Entity/Entity.h"
+#include "Entity/Assets/AssetManager.h"
 
 class SceneObject : public Entity
 {
@@ -14,5 +15,7 @@ public:
 
 private:
     std::string m_ModelPath;
+
+    void createChildSceneObjectFromSubModel(const SubModel& subModel, const uint32_t parentId);
 
 };

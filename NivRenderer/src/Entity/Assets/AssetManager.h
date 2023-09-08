@@ -7,14 +7,18 @@
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
 
-// Struct to associate a Modelpath with Material
+struct SubModel
+{
+    SubModel() : mesh(nullptr), material(nullptr) {}
+    SubModel(const Ref<MeshAsset>& meshAsset, const Ref<MaterialAsset>& materialAsset) : mesh(meshAsset), material(materialAsset) {}
+
+    Ref<MeshAsset> mesh;
+    Ref<MaterialAsset> material;
+    std::vector<SubModel> subModels;
+};
 struct Model
 {
-    Model() : meshPath(""), material(nullptr) {}
-    Model(std::string& path, const Ref<MaterialAsset>& materialAsset) : meshPath(path), material(materialAsset) {}
-
-    std::string meshPath;
-    Ref<MaterialAsset> material;
+    std::vector<SubModel> subModels;
 };
 
 class AssetManager
@@ -32,9 +36,9 @@ public:
     Ref<MeshAsset> LoadMesh(const std::string& path);
     Ref<TextureAsset> LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel = false, int channelIndex = 0);
     Ref<Shader> LoadShader(const std::string& path, ShaderType shaderType);
-    Model* LoadMeshAndTextures(std::string& path, Ref<MeshAsset>& mesh);
-    Model* GetModel(const char* path);
-    Ref<MaterialAsset> GetMaterial(const char* name);
+    Model* LoadModel(const std::string& path);
+    Model* GetModel(const std::string& path);
+    Ref<MaterialAsset> GetMaterial(const std::string& name);
     Ref<MaterialAsset> GetMaterial(uint32_t id);
     Ref<MaterialAsset> CreateMaterial();
     void RemoveMaterial(uint32_t id);
@@ -51,6 +55,7 @@ private:
     std::unordered_map<uint32_t, Ref<MaterialAsset>> m_LoadedMaterialAssets;
 
     void loadDefaultMeshAndTextures();
-    void processNode(const aiNode* node, const aiScene* scene, std::vector<Ref<SubMesh>>& subMeshes);
-    Ref<SubMesh> processMesh(aiMesh* mesh, const aiScene* scene);
+    void processNode(const aiNode* node, const aiScene* scene, std::vector<SubModel>& subModels, const std::string& path);
+    Ref<MeshAsset> processMesh(aiMesh* mesh, const aiScene* scene, const std::string& path);
+    void processMaterials(const aiScene* scene, const SubModel& subModel, const std::string& path);
 };

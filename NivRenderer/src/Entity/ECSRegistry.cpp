@@ -1,11 +1,26 @@
 #include "ECSRegistry.h"
 
-void ECSRegistry::RemoveEntity(uint32_t entityId)
+void ECSRegistry::RemoveEntity(const uint32_t entityId)
 {
 	m_EntityComponentsMap.erase(entityId);
 }
 
-std::vector<Ref<Component>> ECSRegistry::GetAllComponents(uint32_t entityId)
+void ECSRegistry::RemoveComponent(const uint32_t entityId, const uint32_t componentId)
+{
+    uint32_t i = 0;
+    auto& v = m_EntityComponentsMap[entityId].second;
+    for (const auto& c : v)
+    {
+        if (c->GetId() == componentId)
+        {
+            v.erase(v.begin() + i);
+            return;
+        }
+        i++;
+    }
+}
+
+std::vector<Ref<Component>> ECSRegistry::GetAllComponents(const uint32_t entityId)
 {
 	if (!checkIfEntityExists(entityId))
 	{
@@ -16,7 +31,7 @@ std::vector<Ref<Component>> ECSRegistry::GetAllComponents(uint32_t entityId)
 	return m_EntityComponentsMap[entityId].second;
 }
 
-bool ECSRegistry::checkIfEntityExists(uint32_t entityId)
+bool ECSRegistry::checkIfEntityExists(const uint32_t entityId)
 {
 	return m_EntityComponentsMap.count(entityId);
 }

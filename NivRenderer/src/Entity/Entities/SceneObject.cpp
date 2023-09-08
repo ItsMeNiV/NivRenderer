@@ -6,33 +6,28 @@
 #include "Entity/Components/TransformComponent.h"
 
 SceneObject::SceneObject(uint32_t id)
-	: Entity(id, std::string("SceneObject (") + std::to_string(id) + std::string(")")), m_ModelPath("")
+	: Entity(id, std::string("SceneObject (") + std::to_string(id) + std::string(")"))
 {
 }
 
 void SceneObject::LoadMeshAndMaterial()
 {
-    Ref<MeshComponent> meshComponent = ECSRegistry::GetInstance().GetComponent<MeshComponent>(GetId());
-    Ref<MaterialComponent> materialComponent = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(GetId());
-    Ref<TransformComponent> transformComponent = ECSRegistry::GetInstance().GetComponent<TransformComponent>(GetId());
-    if (!meshComponent)
+    if (const auto meshComponent = ECSRegistry::GetInstance().GetComponent<MeshComponent>(GetId()))
     {
-        ECSRegistry::GetInstance().AddComponent<MeshComponent>(GetId());
-        meshComponent = ECSRegistry::GetInstance().GetComponent<MeshComponent>(GetId());
+        ECSRegistry::GetInstance().RemoveComponent(GetId(), meshComponent->GetId());
     }
-    if (!materialComponent)
+    if (const auto materialComponent = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(GetId()))
     {
-        ECSRegistry::GetInstance().AddComponent<MaterialComponent>(GetId());
-        materialComponent = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(GetId());
+        ECSRegistry::GetInstance().RemoveComponent(GetId(), materialComponent->GetId());
     }
-    if (!transformComponent)
+    if (!ECSRegistry::GetInstance().GetComponent<TransformComponent>(GetId()))
     {
         ECSRegistry::GetInstance().AddComponent<TransformComponent>(GetId());
     }
 
-    const Model* model = AssetManager::GetInstance().LoadMeshAndTextures(m_ModelPath, meshComponent->GetMeshAsset());
-    meshComponent->GetPath() = model->meshPath;
-    materialComponent->GetMaterialAsset() = model->material;
+    const Model* model = AssetManager::GetInstance().LoadModel(m_ModelPath);
+    for (auto& subModel : model->subModels)
+        createChildSceneObjectFromSubModel(subModel, GetId());
 }
 
 std::vector<std::pair<std::string, Property>> SceneObject::GetEntityProperties()
@@ -43,4 +38,24 @@ std::vector<std::pair<std::string, Property>> SceneObject::GetEntityProperties()
     returnVector.push_back({"Model Path", {PropertyType::PATH, &m_ModelPath, [this]() { LoadMeshAndMaterial(); }}});
 
     return returnVector;
+}
+
+void SceneObject::createChildSceneObjectFromSubModel(const SubModel& subModel, const uint32_t parentId)
+{
+    const auto subObject = ECSRegistry::GetInstance().CreateEntity<SceneObject>(parentId);
+    auto transform = ECSRegistry::GetInstance().AddComponent<TransformComponent>( subObject->GetId()); // TODO: Get initial transform from imported object
+    if (subModel.mesh)
+    {
+        const auto meshComponent = ECSRegistry::GetInstance().AddComponent<MeshComponent>(subObject->GetId());
+        meshComponent->GetMeshAsset() = subModel.mesh;
+        meshComponent->GetPath() = subModel.mesh->GetPath();
+    }
+    if (subModel.material)
+    {
+        const auto materialComponent = ECSRegistry::GetInstance().AddComponent<MaterialComponent>(subObject->GetId());
+        materialComponent->GetMaterialAsset() = subModel.material;
+    }
+
+    for (auto& nextSubModel : subModel.subModels)
+        createChildSceneObjectFromSubModel(nextSubModel, subObject->GetId());
 }

@@ -17,25 +17,27 @@ public:
 		return instance;
 	}
 
-	void RemoveEntity(uint32_t entityId);
-	std::vector<Ref<Component>> GetAllComponents(uint32_t entityId);
+	void RemoveEntity(const uint32_t entityId);
+    void RemoveComponent(const uint32_t entityId, const uint32_t componentId);
+	std::vector<Ref<Component>> GetAllComponents(const uint32_t entityId);
 
 	template<typename T>
-	void AddComponent(uint32_t entityId)
+	Ref<T> AddComponent(const uint32_t entityId)
 	{
 		if (!checkIfEntityExists(entityId))
 		{
             SPDLOG_DEBUG("Entity with ID " + std::to_string(entityId) + " not found!");
-			return;
+			return nullptr;
 		}
 
 		Ref<T> component = CreateRef<T>(IdManager::GetInstance().CreateNewId());
 
 		m_EntityComponentsMap[entityId].second.push_back(component);
+        return component;
 	}
 
 	template<typename T>
-	Ref<T> CreateEntity(int32_t entityIdParent = -1)
+	Ref<T> CreateEntity(const int32_t entityIdParent = -1)
 	{
 		static_assert(std::is_base_of_v<Entity, T>);
 
@@ -64,7 +66,7 @@ public:
 	}
 
 	template<typename T>
-	Ref<T> GetComponent(uint32_t entityId)
+	Ref<T> GetComponent(const uint32_t entityId)
 	{
 		if (!checkIfEntityExists(entityId))
 		{
