@@ -22,6 +22,7 @@ struct SubModel
 };
 struct Model
 {
+    std::string name;
     std::vector<SubModel> subModels;
 };
 

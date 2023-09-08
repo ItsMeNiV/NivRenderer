@@ -101,7 +101,9 @@ Model* AssetManager::LoadModel(const std::string& path)
     }
 
     const aiScene* scene = m_Importer->ReadFile(
-        path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+        path,
+        aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals |
+            aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         SPDLOG_DEBUG(std::string("ERROR::ASSIMP::") + m_Importer->GetErrorString());
@@ -112,6 +114,7 @@ Model* AssetManager::LoadModel(const std::string& path)
     m_LoadedModels[path] = Model();
     Model& model = m_LoadedModels[path];
     processNode(scene->mRootNode, scene, model.subModels, path);
+    model.name = path.substr(path.find_last_of('/')+1, path.find_last_of('.'));
 
     return &model;
 }
@@ -309,9 +312,9 @@ void AssetManager::processNode(const aiNode* node, const aiScene* scene, std::ve
     // then do the same for each of its children
     for (unsigned int i = 0; i < node->mNumChildren; i++)
     {
-        processNode(node->mChildren[i], scene, subModel.subModels, path);
+        processNode(node->mChildren[i], scene, subModel.mesh ? subModel.subModels : subModels, path);
     }
-    if (subModel.mesh || !subModel.subModels.empty())
+    if (subModel.mesh)
         subModels.push_back(subModel);
 }
 

@@ -27,6 +27,7 @@ void SceneObject::LoadModel()
     }
 
     const Model* model = AssetManager::GetInstance().LoadModel(m_ModelPath);
+    m_EntityName = model->name;
     for (auto& subModel : model->subModels)
         createChildSceneObjectFromSubModel(subModel, GetId());
 }
