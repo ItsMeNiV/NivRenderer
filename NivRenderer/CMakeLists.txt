@@ -109,6 +109,7 @@ set(SRC_FILES
  "src/Application/Event.h"
  "src/Application/Input.h"
  "src/Application/Util/Instrumentor.h"
+ "src/Application/Util/Math.h"
  "src/Application/Window/Window.cpp" "src/Application/Window/Window.h" 
  "src/Application/Window/SceneHierarchy.h"
  "src/Application/Window/Properties.h"

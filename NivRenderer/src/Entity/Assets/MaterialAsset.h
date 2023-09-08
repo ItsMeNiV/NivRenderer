@@ -7,7 +7,7 @@
 class MaterialAsset : public Asset
 {
 public:
-    MaterialAsset(uint32_t id, const char* name);
+    MaterialAsset(uint32_t id, const std::string& name);
     ~MaterialAsset() override = default;
 
     std::string& GetName() { return m_Name; }

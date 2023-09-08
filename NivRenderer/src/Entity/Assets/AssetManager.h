@@ -9,12 +9,16 @@
 
 struct SubModel
 {
-    SubModel() : mesh(nullptr), material(nullptr) {}
-    SubModel(const Ref<MeshAsset>& meshAsset, const Ref<MaterialAsset>& materialAsset) : mesh(meshAsset), material(materialAsset) {}
+    SubModel() : mesh(nullptr), material(nullptr), modelMatrix(1.0f) {}
+    SubModel(const Ref<MeshAsset>& meshAsset, const Ref<MaterialAsset>& materialAsset) :
+        mesh(meshAsset), material(materialAsset), modelMatrix(1.0f)
+    {
+    }
 
     Ref<MeshAsset> mesh;
     Ref<MaterialAsset> material;
     std::vector<SubModel> subModels;
+    glm::mat4 modelMatrix;
 };
 struct Model
 {
@@ -57,5 +61,5 @@ private:
     void loadDefaultMeshAndTextures();
     void processNode(const aiNode* node, const aiScene* scene, std::vector<SubModel>& subModels, const std::string& path);
     Ref<MeshAsset> processMesh(aiMesh* mesh, const aiScene* scene, const std::string& path);
-    void processMaterials(const aiScene* scene, const SubModel& subModel, const std::string& path);
+    void processMaterials(const aiScene* scene, SubModel& subModel, const std::string& path, const uint32_t materialIndex);
 };

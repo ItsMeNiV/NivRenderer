@@ -44,30 +44,11 @@ void ProxyManager::updateSceneObjectProxy(const uint32_t sceneObjectId, const Re
     const auto transformComponent = ECSRegistry::GetInstance().GetComponent<TransformComponent>(sceneObjectId);
     const auto materialComponent = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(sceneObjectId);
 
-    if (!meshComponent || !transformComponent || !materialComponent) // Does the SceneObject have anything to render?
-        return;
-
-    const uint32_t materialId = materialComponent->GetMaterialAsset()->GetId();
-    updateMaterialProxy(materialId);
-
     const auto& childEntities = sceneObject->GetChildEntities();
     if (sceneObject->GetDirtyFlag()) // Do we have to update the Proxy?
     {
         for (const auto& childEntity : childEntities)
             childEntity->SetDirtyFlag(true);
-
-        Ref<MeshProxy> meshProxy;
-        auto meshId = meshComponent->GetMeshAsset()->GetId();
-        if (!m_Proxies.contains(meshId))
-        {
-            meshProxy = CreateRef<MeshProxy>(meshId);
-            m_Proxies[meshId] = meshProxy;
-            meshProxy->CreateBuffers(meshComponent);
-        }
-        else
-        {
-            meshProxy = std::static_pointer_cast<MeshProxy>(m_Proxies[meshId]);
-        }
 
         Ref<SceneObjectProxy> sceneObjectProxy;
         if (!m_Proxies.contains(sceneObjectId))
@@ -80,17 +61,49 @@ void ProxyManager::updateSceneObjectProxy(const uint32_t sceneObjectId, const Re
             sceneObjectProxy = std::static_pointer_cast<SceneObjectProxy>(m_Proxies[sceneObjectId]);
         }
 
-        sceneObjectProxy->SetTransform(transformComponent->GetPosition(), transformComponent->GetScale(),
-                                       transformComponent->GetRotation());
-        if (parentProxy)
+        if (meshComponent)
         {
-            auto& modelMatrix = sceneObjectProxy->GetModelMatrix();
-            modelMatrix = parentProxy->GetModelMatrix() * modelMatrix;
+            Ref<MeshProxy> meshProxy;
+            auto meshId = meshComponent->GetMeshAsset()->GetId();
+            if (!m_Proxies.contains(meshId))
+            {
+                meshProxy = CreateRef<MeshProxy>(meshId);
+                m_Proxies[meshId] = meshProxy;
+                meshProxy->CreateBuffers(meshComponent);
+            }
+            else
+            {
+                meshProxy = std::static_pointer_cast<MeshProxy>(m_Proxies[meshId]);
+            }
+            sceneObjectProxy->SetMesh(meshProxy);
+        }
+        else
+        {
+            sceneObjectProxy->SetMesh(nullptr);
         }
 
-        sceneObjectProxy->SetMesh(meshProxy);
+        if (materialComponent)
+        {
+            const uint32_t materialId = materialComponent->GetMaterialAsset()->GetId();
+            updateMaterialProxy(materialId);
+            sceneObjectProxy->SetMaterial(std::static_pointer_cast<MaterialProxy>(m_Proxies[materialId]));
+        }
+        else
+        {
+            sceneObjectProxy->SetMaterial(nullptr);
+        }
+
+        if (transformComponent)
+        {
+            sceneObjectProxy->SetTransform(transformComponent->GetPosition(), transformComponent->GetScale(), transformComponent->GetRotation());
+            if (parentProxy)
+            {
+                auto& modelMatrix = sceneObjectProxy->GetModelMatrix();
+                modelMatrix = parentProxy->GetModelMatrix() * modelMatrix;
+            }
+        }
+        
         sceneObject->SetDirtyFlag(false);
-        sceneObjectProxy->SetMaterial(std::static_pointer_cast<MaterialProxy>(m_Proxies[materialId]));
     }
 
     for (const auto& childEntity : childEntities)
@@ -230,7 +243,7 @@ void ProxyManager::addSceneObjectProxyAndChildrenToList(std::vector<Ref<SceneObj
     const Ref<SceneObject>& sceneObject)
 {
     const auto proxy = std::static_pointer_cast<SceneObjectProxy>(m_Proxies[sceneObject->GetId()]);
-    if (proxy)
+    if (proxy && proxy->GetMeshProxy())
         list.push_back(proxy);
 
     for (auto& childObject : sceneObject->GetChildEntities())

@@ -112,8 +112,6 @@ Model* AssetManager::LoadModel(const std::string& path)
     m_LoadedModels[path] = Model();
     Model& model = m_LoadedModels[path];
     processNode(scene->mRootNode, scene, model.subModels, path);
-    for (auto& subModel : model.subModels)
-        processMaterials(scene, subModel, path);
 
     return &model;
 }
@@ -302,13 +300,19 @@ void AssetManager::processNode(const aiNode* node, const aiScene* scene, std::ve
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
         subModel.mesh = processMesh(mesh, scene, path);
-        subModels.push_back(subModel);
+        processMaterials(scene, subModel, path, mesh->mMaterialIndex);
+        aiMatrix4x4 modelMat = node->mTransformation;
+        subModel.modelMatrix = {modelMat.a1, modelMat.b1, modelMat.c1, modelMat.d1, modelMat.a2, modelMat.b2,
+                                modelMat.c2, modelMat.d2, modelMat.a3, modelMat.b3, modelMat.c3, modelMat.d3,
+                                modelMat.a4, modelMat.b4, modelMat.c4, modelMat.d4};
     }
     // then do the same for each of its children
     for (unsigned int i = 0; i < node->mNumChildren; i++)
     {
         processNode(node->mChildren[i], scene, subModel.subModels, path);
     }
+    if (subModel.mesh || !subModel.subModels.empty())
+        subModels.push_back(subModel);
 }
 
 Ref<MeshAsset> AssetManager::processMesh(aiMesh* mesh, const aiScene* scene, const std::string& path)
@@ -370,70 +374,74 @@ Ref<MeshAsset> AssetManager::processMesh(aiMesh* mesh, const aiScene* scene, con
     return meshAsset;
 }
 
-void AssetManager::processMaterials(const aiScene* scene, const SubModel& subModel, const std::string& path)
+void AssetManager::processMaterials(const aiScene* scene, SubModel& subModel, const std::string& path, const uint32_t materialIndex)
 {
     const std::string directory = path.substr(0, path.find_last_of('/'));
+    const std::string materialName = path + '@' + std::to_string(materialIndex);
+    Ref<MaterialAsset> materialAsset = GetMaterial(materialName);
+    if (materialAsset)
+    {
+        subModel.material = materialAsset;
+        return;
+    }
 
-    const Ref<MaterialAsset> materialAsset = CreateRef<MaterialAsset>(
-        IdManager::GetInstance().CreateNewId(), (path + std::to_string(subModel.mesh->GetId())).c_str());
+    materialAsset = CreateRef<MaterialAsset>(IdManager::GetInstance().CreateNewId(), materialName);
     auto& diffusePath = materialAsset->GetDiffusePath();
     auto& normalPath = materialAsset->GetNormalPath();
     auto& metallicPath = materialAsset->GetMetallicPath();
     auto& roughnessPath = materialAsset->GetRoughnessPath();
     auto& aoPath = materialAsset->GetAOPath();
     auto& emissivePath = materialAsset->GetEmissivePath();
-    for (uint32_t i = 0; i < scene->mNumMaterials; i++)
-    {
-        const aiMaterial* aiMaterial = scene->mMaterials[i];
 
-        // 1. diffuse map
-        if (aiMaterial->GetTextureCount(aiTextureType_DIFFUSE))
-        {
-            aiString diffuseFile;
-            aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &diffuseFile);
-            diffusePath = directory + '/' + diffuseFile.C_Str();
-        }
-        // 2. normal maps
-        if (aiMaterial->GetTextureCount(aiTextureType_NORMALS))
-        {
-            aiString normalFile;
-            aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &normalFile);
-            normalPath = directory + '/' + normalFile.C_Str();
-        }
-        else if (aiMaterial->GetTextureCount(aiTextureType_HEIGHT))
-        {
-            aiString normalFile;
-            aiMaterial->GetTexture(aiTextureType_HEIGHT, 0, &normalFile);
-            normalPath = directory + '/' + normalFile.C_Str();
-        }
-        // 3. metallic map
-        if (aiMaterial->GetTextureCount(aiTextureType_METALNESS))
-        {
-            aiString metallicFile;
-            aiMaterial->GetTexture(aiTextureType_METALNESS, 0, &metallicFile);
-            metallicPath = directory + '/' + metallicFile.C_Str();
-        }
-        // 4. roughness map
-        if (aiMaterial->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS))
-        {
-            aiString roughnessFile;
-            aiMaterial->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessFile);
-            roughnessPath = directory + '/' + roughnessFile.C_Str();
-        }
-        // 4. AO map
-        if (aiMaterial->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION))
-        {
-            aiString aoFile;
-            aiMaterial->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoFile);
-            aoPath = directory + '/' + aoFile.C_Str();
-        }
-        // 5. Emissive map
-        if (aiMaterial->GetTextureCount(aiTextureType_EMISSIVE))
-        {
-            aiString emissiveFile;
-            aiMaterial->GetTexture(aiTextureType_EMISSIVE, 0, &emissiveFile);
-            emissivePath = directory + '/' + emissiveFile.C_Str();
-        }
+    const aiMaterial* aiMaterial = scene->mMaterials[materialIndex];
+
+    // 1. diffuse map
+    if (aiMaterial->GetTextureCount(aiTextureType_DIFFUSE))
+    {
+        aiString diffuseFile;
+        aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &diffuseFile);
+        diffusePath = directory + '/' + diffuseFile.C_Str();
+    }
+    // 2. normal maps
+    if (aiMaterial->GetTextureCount(aiTextureType_NORMALS))
+    {
+        aiString normalFile;
+        aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &normalFile);
+        normalPath = directory + '/' + normalFile.C_Str();
+    }
+    else if (aiMaterial->GetTextureCount(aiTextureType_HEIGHT))
+    {
+        aiString normalFile;
+        aiMaterial->GetTexture(aiTextureType_HEIGHT, 0, &normalFile);
+        normalPath = directory + '/' + normalFile.C_Str();
+    }
+    // 3. metallic map
+    if (aiMaterial->GetTextureCount(aiTextureType_METALNESS))
+    {
+        aiString metallicFile;
+        aiMaterial->GetTexture(aiTextureType_METALNESS, 0, &metallicFile);
+        metallicPath = directory + '/' + metallicFile.C_Str();
+    }
+    // 4. roughness map
+    if (aiMaterial->GetTextureCount(aiTextureType_DIFFUSE_ROUGHNESS))
+    {
+        aiString roughnessFile;
+        aiMaterial->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessFile);
+        roughnessPath = directory + '/' + roughnessFile.C_Str();
+    }
+    // 4. AO map
+    if (aiMaterial->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION))
+    {
+        aiString aoFile;
+        aiMaterial->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoFile);
+        aoPath = directory + '/' + aoFile.C_Str();
+    }
+    // 5. Emissive map
+    if (aiMaterial->GetTextureCount(aiTextureType_EMISSIVE))
+    {
+        aiString emissiveFile;
+        aiMaterial->GetTexture(aiTextureType_EMISSIVE, 0, &emissiveFile);
+        emissivePath = directory + '/' + emissiveFile.C_Str();
     }
 
     const bool metalRoughnessIsShared = metallicPath == roughnessPath;
@@ -454,6 +462,5 @@ void AssetManager::processMaterials(const aiScene* scene, const SubModel& subMod
 
     m_LoadedMaterialAssets[materialAsset->GetId()] = materialAsset;
 
-    for (auto& nextSubModel : subModel.subModels)
-        processMaterials(scene, nextSubModel, path);
+    subModel.material = materialAsset;
 }
