@@ -312,9 +312,9 @@ void AssetManager::processNode(const aiNode* node, const aiScene* scene, std::ve
     // then do the same for each of its children
     for (unsigned int i = 0; i < node->mNumChildren; i++)
     {
-        processNode(node->mChildren[i], scene, subModel.mesh ? subModel.subModels : subModels, path);
+        processNode(node->mChildren[i], scene, subModel.subModels, path);
     }
-    if (subModel.mesh)
+    if (subModel.mesh || !subModel.subModels.empty())
         subModels.push_back(subModel);
 }
 
