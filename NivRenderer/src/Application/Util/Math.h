@@ -7,7 +7,7 @@ namespace Math
 {
     using namespace glm;
 
-    bool DecomposeMatrix(const mat4& ModelMatrix, vec3& Scale, vec3& Rotation, vec3& Translation)
+    inline bool DecomposeMatrix(const mat4& ModelMatrix, vec3& Scale, vec3& Rotation, vec3& Translation)
     {
         // From glm::decompose in matrix_decompose.inl
 

@@ -9,11 +9,15 @@
 #include "imgui_internal.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_glfw.h"
+#include "ImGuizmo.h"
+#include "Application/Util/Math.h"
+#include "Entity/Components/TransformComponent.h"
 
 Window::Window(uint32_t width, uint32_t height, const char* title)
 	: m_Width(width), m_Height(height), m_Title(title), m_Window(nullptr), m_SelectedObject(-1),
 	m_MainFramebuffer(nullptr), m_CameraControllerFirstPerson(nullptr), m_CameraControllerArcball(nullptr),
-	m_IsFocused(false), m_FirstMouse(true), m_ArcballMove(false), m_DeltaTime(0.0f), m_LastFrame(0.0f), m_RenderWindowHovered(false), m_FirstRender(true)
+    m_IsFocused(false), m_FirstMouse(true), m_ArcballMove(false), m_DeltaTime(0.0f), m_LastFrame(0.0f),
+    m_RenderWindowHovered(false), m_FirstRender(true), m_GizmoType(7)
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -91,6 +95,7 @@ void Window::PrepareFrame()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
+    ImGuizmo::BeginFrame();
 }
 
 void Window::RenderImGui(Ref<Scene> scene)
@@ -137,6 +142,48 @@ void Window::RenderImGui(Ref<Scene> scene)
 	BuildSceneHierarchy(scene, m_SelectedObject);
     BuildProperties(m_SelectedObject, scene);
 	m_RenderWindowHovered = BuildRenderWindow(this);
+    if (m_SelectedObject != -1)
+    {
+        // Entity Transform
+        auto transformComponent = ECSRegistry::GetInstance().GetComponent<TransformComponent>(m_SelectedObject);
+        if (transformComponent && !m_IsFocused)
+        {
+            ImGuizmo::SetOrthographic(false);
+            ImGuizmo::SetDrawlist();
+            ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+
+            // Camera
+            const auto cameraObject = ECSRegistry::GetInstance().GetEntity<CameraObject>(scene->GetCameraId());
+            auto& cameraProjection = cameraObject->GetCameraPtr()->GetProjection();
+            auto& cameraView = cameraObject->GetCameraPtr()->GetView();
+
+			// ModelMatrix
+			glm::mat4 modelMatrix(1.0f);
+            auto& position = transformComponent->GetPosition();
+            auto& rotation = transformComponent->GetRotation();
+            auto& scale = transformComponent->GetScale();
+            modelMatrix = glm::translate(modelMatrix, position);
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+            modelMatrix = glm::scale(modelMatrix, scale); 
+
+
+            ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), static_cast<ImGuizmo::OPERATION>(m_GizmoType),
+                                 ImGuizmo::MODE::LOCAL, glm::value_ptr(modelMatrix));
+			if (ImGuizmo::IsUsing())
+			{
+                m_ArcballMove = false;
+                ECSRegistry::GetInstance().GetEntity<Entity>(m_SelectedObject)->SetDirtyFlag(true);
+                glm::vec3 deltaRotation(1.0f);
+                Math::DecomposeMatrix(modelMatrix, scale, deltaRotation, position);
+                deltaRotation -= transformComponent->GetRotation();
+                transformComponent->GetRotation() = deltaRotation;
+			}
+        }
+    }
+    ImGui::EndChild();
+    ImGui::End(); //End of Render window
 
 	ImGui::End();
 	ImGui::Render();
@@ -215,6 +262,15 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
 		m_FirstMouse = true;
 	}
 
+	if (!ImGuizmo::IsUsing() && !m_IsFocused)
+	{
+        if (key == GLFW_KEY_W && action == GLFW_PRESS)
+            m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+        else if (key == GLFW_KEY_E && action == GLFW_PRESS)
+            m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+        else if (key == GLFW_KEY_R && action == GLFW_PRESS)
+			m_GizmoType = ImGuizmo::OPERATION::SCALE;
+	}
 }
 
 void Window::cursorPosCallback(GLFWwindow* window, double xPos, double yPos)

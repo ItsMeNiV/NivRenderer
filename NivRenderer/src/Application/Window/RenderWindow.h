@@ -13,8 +13,6 @@ bool BuildRenderWindow(Window* window)
 		ImVec2 wsize = ImGui::GetWindowSize();
 		unsigned int framebufferTexture = window->GetFramebuffer()->GetTextureAttachment()->GetTextureId();
 		ImGui::Image((ImTextureID)framebufferTexture, wsize, ImVec2(0, 1), ImVec2(1, 0));
-		ImGui::EndChild();
 	}
-	ImGui::End();
 	return isHovered;
 }

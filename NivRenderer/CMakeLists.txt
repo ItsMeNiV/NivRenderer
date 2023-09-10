@@ -99,6 +99,7 @@ set(INCLUDE_DIRS
 "vendor/OpenGLStarter"
 "vendor/stb_image"
 "vendor/imgui"
+"vendor/ImGuizmo"
 "vendor/assimp/include"
 )
 
@@ -160,6 +161,8 @@ list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/backends/imgui_impl_glfw.cpp
     ${DEAR_IMGUI_PREFIX}/backends/imgui_impl_opengl3.cpp
     ${DEAR_IMGUI_PREFIX}/imgui_demo.cpp
+    "vendor/ImGuizmo/ImGuizmo.cpp"
+    "vendor/ImGuizmo/ImGuizmo.h"
     "vendor/glad/src/glad.c"
     "vendor/stb_image/stb_image.cpp"
     "vendor/stb_image/stb_image.h"
