@@ -20,7 +20,8 @@ public:
 
 	void SetCameraPtr(const Ref<Camera> cameraPtr) { m_CameraPtr = cameraPtr; }
 	const Ref<Camera>& GetCameraPtr() const { return m_CameraPtr; }
-    
+
+    ordered_json SerializeObject() override { return {{"Id", m_EntityId}}; }
 
 private:
 	Ref<Camera> m_CameraPtr;

@@ -13,6 +13,8 @@ public:
 
     std::vector<std::pair<std::string, Property>> GetEntityProperties() override;
 
+    ordered_json SerializeObject() override;
+
 private:
     std::string m_ModelPath;
 

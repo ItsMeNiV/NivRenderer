@@ -5,6 +5,7 @@
 #include "Entity/Components/TransformComponent.h"
 #include "Rendering/ForwardPipeline/ForwardPass.h"
 #include "Application/Util/Instrumentor.h"
+#include "Application/Serialization/SerializationManager.h"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
@@ -60,6 +61,8 @@ void Application::handleWindowCommand(WindowCommandEvent command)
 {
 	if (command.GetCommand() == WindowCommand::RecompileShaders)
 		m_Renderer->GetActivePipeline()->RecompileShaders();
+    if (command.GetCommand() == WindowCommand::SaveScene)
+        SerializationManager::SaveSceneToFile("default.json", m_Scene);
 }
 
 void Application::setupDefaultScene()

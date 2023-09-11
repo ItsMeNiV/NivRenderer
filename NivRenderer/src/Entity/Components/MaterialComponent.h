@@ -13,6 +13,8 @@ public:
 
     Ref<MaterialAsset>& GetMaterialAsset() { return m_MaterialAsset; }
 
+    ordered_json SerializeObject() override;
+
 private:
     Ref<MaterialAsset> m_MaterialAsset;
 };

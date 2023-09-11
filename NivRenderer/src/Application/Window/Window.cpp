@@ -108,8 +108,10 @@ void Window::RenderImGui(Ref<Scene> scene)
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("Recompile Shaders", NULL, false) && m_CommandHandlerCallback)
+            if (ImGui::MenuItem("Recompile Shaders", nullptr) && m_CommandHandlerCallback)
 				m_CommandHandlerCallback(WindowCommandEvent(WindowCommand::RecompileShaders));
+            if (ImGui::MenuItem("Save Scene", nullptr) && m_CommandHandlerCallback)
+                m_CommandHandlerCallback(WindowCommandEvent(WindowCommand::SaveScene));
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();

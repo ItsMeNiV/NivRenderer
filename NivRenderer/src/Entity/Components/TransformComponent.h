@@ -4,30 +4,17 @@
 class TransformComponent : public Component
 {
 public:
-    TransformComponent(const uint32_t id)
-		: Component(id, "TransformComponent"), m_Position(0.0f, 0.0f, 0.0f), m_Scale(1.0f, 1.0f, 1.0f),
-        m_Rotation(0.0f, 0.0f, 0.0f), m_DegRotation(0.0f, 0.0f, 0.0f)
-	{}
+    TransformComponent(const uint32_t id);
 
-	~TransformComponent()
-	{}
+	~TransformComponent() override;
 
-    std::vector<std::pair<std::string, Property>> GetComponentProperties() override
-	{
-        std::vector<std::pair<std::string, Property>> returnVector;
+    std::vector<std::pair<std::string, Property>> GetComponentProperties() override;
 
-        returnVector.push_back({"Position", {PropertyType::FLOAT3, glm::value_ptr(m_Position), [](){}}});
-        returnVector.push_back({"Scale", {PropertyType::FLOAT3, glm::value_ptr(m_Scale), [](){}}});
-        m_DegRotation = glm::degrees(m_Rotation);
-        returnVector.push_back({"Rotation", {PropertyType::FLOAT3, glm::value_ptr(m_DegRotation),
-			[this](){ m_Rotation = glm::radians(m_DegRotation); }}});
+	glm::vec3& GetPosition();
+    glm::vec3& GetScale();
+    glm::vec3& GetRotation();
 
-        return returnVector;
-	}
-
-	glm::vec3& GetPosition() { return m_Position; }
-	glm::vec3& GetScale() { return m_Scale; }
-	glm::vec3& GetRotation() { return m_Rotation; }
+	ordered_json SerializeObject() override;
 
 private:
 	glm::vec3 m_Position;

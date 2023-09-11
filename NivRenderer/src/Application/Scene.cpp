@@ -173,3 +173,41 @@ std::vector<std::pair<std::string, Property>> Scene::GetEntityProperties()
 
     return returnVector;
 }
+
+ordered_json Scene::SerializeObject()
+{
+    ordered_json scene;
+    scene["SceneSettings"] = {
+        {"VisualizeLights", m_SceneSettings.visualizeLights},
+        {"AnimateDirectionalLight", m_SceneSettings.animateDirectionalLight},
+        {"RenderResolution", {{"x", m_SceneSettings.renderResolution.x}, {"y", m_SceneSettings.renderResolution.y}}},
+        {"ShadowmapResolution", {{"x", m_SceneSettings.shadowmapResolution.x}, {"y", m_SceneSettings.shadowmapResolution.y}}},
+        {"SampleCount", m_SceneSettings.sampleCount}
+    };
+
+    scene["SceneObjects"] = json::array();
+    scene["SceneLights"] = json::array();
+    uint32_t i = 0;
+    for (const auto& id : m_SceneObjectIds)
+    {
+        scene["SceneObjects"][i] = ECSRegistry::GetInstance().GetEntity<SceneObject>(id)->SerializeObject();
+        i++;
+    }
+    i = 0;
+    for (const auto& id : m_SceneLightIds)
+    {
+        scene["SceneLights"][i] = ECSRegistry::GetInstance().GetEntity<LightObject>(id)->SerializeObject();
+        i++;
+    }
+    if (m_HasSkybox)
+    {
+        scene["Skybox"] = ECSRegistry::GetInstance().GetEntity<SkyboxObject>(m_SkyboxId)->SerializeObject();
+    }
+
+    scene["Assets"]["MeshAssets"] = json::array();
+    scene["Assets"]["TextureAssets"] = json::array();
+    scene["Assets"]["MaterialAssets"] = json::array();
+    scene["Assets"]["ModelAssets"] = json::array();
+
+    return scene;
+}

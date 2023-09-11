@@ -42,6 +42,41 @@ std::vector<std::pair<std::string, Property>> SceneObject::GetEntityProperties()
     return returnVector;
 }
 
+ordered_json SceneObject::SerializeObject()
+{
+    ordered_json object = {
+        {"Id", m_EntityId},
+        {"Name", m_EntityName},
+        {"ModelPath", m_ModelPath}
+    };
+
+    const auto components = ECSRegistry::GetInstance().GetAllComponents(m_EntityId);
+    if(!components.empty())
+    {
+        object["Components"] = json::array();
+        uint32_t i = 0;
+        for (const auto& component : components)
+        {
+            object["Components"][i] = component->SerializeObject();
+            i++;
+        } 
+    }
+
+    const auto& childEntities = GetChildEntities();
+    if (!childEntities.empty())
+    {
+        object["ChildEntities"] = json::array();
+        uint32_t i = 0;
+        for (auto& child : GetChildEntities())
+        {
+            object["ChildEntities"][i] = child->SerializeObject();
+            i++;
+        }   
+    }
+
+    return object;
+}
+
 void SceneObject::createChildSceneObjectFromSubModel(const SubModel& subModel, const uint32_t parentId)
 {
     if (!subModel.mesh && subModel.subModels.empty())

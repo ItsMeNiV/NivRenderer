@@ -2,8 +2,9 @@
 #include "Base.h"
 #include "Component.h"
 #include "PropertyType.h"
+#include "Application/Serialization/Serializable.h"
 
-class Entity
+class Entity : public Serializable
 {
 public:
 	void AddChildEntity(Ref<Entity> entity)
@@ -39,9 +40,9 @@ protected:
 
 protected:
     std::string m_EntityName;
+    uint32_t m_EntityId;
 
 private:
-	uint32_t m_EntityId;
 	bool m_DirtyFlag;
 
 	int32_t m_ParentEntityId;

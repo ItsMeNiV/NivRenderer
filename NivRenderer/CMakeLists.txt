@@ -85,6 +85,8 @@ OPTION (ASSIMP_BUILD_OBJ_IMPORTER
    "Don't build all importers."
    ON
 )
+#Json Settings
+set(JSON_BuildTests OFF CACHE INTERNAL "")
 
 set(DEAR_IMGUI_PREFIX
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui"
@@ -101,6 +103,7 @@ set(INCLUDE_DIRS
 "vendor/imgui"
 "vendor/ImGuizmo"
 "vendor/assimp/include"
+"vendor/json/include/nlohmann"
 )
 
 set(SRC_FILES
@@ -109,6 +112,7 @@ set(SRC_FILES
  "src/NivRenderer.cpp" "src/NivRenderer.h"
  "src/Application/Event.h"
  "src/Application/Input.h"
+ "src/Application/Serialization/Serializable.h"
  "src/Application/Util/Instrumentor.h"
  "src/Application/Util/Math.h"
  "src/Application/Window/Window.cpp" "src/Application/Window/Window.h" 
@@ -150,7 +154,7 @@ set(SRC_FILES
  "src/Rendering/Proxy/MaterialProxy.h" "src/Rendering/Proxy/MaterialProxy.cpp"
  "src/Rendering/ForwardPipeline/ForwardPass.h"
  "src/Rendering/OpenGL/VertexLayout.h"
- "src/Rendering/ForwardPipeline/ForwardPass.cpp")
+ "src/Rendering/ForwardPipeline/ForwardPass.cpp" "src/Application/Serialization/SerializationManager.h" "src/Application/Serialization/SerializationManager.cpp" "src/Entity/Components/TransformComponent.cpp")
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp
@@ -176,11 +180,13 @@ add_subdirectory("vendor/glm")
 add_subdirectory("vendor/assimp")
 #Spdlog
 add_subdirectory("vendor/spdlog")
+#Json
+add_subdirectory("vendor/json")
 
 add_executable (${CMAKE_PROJECT_NAME} ${SRC_FILES})
 
 include_directories(${INCLUDE_DIRS})
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE glfw assimp spdlog::spdlog_header_only)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE glfw assimp spdlog::spdlog_header_only nlohmann_json::nlohmann_json)
 
 add_compile_definitions(SPDLOG_ACTIVE_LEVEL=${LOG_LEVEL})
 add_compile_definitions(CMAKE_CXX_STANDARD_REQUIRED=ON)

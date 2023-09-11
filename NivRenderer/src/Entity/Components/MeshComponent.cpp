@@ -25,6 +25,18 @@ std::vector<std::pair<std::string, Property>> MeshComponent::GetComponentPropert
     return returnVector;
 }
 
+ordered_json MeshComponent::SerializeObject()
+{
+    ordered_json component = {
+        {"Id", GetId()},
+        {"Name", GetName()},
+        {"Path", m_Path},
+        {"MeshAssetId", m_MeshAsset->GetId()},
+    };
+
+    return component;
+}
+
 void MeshComponent::reloadMesh()
 {
     m_MeshAsset = AssetManager::GetInstance().LoadMesh(m_Path);

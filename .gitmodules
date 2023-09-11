@@ -19,3 +19,6 @@
 [submodule "NivRenderer/vendor/ImGuizmo"]
 	path = NivRenderer/vendor/ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "NivRenderer/vendor/json"]
+	path = NivRenderer/vendor/json
+	url = https://github.com/nlohmann/json.git

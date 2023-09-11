@@ -37,6 +37,19 @@ public:
         return returnVector;
     }
 
+	ordered_json SerializeObject() override
+	{
+        ordered_json object = {
+			{"Id", m_EntityId},
+            {"Name", m_EntityName},
+			{"Type", "DirectionalLight"},
+            {"LightColor", {{"r", m_LightColor.r}, {"g", m_LightColor.g}, {"b", m_LightColor.b}}},
+            {"Direction", {{"x", m_Direction.x}, {"y", m_Direction.y}, {"z", m_Direction.z}}}
+        };
+
+	    return object;
+	}
+
 private:
 	glm::vec3 m_Direction;
 };
@@ -62,6 +75,20 @@ public:
         returnVector.push_back({"Light Position", {PropertyType::FLOAT3, glm::value_ptr(m_Position), [this]() {}}});
         returnVector.push_back({"Light Strength", {PropertyType::SLIDER, &m_Strength, [this]() {}}});
         return returnVector;
+    }
+
+	ordered_json SerializeObject() override
+    {
+        ordered_json object = {
+            {"Id", m_EntityId},
+            {"Name", m_EntityName},
+            {"Type", "PointLight"},
+            {"LightColor", {{"r", m_LightColor.r}, {"g", m_LightColor.g}, {"b", m_LightColor.b}}},
+            {"Position", {{"x", m_Position.x}, {"y", m_Position.y}, {"z", m_Position.z}}},
+            {"Strength", m_Strength}
+        };
+
+        return object;
     }
 
 private:

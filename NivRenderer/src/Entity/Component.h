@@ -1,8 +1,9 @@
 #pragma once
 #include "Base.h"
 #include "PropertyType.h"
+#include "Application/Serialization/Serializable.h"
 
-class Component
+class Component : public Serializable
 {
 public:
     Component(const uint32_t id, const char* name) : m_Id(id), m_Name(name) {}

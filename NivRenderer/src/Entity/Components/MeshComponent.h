@@ -14,6 +14,8 @@ public:
 
     std::vector<std::pair<std::string, Property>> GetComponentProperties() override;
 
+    ordered_json SerializeObject() override;
+
 private:
 	std::string m_Path;
     Ref<MeshAsset> m_MeshAsset;

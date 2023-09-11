@@ -19,6 +19,8 @@ public:
 
     std::vector<std::pair<std::string, Property>> GetEntityProperties() override;
 
+    ordered_json SerializeObject() override;
+
 private:
     std::string m_TextureFolder;
     std::array<std::string, 6> m_TexturePaths;

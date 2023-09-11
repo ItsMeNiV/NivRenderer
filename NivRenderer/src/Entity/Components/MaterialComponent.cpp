@@ -14,3 +14,14 @@ std::vector<std::pair<std::string, Property>> MaterialComponent::GetComponentPro
 
     return returnVector;
 }
+
+ordered_json MaterialComponent::SerializeObject()
+{
+    ordered_json component = {
+        {"Id", GetId()},
+        {"Name", GetName()},
+        {"MaterialAssetId", m_MaterialAsset->GetId()},
+    };
+
+    return component;
+}

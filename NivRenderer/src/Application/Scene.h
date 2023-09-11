@@ -4,6 +4,7 @@
 #include "Entity/Entities/LightObject.h"
 #include "Entity/Entities/CameraObject.h"
 #include "Entity/Entities/SkyboxObject.h"
+#include "Application/Serialization/Serializable.h"
 
 struct SceneSettings
 {
@@ -16,7 +17,7 @@ struct SceneSettings
     uint32_t sampleCount;
 };
 
-class Scene
+class Scene : public Serializable
 {
 public:
     Scene();
@@ -45,6 +46,8 @@ public:
     const bool HasSkybox() const { return m_HasSkybox; }
 
     std::vector<std::pair<std::string, Property>> GetEntityProperties();
+
+    ordered_json SerializeObject() override;
 
 private:
     uint32_t m_Id;

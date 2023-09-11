@@ -85,3 +85,37 @@ std::vector<std::pair<std::string, Property>> SkyboxObject::GetEntityProperties(
 
     return returnVector;
 }
+
+ordered_json SkyboxObject::SerializeObject()
+{
+    ordered_json object = {
+        {"Id", m_EntityId},
+        {"Name", m_EntityName},
+        {"TextureFolder", m_TextureFolder},
+        {"FlipTextures", m_FlipTextures},
+    };
+
+    if (!m_TextureAssets.empty())
+    {
+        object["TextureAssets"] = json::array();
+        uint32_t i = 0;
+        for (const auto& asset : m_TextureAssets)
+        {
+            object["TextureAssets"][i] = asset->GetId();
+            i++;
+        }
+    }
+
+    if (!m_TexturePaths.empty())
+    {
+        object["TexturePaths"] = json::array();
+        uint32_t i = 0;
+        for (const auto& path : m_TexturePaths)
+        {
+            object["TexturePaths"][i] = path;
+            i++;
+        }
+    }
+
+    return object;
+}
