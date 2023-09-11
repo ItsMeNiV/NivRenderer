@@ -72,8 +72,10 @@ Ref<TextureAsset> AssetManager::LoadTexture(std::string& path, bool flipVertical
     }
     else
     {
-        textureAsset->SetTextureData(stbi_load(pathToUse.c_str(), textureAsset->GetWidth(), textureAsset->GetHeight(),
-                                               textureAsset->GetNrComponents(), 0));
+        unsigned char* loadedData = stbi_load(pathToUse.c_str(), textureAsset->GetWidth(), textureAsset->GetHeight(),
+                                              textureAsset->GetNrComponents(), 0);
+        textureAsset->SetTextureData(loadedData);
+        stbi_image_free(loadedData);
     }
 
     m_LoadedTextureAssets[path] = textureAsset;
@@ -102,8 +104,8 @@ Model* AssetManager::LoadModel(const std::string& path)
 
     const aiScene* scene = m_Importer->ReadFile(
         path,
-        aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals |
-            aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType);
+        aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
+            aiProcess_RemoveRedundantMaterials | aiProcess_FixInfacingNormals);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         SPDLOG_DEBUG(std::string("ERROR::ASSIMP::") + m_Importer->GetErrorString());
@@ -298,24 +300,29 @@ void AssetManager::loadDefaultMeshAndTextures()
 
 void AssetManager::processNode(const aiNode* node, const aiScene* scene, std::vector<SubModel>& subModels, const std::string& path)
 {
-    SubModel subModel;
+    SubModel subModelNode;
+    subModelNode.name = node->mName.C_Str();
+    aiMatrix4x4 modelMat = node->mTransformation;
+    subModelNode.modelMatrix = {modelMat.a1, modelMat.b1, modelMat.c1, modelMat.d1,
+                                   modelMat.a2, modelMat.b2, modelMat.c2, modelMat.d2,
+                                   modelMat.a3, modelMat.b3, modelMat.c3, modelMat.d3,
+                                   modelMat.a4, modelMat.b4, modelMat.c4, modelMat.d4};
+
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
     {
+        SubModel subModelMesh;
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        subModel.mesh = processMesh(mesh, scene, path);
-        processMaterials(scene, subModel, path, mesh->mMaterialIndex);
-        aiMatrix4x4 modelMat = node->mTransformation;
-        subModel.modelMatrix = {modelMat.a1, modelMat.b1, modelMat.c1, modelMat.d1, modelMat.a2, modelMat.b2,
-                                modelMat.c2, modelMat.d2, modelMat.a3, modelMat.b3, modelMat.c3, modelMat.d3,
-                                modelMat.a4, modelMat.b4, modelMat.c4, modelMat.d4};
+        subModelMesh.name = mesh->mName.C_Str();
+        subModelMesh.mesh = processMesh(mesh, scene, path);
+        processMaterials(scene, subModelMesh, path, mesh->mMaterialIndex);
+        subModelNode.subModels.push_back(subModelMesh);
     }
     // then do the same for each of its children
     for (unsigned int i = 0; i < node->mNumChildren; i++)
     {
-        processNode(node->mChildren[i], scene, subModel.subModels, path);
+        processNode(node->mChildren[i], scene, subModelNode.subModels, path);
     }
-    if (subModel.mesh || !subModel.subModels.empty())
-        subModels.push_back(subModel);
+    subModels.push_back(subModelNode);
 }
 
 Ref<MeshAsset> AssetManager::processMesh(aiMesh* mesh, const aiScene* scene, const std::string& path)

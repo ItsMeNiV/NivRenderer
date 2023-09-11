@@ -5,8 +5,8 @@ class TransformComponent : public Component
 {
 public:
     TransformComponent(const uint32_t id)
-		: Component(id, "TransformComponent"),
-		m_Position(0.0f, 0.0f, 0.0f), m_Scale(1.0f, 1.0f, 1.0f), m_Rotation(0.0f, 0.0f, 0.0f)
+		: Component(id, "TransformComponent"), m_Position(0.0f, 0.0f, 0.0f), m_Scale(1.0f, 1.0f, 1.0f),
+        m_Rotation(0.0f, 0.0f, 0.0f), m_DegRotation(0.0f, 0.0f, 0.0f)
 	{}
 
 	~TransformComponent()
@@ -16,9 +16,11 @@ public:
 	{
         std::vector<std::pair<std::string, Property>> returnVector;
 
-        returnVector.push_back({"Position", {PropertyType::FLOAT3, glm::value_ptr(m_Position)}});;
-        returnVector.push_back({"Scale", {PropertyType::FLOAT3, glm::value_ptr(m_Scale)}});
-        returnVector.push_back({"Rotation", {PropertyType::FLOAT3, glm::value_ptr(m_Rotation)}});
+        returnVector.push_back({"Position", {PropertyType::FLOAT3, glm::value_ptr(m_Position), [](){}}});
+        returnVector.push_back({"Scale", {PropertyType::FLOAT3, glm::value_ptr(m_Scale), [](){}}});
+        m_DegRotation = glm::degrees(m_Rotation);
+        returnVector.push_back({"Rotation", {PropertyType::FLOAT3, glm::value_ptr(m_DegRotation),
+			[this](){ m_Rotation = glm::radians(m_DegRotation); }}});
 
         return returnVector;
 	}
@@ -29,6 +31,7 @@ public:
 
 private:
 	glm::vec3 m_Position;
-	glm::vec3 m_Scale;
+    glm::vec3 m_Scale;
 	glm::vec3 m_Rotation;
+    glm::vec3 m_DegRotation;
 };

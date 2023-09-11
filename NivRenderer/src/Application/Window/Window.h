@@ -53,6 +53,7 @@ private:
 
 	//Gizmo
     int32_t m_GizmoType;
+    bool m_ShouldSnap;
 
 	void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	void cursorPosCallback(GLFWwindow* window, double xPos, double yPos);

@@ -44,21 +44,25 @@ std::vector<std::pair<std::string, Property>> SceneObject::GetEntityProperties()
 
 void SceneObject::createChildSceneObjectFromSubModel(const SubModel& subModel, const uint32_t parentId)
 {
+    if (!subModel.mesh && subModel.subModels.empty())
+        return; // Empty node, not interesting for us
+
     const auto subObject = ECSRegistry::GetInstance().CreateEntity<SceneObject>(parentId);
-    auto transform = ECSRegistry::GetInstance().AddComponent<TransformComponent>( subObject->GetId());
+    const auto transform = ECSRegistry::GetInstance().AddComponent<TransformComponent>(subObject->GetId());
+
     if (subModel.mesh)
     {
         const auto meshComponent = ECSRegistry::GetInstance().AddComponent<MeshComponent>(subObject->GetId());
         meshComponent->GetMeshAsset() = subModel.mesh;
         const std::string meshPath = subModel.mesh->GetPath();
         meshComponent->GetPath() = meshPath;
-        *subObject->GetEntityName() = meshPath.substr(meshPath.find_last_of('/'), meshPath.size());
     }
     if (subModel.material)
     {
         const auto materialComponent = ECSRegistry::GetInstance().AddComponent<MaterialComponent>(subObject->GetId());
         materialComponent->GetMaterialAsset() = subModel.material;
     }
+    *subObject->GetEntityName() = subModel.name;
     Math::DecomposeMatrix(subModel.modelMatrix, transform->GetScale(), transform->GetRotation(),
                           transform->GetPosition());
 

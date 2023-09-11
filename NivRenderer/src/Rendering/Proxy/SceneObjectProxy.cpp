@@ -10,9 +10,9 @@ void SceneObjectProxy::SetTransform(glm::vec3 position, glm::vec3 scale, glm::ve
 {
     m_ModelMatrix = glm::mat4(1.0f);
     m_ModelMatrix = glm::translate(m_ModelMatrix, position);
-    m_ModelMatrix = glm::rotate(m_ModelMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-    m_ModelMatrix = glm::rotate(m_ModelMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-    m_ModelMatrix = glm::rotate(m_ModelMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+    m_ModelMatrix = glm::rotate(m_ModelMatrix, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+    m_ModelMatrix = glm::rotate(m_ModelMatrix, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+    m_ModelMatrix = glm::rotate(m_ModelMatrix, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
     m_ModelMatrix = glm::scale(m_ModelMatrix, scale);
 }
 

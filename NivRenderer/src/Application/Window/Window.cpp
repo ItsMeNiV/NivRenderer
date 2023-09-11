@@ -17,7 +17,7 @@ Window::Window(uint32_t width, uint32_t height, const char* title)
 	: m_Width(width), m_Height(height), m_Title(title), m_Window(nullptr), m_SelectedObject(-1),
 	m_MainFramebuffer(nullptr), m_CameraControllerFirstPerson(nullptr), m_CameraControllerArcball(nullptr),
     m_IsFocused(false), m_FirstMouse(true), m_ArcballMove(false), m_DeltaTime(0.0f), m_LastFrame(0.0f),
-    m_RenderWindowHovered(false), m_FirstRender(true), m_GizmoType(7)
+    m_RenderWindowHovered(false), m_FirstRender(true), m_GizmoType(7), m_ShouldSnap(false)
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -160,25 +160,25 @@ void Window::RenderImGui(Ref<Scene> scene)
 			// ModelMatrix
 			glm::mat4 modelMatrix(1.0f);
             auto& position = transformComponent->GetPosition();
-            auto& rotation = transformComponent->GetRotation();
+            const auto rotation = glm::degrees(transformComponent->GetRotation());
             auto& scale = transformComponent->GetScale();
-            modelMatrix = glm::translate(modelMatrix, position);
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-            modelMatrix = glm::scale(modelMatrix, scale); 
 
+			ImGuizmo::RecomposeMatrixFromComponents(glm::value_ptr(position), glm::value_ptr(rotation),
+                                                    glm::value_ptr(scale), glm::value_ptr(modelMatrix));
+
+			const float snapValue = m_GizmoType == ImGuizmo::OPERATION::ROTATE ? 45.0f : 0.5f;
+            const float snapValues[3] = {snapValue, snapValue, snapValue};
 
             ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), static_cast<ImGuizmo::OPERATION>(m_GizmoType),
-                                 ImGuizmo::MODE::LOCAL, glm::value_ptr(modelMatrix));
+                                 ImGuizmo::MODE::LOCAL, glm::value_ptr(modelMatrix), nullptr, m_ShouldSnap ? snapValues : nullptr);
 			if (ImGuizmo::IsUsing())
 			{
                 m_ArcballMove = false;
                 ECSRegistry::GetInstance().GetEntity<Entity>(m_SelectedObject)->SetDirtyFlag(true);
-                glm::vec3 deltaRotation(1.0f);
-                Math::DecomposeMatrix(modelMatrix, scale, deltaRotation, position);
-                deltaRotation -= transformComponent->GetRotation();
-                transformComponent->GetRotation() = deltaRotation;
+                glm::vec3 deltaRotation;
+                ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(modelMatrix), glm::value_ptr(position), glm::value_ptr(deltaRotation), glm::value_ptr(scale));
+                deltaRotation -= rotation;
+                transformComponent->GetRotation() += glm::radians(deltaRotation);
 			}
         }
     }
@@ -271,6 +271,13 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
         else if (key == GLFW_KEY_R && action == GLFW_PRESS)
 			m_GizmoType = ImGuizmo::OPERATION::SCALE;
 	}
+    if (!m_IsFocused)
+    {
+        if (key == GLFW_KEY_LEFT_CONTROL && action == GLFW_PRESS)
+            m_ShouldSnap = true;
+        if (key == GLFW_KEY_LEFT_CONTROL && action == GLFW_RELEASE)
+            m_ShouldSnap = false;
+    }
 }
 
 void Window::cursorPosCallback(GLFWwindow* window, double xPos, double yPos)

@@ -66,3 +66,4 @@ private:
 };
 
 #define PROFILE_FUNCTION() Timer timer##__LINE__(__func__);
+#define PROFILE_SCOPE(name) Timer timer##__LINE__(name);

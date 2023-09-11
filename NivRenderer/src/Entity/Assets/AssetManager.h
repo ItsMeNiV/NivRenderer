@@ -10,11 +10,8 @@
 struct SubModel
 {
     SubModel() : mesh(nullptr), material(nullptr), modelMatrix(1.0f) {}
-    SubModel(const Ref<MeshAsset>& meshAsset, const Ref<MaterialAsset>& materialAsset) :
-        mesh(meshAsset), material(materialAsset), modelMatrix(1.0f)
-    {
-    }
 
+    std::string name;
     Ref<MeshAsset> mesh;
     Ref<MaterialAsset> material;
     std::vector<SubModel> subModels;

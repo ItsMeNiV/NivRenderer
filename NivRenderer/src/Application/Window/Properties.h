@@ -51,7 +51,11 @@ bool displayProperty(std::pair<std::string, Property>& property, std::string& na
         ImGui::Spacing();
         break;
     case PropertyType::FLOAT3:
-        wasEdited = ImGui::InputFloat3(label, static_cast<float*>(property.second.valuePtr));
+        if(ImGui::InputFloat3(label, static_cast<float*>(property.second.valuePtr)))
+        {
+            wasEdited = true;
+            property.second.callback();
+        }
         ImGui::Spacing();
         break;
     case PropertyType::COLOR:

@@ -1,5 +1,7 @@
 #include "ForwardPass.h"
 
+#include "Application/Util/Instrumentor.h"
+
 ForwardPass::ForwardPass(const Ref<Shader>& passShader, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount) :
     RenderPass(passShader, resolutionWidth, resolutionHeight, sampleCount),
     m_ShadowmapShader(AssetManager::GetInstance().LoadShader("assets/shaders/shadowmap.glsl", ShaderType::VERTEX_AND_FRAGMENT))
@@ -7,185 +9,194 @@ ForwardPass::ForwardPass(const Ref<Shader>& passShader, uint32_t resolutionWidth
 
 void ForwardPass::Run(const Ref<Scene>& scene, ProxyManager& proxyManager)
 {
-    glEnable(GL_DEPTH_TEST);
-    glCullFace(GL_FRONT);
-    // Render Shadowmap TODO: Allow multiple lights to be dynamic shadow casters - For now only Directional light
     glm::mat4 lightSpaceMatrix(1.0f);
-    for (const uint32_t sceneLightId : scene->GetSceneLightIds())
     {
-        Ref<Proxy> proxy = proxyManager.GetProxy(sceneLightId);
-        const bool isDirectionalLight = std::dynamic_pointer_cast<DirectionalLightProxy>(proxy) != nullptr;
-        if (isDirectionalLight)
+        PROFILE_SCOPE("ForwardPass::RenderShadowmap")
+
+        glEnable(GL_DEPTH_TEST);
+        glCullFace(GL_FRONT);
+        // Render Shadowmap TODO: Allow multiple lights to be dynamic shadow casters - For now only Directional light
+        for (const uint32_t sceneLightId : scene->GetSceneLightIds())
         {
-            m_ShadowmapShader->Bind();
-
-            const Ref<DirectionalLightProxy> directionalLightProxy =
-                std::static_pointer_cast<DirectionalLightProxy>(proxyManager.GetProxy(sceneLightId));
-            glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 50.0f);
-            glm::vec3 lightPosition = -10.0f * directionalLightProxy->GetLightDirection();
-            glm::vec3 up = directionalLightProxy->GetLightDirection() == glm::vec3(0.0f, -1.0f, 0.0f) ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
-            glm::mat4 lightView = glm::lookAt(lightPosition, glm::vec3(0.0f, 0.0f, 0.0f), up);
-            lightSpaceMatrix = lightProjection * lightView;
-            m_ShadowmapShader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
-
-            updateShadowmapFramebuffer(scene);
-            m_ShadowmapFramebuffer->Bind();
-            glViewport(0, 0, m_ShadowmapFramebuffer->GetWidth(), m_ShadowmapFramebuffer->GetHeight());
-            glClear(GL_DEPTH_BUFFER_BIT);
-            for (const auto& sceneObjectProxy : proxyManager.GetSceneObjectsToRender(scene))
+            Ref<Proxy> proxy = proxyManager.GetProxy(sceneLightId);
+            const bool isDirectionalLight = std::dynamic_pointer_cast<DirectionalLightProxy>(proxy) != nullptr;
+            if (isDirectionalLight)
             {
-                sceneObjectProxy->Bind();
-                m_ShadowmapShader->SetMat4("model", sceneObjectProxy->GetModelMatrix());
-                const auto& meshProxy = sceneObjectProxy->GetMeshProxy();
-                if (meshProxy->GetIndexCount())
-                    glDrawElements(GL_TRIANGLES, meshProxy->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
-                else
-                    glDrawArrays(GL_TRIANGLES, 0, meshProxy->GetVerticesCount());
+                m_ShadowmapShader->Bind();
+
+                const Ref<DirectionalLightProxy> directionalLightProxy =
+                    std::static_pointer_cast<DirectionalLightProxy>(proxyManager.GetProxy(sceneLightId));
+                glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 50.0f);
+                glm::vec3 lightPosition = -10.0f * directionalLightProxy->GetLightDirection();
+                glm::vec3 up = directionalLightProxy->GetLightDirection() == glm::vec3(0.0f, -1.0f, 0.0f)
+                    ? glm::vec3(1.0f, 0.0f, 0.0f)
+                    : glm::vec3(0.0f, 1.0f, 0.0f);
+                glm::mat4 lightView = glm::lookAt(lightPosition, glm::vec3(0.0f, 0.0f, 0.0f), up);
+                lightSpaceMatrix = lightProjection * lightView;
+                m_ShadowmapShader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+                updateShadowmapFramebuffer(scene);
+                m_ShadowmapFramebuffer->Bind();
+                glViewport(0, 0, m_ShadowmapFramebuffer->GetWidth(), m_ShadowmapFramebuffer->GetHeight());
+                glClear(GL_DEPTH_BUFFER_BIT);
+                for (const auto& sceneObjectProxy : proxyManager.GetSceneObjectsToRender(scene))
+                {
+                    sceneObjectProxy->Bind();
+                    m_ShadowmapShader->SetMat4("model", sceneObjectProxy->GetModelMatrix());
+                    const auto& meshProxy = sceneObjectProxy->GetMeshProxy();
+                    if (meshProxy->GetIndexCount())
+                        glDrawElements(GL_TRIANGLES, meshProxy->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
+                    else
+                        glDrawArrays(GL_TRIANGLES, 0, meshProxy->GetVerticesCount());
+                }
             }
         }
     }
-
-    // Render scene
-    glCullFace(GL_BACK);
-    m_OutputFramebuffer->Bind();
-    glViewport(0, 0, m_OutputFramebuffer->GetWidth(), m_OutputFramebuffer->GetHeight());
-    const Ref<CameraProxy> camera = std::static_pointer_cast<CameraProxy>(proxyManager.GetProxy(scene->GetCameraId()));
-
-    glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    m_PassShader->Bind();
-    glm::mat4 view = camera->GetView();
-    glm::mat4 projection = camera->GetProjection();
-    glm::mat4 viewProj = projection * view;
-    m_PassShader->SetMat4("viewProjection", viewProj);
-    const glm::vec3 viewPos = camera->GetPosition();
-    m_PassShader->SetVec3("viewPos", viewPos);
-
-    // Set Shadowmap uniforms
-    const bool hasShadowMap = lightSpaceMatrix != glm::mat4(1.0f);
-    m_PassShader->SetBool("hasShadowMap", hasShadowMap);
-    m_PassShader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
-    if (hasShadowMap)
     {
-        m_ShadowmapFramebuffer->GetTextureAttachment()->ActivateForSlot(10);
-        m_PassShader->SetTexture("shadowMap", 10);
-    }
+        PROFILE_SCOPE("ForwardPass::RenderScene")
+        // Render scene
+        glCullFace(GL_BACK);
+        m_OutputFramebuffer->Bind();
+        glViewport(0, 0, m_OutputFramebuffer->GetWidth(), m_OutputFramebuffer->GetHeight());
+        const Ref<CameraProxy> camera =
+            std::static_pointer_cast<CameraProxy>(proxyManager.GetProxy(scene->GetCameraId()));
 
-    // Set Light uniforms
-    uint32_t pointLightIndex = 0;
-    bool hasDirectionalLight = false;
-    for (const uint32_t id : scene->GetSceneLightIds())
-    {
-        Ref<Proxy> proxy = proxyManager.GetProxy(id);
-        const bool isDirectionalLight = std::dynamic_pointer_cast<DirectionalLightProxy>(proxy) != nullptr;
-        const bool isPointLight = std::dynamic_pointer_cast<PointLightProxy>(proxy) != nullptr;
-        if (isDirectionalLight)
+        glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        m_PassShader->Bind();
+        glm::mat4 view = camera->GetView();
+        glm::mat4 projection = camera->GetProjection();
+        glm::mat4 viewProj = projection * view;
+        m_PassShader->SetMat4("viewProjection", viewProj);
+        const glm::vec3 viewPos = camera->GetPosition();
+        m_PassShader->SetVec3("viewPos", viewPos);
+
+        // Set Shadowmap uniforms
+        const bool hasShadowMap = lightSpaceMatrix != glm::mat4(1.0f);
+        m_PassShader->SetBool("hasShadowMap", hasShadowMap);
+        m_PassShader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
+        if (hasShadowMap)
         {
-            hasDirectionalLight = true;
-            const Ref<DirectionalLightProxy> directionalLightProxy =
-                std::static_pointer_cast<DirectionalLightProxy>(proxyManager.GetProxy(id));
-            m_PassShader->SetVec3("directionalLight.color", directionalLightProxy->GetLightColor());
-            m_PassShader->SetVec3("directionalLight.direction", directionalLightProxy->GetLightDirection());
-        }
-        else if (isPointLight)
-        {
-            const Ref<PointLightProxy> pointLightProxy = std::static_pointer_cast<PointLightProxy>(proxyManager.GetProxy(id));
-            m_PassShader->SetVec3("pointLights[" + std::to_string(pointLightIndex) + "].color",
-                                  pointLightProxy->GetLightColor());
-            m_PassShader->SetVec3("pointLights[" + std::to_string(pointLightIndex) + "].position",
-                                  pointLightProxy->GetLightPosition());
-            m_PassShader->SetInt("pointLights[" + std::to_string(pointLightIndex) + "].strength",
-                                 pointLightProxy->GetLightStrength());
-            pointLightIndex++;
-        }
-    }
-    m_PassShader->SetBool("hasDirectionalLight", hasDirectionalLight);
-    m_PassShader->SetInt("amountPointLights", pointLightIndex);
-
-    for (const auto& sceneObjectProxy : proxyManager.GetSceneObjectsToRender(scene))
-    {
-
-        sceneObjectProxy->Bind();
-        m_PassShader->SetMat4("model", sceneObjectProxy->GetModelMatrix());
-
-        sceneObjectProxy->GetMaterialProxy()->BindDiffuseTexture(0);
-        m_PassShader->SetTexture("diffuseTexture", 0);
-
-        if (sceneObjectProxy->GetMaterialProxy()->HasNormalTexture())
-        {
-            sceneObjectProxy->GetMaterialProxy()->BindNormalTexture(1);
-            m_PassShader->SetBool("hasNormalTexture", true);
-            m_PassShader->SetTexture("normalTexture", 1);
-        }
-        else
-        {
-            m_PassShader->SetBool("hasNormalTexture", false);
+            m_ShadowmapFramebuffer->GetTextureAttachment()->ActivateForSlot(10);
+            m_PassShader->SetTexture("shadowMap", 10);
         }
 
-        sceneObjectProxy->GetMaterialProxy()->BindMetallicTexture(2);
-        m_PassShader->SetTexture("metallicTexture", 2);
-
-        sceneObjectProxy->GetMaterialProxy()->BindRoughnessTexture(3);
-        m_PassShader->SetTexture("roughnessTexture", 3);
-
-        sceneObjectProxy->GetMaterialProxy()->BindAOTexture(4);
-        m_PassShader->SetTexture("aoTexture", 4);
-
-        sceneObjectProxy->GetMaterialProxy()->BindEmissiveTexture(5);
-        m_PassShader->SetTexture("emissiveTexture", 5);
-
-        auto& meshProxy = sceneObjectProxy->GetMeshProxy();
-        if (meshProxy->GetIndexCount())
-            glDrawElements(GL_TRIANGLES, meshProxy->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
-        else
-            glDrawArrays(GL_TRIANGLES, 0, meshProxy->GetVerticesCount());
-    }
-
-    if (scene->GetSceneSettings().visualizeLights && pointLightIndex)
-    {
-        const Ref<Shader> lightVisualizeShader = AssetManager::GetInstance().LoadShader(
-            "assets/shaders/lightcube.glsl", ShaderType::VERTEX_AND_FRAGMENT);
-        lightVisualizeShader->Bind();
-        lightVisualizeShader->SetMat4("viewProjection", viewProj);
-
-        LightProxy::Bind();
+        // Set Light uniforms
+        uint32_t pointLightIndex = 0;
+        bool hasDirectionalLight = false;
         for (const uint32_t id : scene->GetSceneLightIds())
         {
-
-            if (std::dynamic_pointer_cast<PointLightProxy>(proxyManager.GetProxy(id)))
+            Ref<Proxy> proxy = proxyManager.GetProxy(id);
+            const bool isDirectionalLight = std::dynamic_pointer_cast<DirectionalLightProxy>(proxy) != nullptr;
+            const bool isPointLight = std::dynamic_pointer_cast<PointLightProxy>(proxy) != nullptr;
+            if (isDirectionalLight)
+            {
+                hasDirectionalLight = true;
+                const Ref<DirectionalLightProxy> directionalLightProxy =
+                    std::static_pointer_cast<DirectionalLightProxy>(proxyManager.GetProxy(id));
+                m_PassShader->SetVec3("directionalLight.color", directionalLightProxy->GetLightColor());
+                m_PassShader->SetVec3("directionalLight.direction", directionalLightProxy->GetLightDirection());
+            }
+            else if (isPointLight)
             {
                 const Ref<PointLightProxy> pointLightProxy =
                     std::static_pointer_cast<PointLightProxy>(proxyManager.GetProxy(id));
-                lightVisualizeShader->SetVec3("lightColor", pointLightProxy->GetLightColor());
-                lightVisualizeShader->SetMat4("model", pointLightProxy->GetModelMatrix());
+                m_PassShader->SetVec3("pointLights[" + std::to_string(pointLightIndex) + "].color",
+                                      pointLightProxy->GetLightColor());
+                m_PassShader->SetVec3("pointLights[" + std::to_string(pointLightIndex) + "].position",
+                                      pointLightProxy->GetLightPosition());
+                m_PassShader->SetInt("pointLights[" + std::to_string(pointLightIndex) + "].strength",
+                                     pointLightProxy->GetLightStrength());
+                pointLightIndex++;
+            }
+        }
+        m_PassShader->SetBool("hasDirectionalLight", hasDirectionalLight);
+        m_PassShader->SetInt("amountPointLights", pointLightIndex);
 
-                glDrawArrays(GL_TRIANGLES, 0, LightProxy::GetVerticesCount());
+        for (const auto& sceneObjectProxy : proxyManager.GetSceneObjectsToRender(scene))
+        {
+
+            sceneObjectProxy->Bind();
+            m_PassShader->SetMat4("model", sceneObjectProxy->GetModelMatrix());
+
+            sceneObjectProxy->GetMaterialProxy()->BindDiffuseTexture(0);
+            m_PassShader->SetTexture("diffuseTexture", 0);
+
+            if (sceneObjectProxy->GetMaterialProxy()->HasNormalTexture())
+            {
+                sceneObjectProxy->GetMaterialProxy()->BindNormalTexture(1);
+                m_PassShader->SetBool("hasNormalTexture", true);
+                m_PassShader->SetTexture("normalTexture", 1);
+            }
+            else
+            {
+                m_PassShader->SetBool("hasNormalTexture", false);
+            }
+
+            sceneObjectProxy->GetMaterialProxy()->BindMetallicTexture(2);
+            m_PassShader->SetTexture("metallicTexture", 2);
+
+            sceneObjectProxy->GetMaterialProxy()->BindRoughnessTexture(3);
+            m_PassShader->SetTexture("roughnessTexture", 3);
+
+            sceneObjectProxy->GetMaterialProxy()->BindAOTexture(4);
+            m_PassShader->SetTexture("aoTexture", 4);
+
+            sceneObjectProxy->GetMaterialProxy()->BindEmissiveTexture(5);
+            m_PassShader->SetTexture("emissiveTexture", 5);
+
+            auto& meshProxy = sceneObjectProxy->GetMeshProxy();
+            if (meshProxy->GetIndexCount())
+                glDrawElements(GL_TRIANGLES, meshProxy->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
+            else
+                glDrawArrays(GL_TRIANGLES, 0, meshProxy->GetVerticesCount());
+        }
+
+        if (scene->GetSceneSettings().visualizeLights && pointLightIndex)
+        {
+            const Ref<Shader> lightVisualizeShader = AssetManager::GetInstance().LoadShader(
+                "assets/shaders/lightcube.glsl", ShaderType::VERTEX_AND_FRAGMENT);
+            lightVisualizeShader->Bind();
+            lightVisualizeShader->SetMat4("viewProjection", viewProj);
+
+            LightProxy::Bind();
+            for (const uint32_t id : scene->GetSceneLightIds())
+            {
+
+                if (std::dynamic_pointer_cast<PointLightProxy>(proxyManager.GetProxy(id)))
+                {
+                    const Ref<PointLightProxy> pointLightProxy =
+                        std::static_pointer_cast<PointLightProxy>(proxyManager.GetProxy(id));
+                    lightVisualizeShader->SetVec3("lightColor", pointLightProxy->GetLightColor());
+                    lightVisualizeShader->SetMat4("model", pointLightProxy->GetModelMatrix());
+
+                    glDrawArrays(GL_TRIANGLES, 0, LightProxy::GetVerticesCount());
+                }
+            }
+        }
+
+        if (scene->HasSkybox())
+        {
+            const Ref<Shader> skyboxShader =
+                AssetManager::GetInstance().LoadShader("assets/shaders/skybox.glsl", ShaderType::VERTEX_AND_FRAGMENT);
+            const Ref<SkyboxProxy> skyboxProxy =
+                std::static_pointer_cast<SkyboxProxy>(proxyManager.GetProxy(scene->GetSkyboxObjectId()));
+            if (skyboxProxy->HasAllTexturesSet())
+            {
+                skyboxShader->Bind();
+                skyboxShader->SetMat4("projection", projection);
+                view = glm::mat4(glm::mat3(camera->GetView()));
+                skyboxShader->SetMat4("view", view);
+                skyboxShader->SetTexture("skybox", 0);
+                skyboxProxy->BindTexture(0);
+
+                glDepthFunc(GL_LEQUAL);
+                skyboxProxy->Bind();
+                glDrawArrays(GL_TRIANGLES, 0, 36);
+                glDepthFunc(GL_LESS);
             }
         }
     }
-
-    if (scene->HasSkybox())
-    {
-        const Ref<Shader> skyboxShader = AssetManager::GetInstance().LoadShader("assets/shaders/skybox.glsl",
-                                                                          ShaderType::VERTEX_AND_FRAGMENT);
-        const Ref<SkyboxProxy> skyboxProxy =
-            std::static_pointer_cast<SkyboxProxy>(proxyManager.GetProxy(scene->GetSkyboxObjectId()));
-        if (skyboxProxy->HasAllTexturesSet())
-        {
-            skyboxShader->Bind();
-            skyboxShader->SetMat4("projection", projection);
-            view = glm::mat4(glm::mat3(camera->GetView()));
-            skyboxShader->SetMat4("view", view);
-            skyboxShader->SetTexture("skybox", 0);
-            skyboxProxy->BindTexture(0);
-
-            glDepthFunc(GL_LEQUAL);
-            skyboxProxy->Bind();
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            glDepthFunc(GL_LESS);
-        }
-    }
-
     m_OutputFramebuffer->Unbind();
 }
 

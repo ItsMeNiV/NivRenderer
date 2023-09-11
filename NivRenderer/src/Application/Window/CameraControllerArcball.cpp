@@ -35,14 +35,14 @@ void CameraControllerArcball::ProcessMouseMovement(float xoffset, float yoffset)
     // step 3: Rotate the camera around the pivot point on the second axis.
     glm::mat4x4 rotationMatrixY(1.0f);
     rotationMatrixY = glm::rotate(rotationMatrixY, yAngle, m_CameraPtr->GetCameraRight());
-    glm::vec3 finalPosition = (rotationMatrixY * (position - m_Pivot)) + m_Pivot;
+    const glm::vec3 finalPosition = (rotationMatrixY * (position - m_Pivot)) + m_Pivot;
 
     // Update the camera view (we keep the same lookat and the same up vector)
     m_CameraPtr->SetCameraView(finalPosition, m_Pivot, upVector);
 
-    // Update the mouse position for the next rotation
-    // app->m_lastMousePos.x = xPos;
-    // app->m_lastMousePos.y = yPos;
+    const glm::vec3 direction = glm::normalize(glm::vec3(m_Pivot) - finalPosition);
+    m_CameraPtr->SetPitch(glm::degrees(asin(direction.y)));
+    m_CameraPtr->SetYaw(glm::degrees(atan2(direction.x, direction.z)));
 }
 
 void CameraControllerArcball::ProcessScroll(float yoffset)
