@@ -63,6 +63,8 @@ void Application::handleWindowCommand(WindowCommandEvent command)
 		m_Renderer->GetActivePipeline()->RecompileShaders();
     if (command.GetCommand() == WindowCommand::SaveScene)
         SerializationManager::SaveSceneToFile("default.json", m_Scene);
+    if (command.GetCommand() == WindowCommand::LoadScene)
+        SerializationManager::LoadSceneFromFile("default.json");
 }
 
 void Application::setupDefaultScene()

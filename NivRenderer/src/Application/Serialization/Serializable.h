@@ -7,4 +7,5 @@ class Serializable
 {
 public:
     virtual ordered_json SerializeObject() = 0;
+    virtual void DeSerializeObject() = 0;
 };

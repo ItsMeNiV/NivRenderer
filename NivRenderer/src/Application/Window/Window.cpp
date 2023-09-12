@@ -112,6 +112,8 @@ void Window::RenderImGui(Ref<Scene> scene)
 				m_CommandHandlerCallback(WindowCommandEvent(WindowCommand::RecompileShaders));
             if (ImGui::MenuItem("Save Scene", nullptr) && m_CommandHandlerCallback)
                 m_CommandHandlerCallback(WindowCommandEvent(WindowCommand::SaveScene));
+            if (ImGui::MenuItem("Load Scene", nullptr) && m_CommandHandlerCallback)
+                m_CommandHandlerCallback(WindowCommandEvent(WindowCommand::LoadScene));
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();

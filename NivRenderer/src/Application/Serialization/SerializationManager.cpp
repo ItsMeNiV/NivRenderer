@@ -7,3 +7,13 @@ void SerializationManager::SaveSceneToFile(const std::string& path, const Ref<Sc
     oStream << std::setw(4) << sceneJson;
     oStream.close();
 }
+
+const Ref<Scene>& SerializationManager::LoadSceneFromFile(const std::string& path)
+{
+    std::ifstream iStream(path);
+    json fileJson;
+
+    iStream >> fileJson;
+    std::cout << fileJson["SceneSettings"].dump() << std::endl;
+    return {};
+}
