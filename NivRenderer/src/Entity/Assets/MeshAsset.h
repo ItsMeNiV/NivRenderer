@@ -29,6 +29,8 @@ public:
         return returnVector;
     }
 
+    ordered_json SerializeObject() override;
+
 private:
     std::string m_Path;
     std::vector<MeshVertex> m_Vertices;

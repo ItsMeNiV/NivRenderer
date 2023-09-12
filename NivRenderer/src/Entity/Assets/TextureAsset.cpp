@@ -53,3 +53,21 @@ std::vector<std::pair<std::string, Property>> TextureAsset::GetAssetProperties()
     std::vector<std::pair<std::string, Property>> returnVector;
     return returnVector;
 }
+
+ordered_json TextureAsset::SerializeObject()
+{
+    ordered_json texture = {
+        {"InternalPath", m_Path},
+        {"Width", m_Width},
+        {"Height", m_Height},
+        {"NrComponents", m_NrComponents}
+    };
+    texture["TextureData"] = json::array_t();
+    auto textureData = texture["TextureData"];
+    const uint32_t dataSize = m_Width * m_Height * m_NrComponents;
+    std::vector<unsigned char> data(dataSize);
+    memcpy(data.data(), m_TextureData, dataSize);
+    texture["TextureData"] = data;
+
+    return texture;
+}

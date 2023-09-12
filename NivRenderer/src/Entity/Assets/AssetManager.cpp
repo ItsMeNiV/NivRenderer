@@ -95,11 +95,11 @@ Ref<Shader> AssetManager::LoadShader(const std::string& path, ShaderType shaderT
     return shader;
 }
 
-Model* AssetManager::LoadModel(const std::string& path)
+Ref<Model> AssetManager::LoadModel(const std::string& path)
 {
     if (m_LoadedModels.contains(path))
     {
-        return &m_LoadedModels[path];
+        return m_LoadedModels[path];
     }
 
     const aiScene* scene = m_Importer->ReadFile(
@@ -113,18 +113,18 @@ Model* AssetManager::LoadModel(const std::string& path)
         return nullptr;
     }
 
-    m_LoadedModels[path] = Model();
-    Model& model = m_LoadedModels[path];
-    processNode(scene->mRootNode, scene, model.subModels, path);
-    model.name = path.substr(path.find_last_of('/')+1, path.find_last_of('.'));
+    m_LoadedModels[path] = CreateRef<Model>();
+    Ref<Model> model = m_LoadedModels[path];
+    processNode(scene->mRootNode, scene, model->subModels, path);
+    model->name = path.substr(path.find_last_of('/')+1, path.find_last_of('.'));
 
-    return &model;
+    return model;
 }
 
-Model* AssetManager::GetModel(const std::string& path)
+Ref<Model> AssetManager::GetModel(const std::string& path)
 {
     if (m_LoadedModels.contains(path))
-        return &m_LoadedModels[path];
+        return m_LoadedModels[path];
 
     return nullptr;
 }
@@ -172,6 +172,50 @@ std::vector<uint32_t> AssetManager::GetMaterialIds(bool includeDefault) const
             continue;
 
         returnVector.push_back(it.first);
+    }
+
+    return returnVector;
+}
+
+std::vector<std::pair<std::string, Ref<Model>>> AssetManager::GetModels() const
+{
+    std::vector<std::pair<std::string, Ref<Model>>> returnVector;
+    for (const auto& model : m_LoadedModels)
+    {
+        returnVector.emplace_back(model);
+    }
+
+    return returnVector;
+}
+
+std::vector<std::pair<std::string, Ref<MeshAsset>>> AssetManager::GetMeshes() const
+{
+    std::vector<std::pair<std::string, Ref<MeshAsset>>> returnVector;
+    for (const auto& mesh : m_LoadedMeshAssets)
+    {
+        returnVector.emplace_back(mesh);
+    }
+
+    return returnVector;
+}
+
+std::vector<std::pair<uint32_t, Ref<MaterialAsset>>> AssetManager::GetMaterials() const
+{
+    std::vector<std::pair<uint32_t, Ref<MaterialAsset>>> returnVector;
+    for (const auto& material : m_LoadedMaterialAssets)
+    {
+        returnVector.push_back(material);
+    }
+
+    return returnVector;
+}
+
+std::vector<std::pair<std::string, Ref<TextureAsset>>> AssetManager::GetTextures() const
+{
+    std::vector<std::pair<std::string, Ref<TextureAsset>>> returnVector;
+    for (const auto& texture : m_LoadedTextureAssets)
+    {
+        returnVector.emplace_back(texture);
     }
 
     return returnVector;
@@ -473,4 +517,56 @@ void AssetManager::processMaterials(const aiScene* scene, SubModel& subModel, co
     m_LoadedMaterialAssets[materialAsset->GetId()] = materialAsset;
 
     subModel.material = materialAsset;
+}
+
+ordered_json Model::SerializeObject()
+{
+    ordered_json model = {
+        {"Name", name},
+        {"SubModels", addSubModelJson(subModels)}
+    };
+
+    return model;
+}
+
+ordered_json Model::addSubModelJson(std::vector<SubModel>& subModels)
+{
+    ordered_json subModelsArray = json::array();
+
+    uint32_t i = 0;
+    for (auto& subModel : subModels)
+    {
+        subModelsArray[i] = {{"Name", subModel.name},
+                             {"ModelMatrix",
+                                {{"0", subModel.modelMatrix[0][0]},
+                                {"1", subModel.modelMatrix[0][1]},
+                                {"2", subModel.modelMatrix[0][2]},
+                                {"3", subModel.modelMatrix[0][3]},
+                                {"4", subModel.modelMatrix[1][0]},
+                                {"5", subModel.modelMatrix[1][1]},
+                                {"6", subModel.modelMatrix[1][2]},
+                                {"7", subModel.modelMatrix[1][3]},
+                                {"8", subModel.modelMatrix[2][0]},
+                                {"9", subModel.modelMatrix[2][1]},
+                                {"10", subModel.modelMatrix[2][2]},
+                                {"11", subModel.modelMatrix[2][3]},
+                                {"12", subModel.modelMatrix[3][0]},
+                                {"13", subModel.modelMatrix[3][1]},
+                                {"14", subModel.modelMatrix[3][2]},
+                                {"15", subModel.modelMatrix[3][3]}}}};
+        if (subModel.mesh)
+            subModelsArray[i]["MeshAssetId"] = subModel.mesh->GetId();
+        if (subModel.material)
+            subModelsArray[i]["MaterialAssetId"] = subModel.material->GetId();
+        ordered_json nextSubModels = addSubModelJson(subModel.subModels);
+        if (!nextSubModels.empty())
+        {
+            subModelsArray[i]["SubModels"] = json::array();
+            subModelsArray[i]["SubModels"] = nextSubModels;
+        }
+
+        i++;
+    }
+
+    return subModelsArray;
 }

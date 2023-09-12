@@ -20,6 +20,8 @@ public:
 
     std::vector<std::pair<std::string, Property>> GetAssetProperties() override;
 
+    ordered_json SerializeObject() override;
+
 private:
     unsigned char* m_TextureData;
     bool m_FlipVertical;

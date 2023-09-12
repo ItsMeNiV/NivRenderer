@@ -35,6 +35,8 @@ public:
 
     std::vector<std::pair<std::string, Property>> GetAssetProperties() override;
 
+    ordered_json SerializeObject() override;
+
 private:
     std::string m_Name;
     bool m_DirtyFlag;
@@ -70,4 +72,5 @@ private:
     void reloadRoughnessTexture();
     void reloadAOTexture();
     void reloadEmissiveTexture();
+
 };

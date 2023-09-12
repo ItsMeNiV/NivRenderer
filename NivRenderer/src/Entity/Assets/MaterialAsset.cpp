@@ -87,3 +87,60 @@ std::vector<std::pair<std::string, Property>> MaterialAsset::GetAssetProperties(
 
     return returnVector;
 }
+
+ordered_json MaterialAsset::SerializeObject()
+{
+    ordered_json material = {
+        {"Name", m_Name},
+    };
+    if (m_DiffuseTextureAsset)
+    {
+        material["Diffuse"] = {
+            {"Path", m_DiffusePath},
+            {"TextureAssetId", m_DiffuseTextureAsset->GetId()},
+            {"Flip", m_FlipDiffuseTexture}
+        };
+    }
+    if (m_NormalTextureAsset)
+    {
+        material["Normal"] = {
+            {"Path", m_NormalPath},
+            {"TextureAssetId", m_NormalTextureAsset->GetId()},
+            {"Flip", m_FlipNormalTexture}
+        };
+    }
+    if (m_MetallicTextureAsset)
+    {
+        material["Metallic"] = {
+            {"Path", m_MetallicPath},
+            {"TextureAssetId", m_MetallicTextureAsset->GetId()},
+            {"Flip", m_FlipMetallicTexture}
+        };
+    }
+    if (m_RoughnessTextureAsset)
+    {
+        material["Roughness"] = {
+            {"Path", m_RoughnessPath},
+            {"TextureAssetId", m_RoughnessTextureAsset->GetId()},
+            {"Flip", m_FlipRoughnessTexture}
+        };
+    }
+    if (m_AOTextureAsset)
+    {
+        material["AO"] = {
+            {"Path", m_AOPath},
+            {"TextureAssetId", m_AOTextureAsset->GetId()},
+            {"Flip", m_FlipAOTexture}
+        };
+    }
+    if (m_EmissiveTextureAsset)
+    {
+        material["Emissive"] = {
+            {"Path", m_EmissivePath},
+            {"TextureAssetId", m_EmissiveTextureAsset->GetId()},
+            {"Flip", m_FlipEmissiveTexture}
+        };
+    }
+
+    return material;
+}

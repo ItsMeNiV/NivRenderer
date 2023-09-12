@@ -1,8 +1,9 @@
 #pragma once
 #include "Base.h"
 #include "Entity/PropertyType.h"
+#include "Application/Serialization/Serializable.h"
 
-class Asset
+class Asset : public Serializable
 {
 public:
     virtual ~Asset() = default;

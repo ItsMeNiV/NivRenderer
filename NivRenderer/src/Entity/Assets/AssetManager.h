@@ -21,6 +21,9 @@ struct Model
 {
     std::string name;
     std::vector<SubModel> subModels;
+
+    ordered_json SerializeObject();
+    static ordered_json addSubModelJson(std::vector<SubModel>& subModels);
 };
 
 class AssetManager
@@ -38,13 +41,19 @@ public:
     Ref<MeshAsset> LoadMesh(const std::string& path);
     Ref<TextureAsset> LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel = false, int channelIndex = 0);
     Ref<Shader> LoadShader(const std::string& path, ShaderType shaderType);
-    Model* LoadModel(const std::string& path);
-    Model* GetModel(const std::string& path);
+    Ref<Model> LoadModel(const std::string& path);
+    Ref<Model> GetModel(const std::string& path);
     Ref<MaterialAsset> GetMaterial(const std::string& name);
     Ref<MaterialAsset> GetMaterial(uint32_t id);
     Ref<MaterialAsset> CreateMaterial();
     void RemoveMaterial(uint32_t id);
     std::vector<uint32_t> GetMaterialIds(bool includeDefault) const;
+
+    // Used for Serialization
+    std::vector<std::pair<std::string, Ref<Model>>> GetModels() const;
+    std::vector<std::pair<std::string, Ref<MeshAsset>>> GetMeshes() const;
+    std::vector<std::pair<uint32_t, Ref<MaterialAsset>>> GetMaterials() const;
+    std::vector<std::pair<std::string, Ref<TextureAsset>>> GetTextures() const;
 
 private:
     AssetManager();
@@ -53,7 +62,7 @@ private:
     std::unordered_map<std::string, Ref<MeshAsset>> m_LoadedMeshAssets;
     std::unordered_map<std::string, Ref<TextureAsset>> m_LoadedTextureAssets;
     std::unordered_map<std::string, Ref<Shader>> m_LoadedShaders;
-    std::unordered_map<std::string, Model> m_LoadedModels;
+    std::unordered_map<std::string, Ref<Model>> m_LoadedModels;
     std::unordered_map<uint32_t, Ref<MaterialAsset>> m_LoadedMaterialAssets;
 
     void loadDefaultMeshAndTextures();

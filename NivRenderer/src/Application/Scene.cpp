@@ -129,7 +129,7 @@ void Scene::RemoveMaterialAsset(uint32_t materialAssetId)
             continue;
 
         materialComponent->GetMaterialAsset() = defaultMaterial;
-        if (Model* model = AssetManager::GetInstance().GetModel(*sceneObject->GetModelPath()))
+        if (const Ref<Model> model = AssetManager::GetInstance().GetModel(*sceneObject->GetModelPath()))
         {
             auto& subModels = model->subModels;
             while (!subModels.empty())
@@ -204,10 +204,43 @@ ordered_json Scene::SerializeObject()
         scene["Skybox"] = ECSRegistry::GetInstance().GetEntity<SkyboxObject>(m_SkyboxId)->SerializeObject();
     }
 
-    scene["Assets"]["MeshAssets"] = json::array();
-    scene["Assets"]["TextureAssets"] = json::array();
-    scene["Assets"]["MaterialAssets"] = json::array();
     scene["Assets"]["ModelAssets"] = json::array();
+    i = 0;
+    for(auto& m : AssetManager::GetInstance().GetModels())
+    {
+        ordered_json model = m.second->SerializeObject();
+        model["Path"] = m.first;
+        scene["Assets"]["ModelAssets"][i] = model;
+        i++;
+    }
+
+    scene["Assets"]["MaterialAssets"] = json::array();
+    i = 0;
+    for (const auto& m : AssetManager::GetInstance().GetMaterials())
+    {
+        scene["Assets"]["MaterialAssets"][i] = m.second->SerializeObject();
+        i++;
+    }
+
+    scene["Assets"]["MeshAssets"] = json::array();
+    i = 0;
+    for (const auto& m : AssetManager::GetInstance().GetMeshes())
+    {
+        ordered_json mesh = m.second->SerializeObject();
+        mesh["Path"] = m.first;
+        scene["Assets"]["MeshAssets"][i] = mesh;
+        i++;
+    }
+
+    scene["Assets"]["TextureAssets"] = json::array();
+    i = 0;
+    for (const auto& t : AssetManager::GetInstance().GetTextures())
+    {
+        ordered_json texture = t.second->SerializeObject();
+        texture["Path"] = t.first;
+        scene["Assets"]["TextureAssets"][i] = texture;
+        i++;
+    }
 
     return scene;
 }
