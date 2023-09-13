@@ -14,7 +14,9 @@ public:
         return instance;
     }
 
-    const uint32_t CreateNewId() { return m_NextId++; }
+    uint32_t CreateNewId() { return m_NextId++; }
+    uint32_t GetCurrentId() const { return m_NextId-1; }
+    void SetNextId(const uint32_t id) { m_NextId = id; }
 
 private:
     IdManager() : m_NextId(0) {}

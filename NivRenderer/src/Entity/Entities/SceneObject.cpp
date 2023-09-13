@@ -11,6 +11,8 @@ SceneObject::SceneObject(uint32_t id)
 {
 }
 
+SceneObject::~SceneObject() = default;
+
 void SceneObject::LoadModel()
 {
     if (const auto meshComponent = ECSRegistry::GetInstance().GetComponent<MeshComponent>(GetId()))
@@ -75,6 +77,46 @@ ordered_json SceneObject::SerializeObject()
     }
 
     return object;
+}
+
+void SceneObject::DeSerializeObject(json jsonObject)
+{
+    m_EntityName = jsonObject["Name"];
+    m_ModelPath = jsonObject["ModelPath"];
+
+    if (jsonObject.contains("Components"))
+    {
+        for (json component : jsonObject["Components"])
+        {
+            IdManager::GetInstance().SetNextId(component["Id"]);
+            if (component["Type"] == "TransformComponent")
+            {
+                const auto transformComponent = ECSRegistry::GetInstance().AddComponent<TransformComponent>(GetId());
+                transformComponent->DeSerializeObject(component);
+            }
+            else if (component["Type"] == "MeshComponent")
+            {
+                const auto meshComponent = ECSRegistry::GetInstance().AddComponent<MeshComponent>(GetId());
+                meshComponent->DeSerializeObject(component);
+            }
+            else if(component["Type"] == "MaterialComponent")
+            {
+                const auto materialComponent = ECSRegistry::GetInstance().AddComponent<MaterialComponent>(GetId());
+                materialComponent->DeSerializeObject(component);
+            }
+        }   
+    }
+
+    if (jsonObject.contains("ChildEntities"))
+    {
+        for (json childEntity : jsonObject["ChildEntities"])
+        {
+            IdManager::GetInstance().SetNextId(childEntity["Id"]);
+            auto childObject = ECSRegistry::GetInstance().CreateEntity<SceneObject>(GetId());
+            childObject->DeSerializeObject(childEntity);
+            AddChildEntity(childObject);
+        }   
+    }
 }
 
 void SceneObject::createChildSceneObjectFromSubModel(const SubModel& subModel, const uint32_t parentId)

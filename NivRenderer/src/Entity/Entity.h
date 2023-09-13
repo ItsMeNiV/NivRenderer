@@ -7,6 +7,8 @@
 class Entity : public Serializable
 {
 public:
+    virtual ~Entity() {}
+
 	void AddChildEntity(Ref<Entity> entity)
 	{
 		m_ChildEntities.push_back(entity);
@@ -36,7 +38,6 @@ protected:
 	Entity(uint32_t id, std::string&& entityName)
 		: m_EntityId(id), m_EntityName(std::move(entityName)), m_ChildEntities(), m_ParentEntityId(-1), m_DirtyFlag(true)
 	{}
-	virtual ~Entity() {}
 
 protected:
     std::string m_EntityName;

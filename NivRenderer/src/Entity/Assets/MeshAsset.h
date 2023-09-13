@@ -18,6 +18,9 @@ public:
     MeshAsset(const uint32_t id, const std::string& path, const std::vector<MeshVertex>& vertices, const std::vector<uint32_t>& indices) :
         Asset(id), m_Path(path), m_Vertices(vertices), m_Indices(indices)
     {}
+    MeshAsset(const uint32_t id, const std::string& path) :
+        Asset(id), m_Path(path)
+    {}
 
     const std::string& GetPath();
     const std::vector<MeshVertex>& GetVertices() const;
@@ -30,6 +33,7 @@ public:
     }
 
     ordered_json SerializeObject() override;
+    void DeSerializeObject(json jsonObject) override;
 
 private:
     std::string m_Path;

@@ -13,7 +13,7 @@ public:
 	void PrepareFrame() const;
 	void RenderScene() const;
 
-	void SetActiveScene(const Ref<Scene>& scene) { m_ActiveScene = scene; }
+	void SetActiveScene(Ref<Scene> scene) { m_ActiveScene = scene; }
 	void SetActivePipeline(const Ref<RenderPipeline>& renderPipeline) { m_ActiveRenderPipeline = renderPipeline; }
 
 	const Ref<RenderPipeline>& GetActivePipeline() const { return m_ActiveRenderPipeline; }

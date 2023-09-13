@@ -57,7 +57,9 @@ std::vector<std::pair<std::string, Property>> TextureAsset::GetAssetProperties()
 ordered_json TextureAsset::SerializeObject()
 {
     ordered_json texture = {
+        {"Id", GetId()},
         {"InternalPath", m_Path},
+        {"FlipVertical", m_FlipVertical},
         {"Width", m_Width},
         {"Height", m_Height},
         {"NrComponents", m_NrComponents}
@@ -70,4 +72,16 @@ ordered_json TextureAsset::SerializeObject()
     texture["TextureData"] = data;
 
     return texture;
+}
+
+void TextureAsset::DeSerializeObject(json jsonObject)
+{
+    m_Width = jsonObject["Width"];
+    m_Height = jsonObject["Height"];
+    m_NrComponents = jsonObject["NrComponents"];
+    const std::vector<unsigned char> data = jsonObject["TextureData"];
+    delete[] m_TextureData;
+    const size_t dataSize = sizeof(unsigned char) * m_Width * m_Height * m_NrComponents;
+    m_TextureData = new unsigned char[dataSize];
+    memcpy(m_TextureData, data.data(), dataSize);
 }

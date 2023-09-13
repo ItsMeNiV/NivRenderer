@@ -32,8 +32,8 @@ Framebuffer::Framebuffer(const int width, const int height, const FramebufferAtt
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
-        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-        std::cout << std::to_string(glCheckFramebufferStatus(GL_FRAMEBUFFER)) << std::endl;
+        SPDLOG_ERROR("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
+        SPDLOG_ERROR(std::to_string(glCheckFramebufferStatus(GL_FRAMEBUFFER)));
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

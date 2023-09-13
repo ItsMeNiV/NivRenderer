@@ -32,6 +32,7 @@ ordered_json TransformComponent::SerializeObject()
 {
     ordered_json component = {
         {"Id", GetId()},
+        {"Type", "TransformComponent"},
         {"Name", GetName()},
         {"Position", {{"x", m_Position.x}, {"y", m_Position.y}, {"z", m_Position.z}}},
         {"Scale", {{"x", m_Scale.x}, {"y", m_Scale.y}, {"z", m_Scale.z}}},
@@ -40,6 +41,14 @@ ordered_json TransformComponent::SerializeObject()
     };
 
     return component;
+}
+
+void TransformComponent::DeSerializeObject(json jsonObject)
+{
+    m_Position = {jsonObject["Position"]["x"], jsonObject["Position"]["y"], jsonObject["Position"]["z"]};
+    m_Scale = {jsonObject["Scale"]["x"], jsonObject["Scale"]["y"], jsonObject["Scale"]["z"]};
+    m_Rotation = {jsonObject["Rotation"]["x"], jsonObject["Rotation"]["y"], jsonObject["Rotation"]["z"]};
+    m_DegRotation = {jsonObject["DegRotation"]["x"], jsonObject["DegRotation"]["y"], jsonObject["DegRotation"]["z"]};
 }
 
 

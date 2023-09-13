@@ -1,5 +1,7 @@
 #include "Entity/Components/MaterialComponent.h"
 
+#include "Entity/Assets/AssetManager.h"
+
 MaterialComponent::MaterialComponent(const uint32_t id) :
     Component(id, "MaterialComponent"), m_MaterialAsset(nullptr)
 {
@@ -19,9 +21,15 @@ ordered_json MaterialComponent::SerializeObject()
 {
     ordered_json component = {
         {"Id", GetId()},
+        {"Type", "MaterialComponent"},
         {"Name", GetName()},
         {"MaterialAssetId", m_MaterialAsset->GetId()},
     };
 
     return component;
+}
+
+void MaterialComponent::DeSerializeObject(json jsonObject)
+{
+    m_MaterialAsset = AssetManager::GetInstance().GetMaterial(static_cast<uint32_t>(jsonObject["MaterialAssetId"]));
 }

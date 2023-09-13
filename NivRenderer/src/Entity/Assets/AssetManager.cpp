@@ -33,6 +33,16 @@ Ref<MeshAsset> AssetManager::LoadMesh(const std::string& path)
     return tempSubModel.mesh;
 }
 
+Ref<MeshAsset> AssetManager::GetMesh(const uint32_t id)
+{
+    for (auto meshAsset : m_LoadedMeshAssets | std::views::values)
+    {
+        if (meshAsset->GetId() == id)
+            return meshAsset;
+    }
+    return nullptr;
+}
+
 Ref<TextureAsset> AssetManager::LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel, int channelIndex)
 {
     const bool textureExists = m_LoadedTextureAssets.contains(path);
@@ -81,6 +91,17 @@ Ref<TextureAsset> AssetManager::LoadTexture(std::string& path, bool flipVertical
     m_LoadedTextureAssets[path] = textureAsset;
 
     return textureAsset;
+}
+
+Ref<TextureAsset> AssetManager::GetTexture(const uint32_t id)
+{
+    for (auto textureAsset : m_LoadedTextureAssets | std::views::values)
+    {
+        if (textureAsset->GetId() == id)
+            return textureAsset;
+    }
+
+    return nullptr;
 }
 
 Ref<Shader> AssetManager::LoadShader(const std::string& path, ShaderType shaderType)
@@ -193,6 +214,9 @@ std::vector<std::pair<std::string, Ref<MeshAsset>>> AssetManager::GetMeshes() co
     std::vector<std::pair<std::string, Ref<MeshAsset>>> returnVector;
     for (const auto& mesh : m_LoadedMeshAssets)
     {
+        if (mesh.first == "default")
+            continue;
+
         returnVector.emplace_back(mesh);
     }
 
@@ -204,6 +228,9 @@ std::vector<std::pair<uint32_t, Ref<MaterialAsset>>> AssetManager::GetMaterials(
     std::vector<std::pair<uint32_t, Ref<MaterialAsset>>> returnVector;
     for (const auto& material : m_LoadedMaterialAssets)
     {
+        if (material.second->GetName() == "Default")
+            continue;
+
         returnVector.push_back(material);
     }
 
@@ -215,10 +242,33 @@ std::vector<std::pair<std::string, Ref<TextureAsset>>> AssetManager::GetTextures
     std::vector<std::pair<std::string, Ref<TextureAsset>>> returnVector;
     for (const auto& texture : m_LoadedTextureAssets)
     {
+        if (texture.first == "default" || texture.first == "white" || texture.first == "black")
+            continue;
+
         returnVector.emplace_back(texture);
     }
 
     return returnVector;
+}
+
+void AssetManager::AddTexture(const std::string& path, const Ref<TextureAsset>& textureAsset)
+{
+    m_LoadedTextureAssets[path] = textureAsset;
+}
+
+void AssetManager::AddMesh(const std::string& path, const Ref<MeshAsset>& meshAsset)
+{
+    m_LoadedMeshAssets[path] = meshAsset;
+}
+
+void AssetManager::AddMaterial(const Ref<MaterialAsset>& materialAsset)
+{
+    m_LoadedMaterialAssets[materialAsset->GetId()] = materialAsset;
+}
+
+void AssetManager::AddModel(const std::string& path, const Ref<Model>& model)
+{
+    m_LoadedModels[path] = model;
 }
 
 void AssetManager::loadDefaultMeshAndTextures()
@@ -527,6 +577,55 @@ ordered_json Model::SerializeObject()
     };
 
     return model;
+}
+
+void Model::DeserializeObject(json jsonObject)
+{
+    name = jsonObject["Name"];
+    subModels = deserializeSubModels(jsonObject["SubModels"]);
+}
+
+std::vector<SubModel>& Model::deserializeSubModels(json subModelsJsonArr)
+{
+    std::vector<SubModel> returnVector;
+    for (json subModelJson : subModelsJsonArr)
+    {
+        SubModel subModel;
+        subModel.name = subModelJson["Name"];
+        subModel.modelMatrix = glm::mat4(1.0f);
+        subModel.modelMatrix[0][0] = subModelJson["ModelMatrix"]["0"];
+        subModel.modelMatrix[0][1] = subModelJson["ModelMatrix"]["1"];
+        subModel.modelMatrix[0][2] = subModelJson["ModelMatrix"]["2"];
+        subModel.modelMatrix[0][3] = subModelJson["ModelMatrix"]["3"];
+        subModel.modelMatrix[1][0] = subModelJson["ModelMatrix"]["4"];
+        subModel.modelMatrix[1][1] = subModelJson["ModelMatrix"]["5"];
+        subModel.modelMatrix[1][2] = subModelJson["ModelMatrix"]["6"];
+        subModel.modelMatrix[1][3] = subModelJson["ModelMatrix"]["7"];
+        subModel.modelMatrix[2][0] = subModelJson["ModelMatrix"]["8"];
+        subModel.modelMatrix[2][1] = subModelJson["ModelMatrix"]["9"];
+        subModel.modelMatrix[2][2] = subModelJson["ModelMatrix"]["10"];
+        subModel.modelMatrix[2][3] = subModelJson["ModelMatrix"]["11"];
+        subModel.modelMatrix[3][0] = subModelJson["ModelMatrix"]["12"];
+        subModel.modelMatrix[3][1] = subModelJson["ModelMatrix"]["13"];
+        subModel.modelMatrix[3][2] = subModelJson["ModelMatrix"]["14"];
+        subModel.modelMatrix[3][3] = subModelJson["ModelMatrix"]["15"];
+        if (subModelJson.contains("MeshAssetId"))
+        {
+            const uint32_t meshAssetId = subModelJson["MeshAssetId"];
+            subModel.mesh = AssetManager::GetInstance().GetMesh(meshAssetId);
+        }
+        if (subModelJson.contains("MaterialAssetId"))
+        {
+            const uint32_t materialAssetId = subModelJson["MaterialAssetId"];
+            subModel.material = AssetManager::GetInstance().GetMaterial(materialAssetId);
+        }
+        if (subModelJson.contains("SubModels"))
+            subModel.subModels = deserializeSubModels(subModelJson["SubModels"]);
+
+        returnVector.push_back(subModel);
+    }
+
+    return returnVector;
 }
 
 ordered_json Model::addSubModelJson(std::vector<SubModel>& subModels)

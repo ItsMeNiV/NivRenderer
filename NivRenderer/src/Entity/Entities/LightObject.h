@@ -50,6 +50,13 @@ public:
 	    return object;
 	}
 
+    void DeSerializeObject(json jsonObject) override
+	{
+        m_EntityName = jsonObject["Name"];
+        m_LightColor = {jsonObject["LightColor"]["r"], jsonObject["LightColor"]["g"], jsonObject["LightColor"]["b"]};
+        m_Direction = {jsonObject["Direction"]["x"], jsonObject["Direction"]["y"], jsonObject["Direction"]["z"]};
+	}
+
 private:
 	glm::vec3 m_Direction;
 };
@@ -90,6 +97,14 @@ public:
 
         return object;
     }
+
+    void DeSerializeObject(json jsonObject) override
+    {
+	    m_EntityName = jsonObject["Name"];
+        m_LightColor = {jsonObject["LightColor"]["r"], jsonObject["LightColor"]["g"], jsonObject["LightColor"]["b"]};
+        m_Position = {jsonObject["Position"]["x"], jsonObject["Position"]["y"], jsonObject["Position"]["z"]};
+        m_Strength = jsonObject["Strength"];
+	}
 
 private:
 	glm::vec3 m_Position;

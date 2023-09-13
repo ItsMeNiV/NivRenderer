@@ -44,6 +44,7 @@ void Application::Run()
 	while (!m_Window->ShouldClose())
 	{
         PROFILE_FUNCTION()
+        m_Window->HandleWindowCommands();
 		m_Window->PollEvents();
 		m_Window->PrepareFrame();
 
@@ -64,14 +65,22 @@ void Application::handleWindowCommand(WindowCommandEvent command)
     if (command.GetCommand() == WindowCommand::SaveScene)
         SerializationManager::SaveSceneToFile("default.json", m_Scene);
     if (command.GetCommand() == WindowCommand::LoadScene)
-        SerializationManager::LoadSceneFromFile("default.json");
+    {
+        const auto newScene = SerializationManager::LoadSceneFromFile("default.json");
+        const Ref<Camera> camera(CreateRef<Camera>(glm::vec3(0.0f, 0.0f, 5.0f),
+                                                   newScene->GetSceneSettings().renderResolution.x,
+                                                   newScene->GetSceneSettings().renderResolution.y));
+        newScene->AddCamera(camera);
+        m_Scene = newScene;
+        m_Renderer->SetActiveScene(newScene);
+    }
 }
 
 void Application::setupDefaultScene()
 {
 	m_Scene->AddSceneObject();
 	m_Scene->AddDirectionalLight();
-    Ref<Camera> camera(CreateRef<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), m_Scene->GetSceneSettings().renderResolution.x, m_Scene->GetSceneSettings().renderResolution.y));
+    const Ref<Camera> camera(CreateRef<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), m_Scene->GetSceneSettings().renderResolution.x, m_Scene->GetSceneSettings().renderResolution.y));
 	m_Scene->AddCamera(camera);
 	m_Window->CreateCameraController(camera.get());
 }

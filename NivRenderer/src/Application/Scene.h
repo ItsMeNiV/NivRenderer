@@ -48,6 +48,7 @@ public:
     std::vector<std::pair<std::string, Property>> GetEntityProperties();
 
     ordered_json SerializeObject() override;
+    void DeSerializeObject(json jsonObject) override;
 
 private:
     uint32_t m_Id;

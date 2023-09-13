@@ -36,6 +36,7 @@ public:
     std::vector<std::pair<std::string, Property>> GetAssetProperties() override;
 
     ordered_json SerializeObject() override;
+    void DeSerializeObject(json jsonObject) override;
 
 private:
     std::string m_Name;

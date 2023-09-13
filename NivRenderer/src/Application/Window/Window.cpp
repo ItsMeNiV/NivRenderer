@@ -109,11 +109,11 @@ void Window::RenderImGui(Ref<Scene> scene)
 		if (ImGui::BeginMenu("File"))
 		{
             if (ImGui::MenuItem("Recompile Shaders", nullptr) && m_CommandHandlerCallback)
-				m_CommandHandlerCallback(WindowCommandEvent(WindowCommand::RecompileShaders));
+                m_WindowCommandStack.push(WindowCommand::RecompileShaders);
             if (ImGui::MenuItem("Save Scene", nullptr) && m_CommandHandlerCallback)
-                m_CommandHandlerCallback(WindowCommandEvent(WindowCommand::SaveScene));
+                m_WindowCommandStack.push(WindowCommand::SaveScene);
             if (ImGui::MenuItem("Load Scene", nullptr) && m_CommandHandlerCallback)
-                m_CommandHandlerCallback(WindowCommandEvent(WindowCommand::LoadScene));
+                m_WindowCommandStack.push(WindowCommand::LoadScene);
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
@@ -252,6 +252,18 @@ void Window::ProcessInput()
 void Window::SetCommandHandler(WindowCommandEventCallbackFn commandHandlerCallback)
 {
 	m_CommandHandlerCallback = commandHandlerCallback;
+}
+
+void Window::HandleWindowCommands()
+{
+    if (m_CommandHandlerCallback)
+    {
+        while (!m_WindowCommandStack.empty())
+        {
+            m_CommandHandlerCallback(WindowCommandEvent(m_WindowCommandStack.top()));
+            m_WindowCommandStack.pop();
+        }
+    }
 }
 
 void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)

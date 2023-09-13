@@ -22,13 +22,14 @@ public:
 private:
     std::unordered_map<uint32_t, Ref<Proxy>> m_Proxies;
 
-    void updateSceneObjectProxy(const uint32_t sceneObjectId, const Ref<SceneObjectProxy>& parentProxy);
-    void updateMaterialProxy(const uint32_t materialId);
-    void updateCameraProxy(const uint32_t cameraId);
-    void updateSkyboxProxy(const uint32_t skyboxId);
-    void updateSceneLightProxies(const uint32_t sceneLightId);
+    void updateSceneObjectProxy(const uint32_t sceneObjectId, const Ref<SceneObjectProxy>& parentProxy, std::unordered_map<uint32_t, Ref<Proxy>>& proxyMap);
+    void updateMaterialProxy(const uint32_t materialId, std::unordered_map<uint32_t, Ref<Proxy>>& proxyMap);
+    void updateCameraProxy(const uint32_t cameraId, std::unordered_map<uint32_t, Ref<Proxy>>& proxyMap);
+    void updateSkyboxProxy(const uint32_t skyboxId, std::unordered_map<uint32_t, Ref<Proxy>>& proxyMap);
+    void updateSceneLightProxies(const uint32_t sceneLightId, std::unordered_map<uint32_t, Ref<Proxy>>& proxyMap);
     void setupMaterialProxy(const std::string& assetPath, Ref<TextureProxy>& textureProxy,
-                            const Ref<TextureAsset>& textureAsset, const Ref<TextureAsset>& alternativeTextureAsset);
+                            const Ref<TextureAsset>& textureAsset, const Ref<TextureAsset>& alternativeTextureAsset,
+                            std::unordered_map<uint32_t, Ref<Proxy>>& proxyMap);
 
     void addSceneObjectProxyAndChildrenToList(std::vector<Ref<SceneObjectProxy>>& list, const Ref<SceneObject>& sceneObject);
 };

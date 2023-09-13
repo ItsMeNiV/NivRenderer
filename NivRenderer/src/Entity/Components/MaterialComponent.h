@@ -14,6 +14,7 @@ public:
     Ref<MaterialAsset>& GetMaterialAsset() { return m_MaterialAsset; }
 
     ordered_json SerializeObject() override;
+    void DeSerializeObject(json jsonObject) override;
 
 private:
     Ref<MaterialAsset> m_MaterialAsset;

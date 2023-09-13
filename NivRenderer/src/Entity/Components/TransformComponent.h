@@ -15,6 +15,7 @@ public:
     glm::vec3& GetRotation();
 
 	ordered_json SerializeObject() override;
+    void DeSerializeObject(json jsonObject) override;
 
 private:
 	glm::vec3 m_Position;

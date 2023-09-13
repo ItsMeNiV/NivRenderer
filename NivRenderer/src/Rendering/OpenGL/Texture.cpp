@@ -25,7 +25,7 @@ Texture::Texture(std::string&& path, bool flipVertically)
     }
     else
     {
-        std::cout << "Failed to load texture at path: " << m_Paths[0] << std::endl;
+        SPDLOG_DEBUG("Failed to load texture at path:" + m_Paths[0]);
     }
     stbi_image_free(data);
     glBindTexture(m_TextureType, 0);
@@ -53,7 +53,7 @@ Texture::Texture(std::vector<std::string> paths, bool flipVertically)
         }
         else
         {
-            std::cout << "Failed to load texture at path: " << paths[i] << std::endl;
+            SPDLOG_DEBUG("Failed to load texture at path:" + paths[i]);
             stbi_image_free(data);
         }
     }

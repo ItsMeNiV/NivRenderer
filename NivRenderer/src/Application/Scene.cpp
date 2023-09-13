@@ -19,13 +19,7 @@ Scene::Scene()
     m_HasSkybox = false;
 }
 
-Scene::~Scene()
-{
-    for (uint32_t id : m_SceneObjectIds)
-    {
-        ECSRegistry::GetInstance().RemoveEntity(id);
-    }
-}
+Scene::~Scene() = default;
 
 uint32_t Scene::AddSceneObject(int32_t parentObjectId)
 {
@@ -51,13 +45,13 @@ uint32_t Scene::AddEmptySceneObject(int32_t parentObjectId)
 
 void Scene::RemoveSceneObject(uint32_t sceneObjectId)
 {
-    Ref<Entity> object = ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId);
+    const Ref<Entity> object = ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId);
     if (object->GetChildEntities().size() > 0)
     {
-        auto childEntities = object->GetChildEntities();
-        for (auto& child : childEntities)
+        const auto childEntities = object->GetChildEntities();
+        for (const auto& child : childEntities)
         {
-            uint32_t childId = child->GetId();
+            const uint32_t childId = child->GetId();
             RemoveSceneObject(childId);
             object->RemoveChildEntity(childId);
         }
@@ -185,6 +179,8 @@ ordered_json Scene::SerializeObject()
         {"SampleCount", m_SceneSettings.sampleCount}
     };
 
+    scene["CurrentId"] = IdManager::GetInstance().GetCurrentId();
+
     scene["SceneObjects"] = json::array();
     scene["SceneLights"] = json::array();
     uint32_t i = 0;
@@ -243,4 +239,84 @@ ordered_json Scene::SerializeObject()
     }
 
     return scene;
+}
+
+void Scene::DeSerializeObject(json jsonObject)
+{
+    json sceneSettings = jsonObject["SceneSettings"];
+    m_SceneSettings.visualizeLights = sceneSettings["VisualizeLights"];
+    m_SceneSettings.animateDirectionalLight = sceneSettings["AnimateDirectionalLight"];
+    m_SceneSettings.renderResolution = { sceneSettings["RenderResolution"]["x"], sceneSettings["RenderResolution"]["y"] };
+    m_SceneSettings.tempRenderResolution = {sceneSettings["RenderResolution"]["x"], sceneSettings["RenderResolution"]["y"]};
+    m_SceneSettings.shadowmapResolution = {sceneSettings["ShadowmapResolution"]["x"], sceneSettings["ShadowmapResolution"]["y"]};
+    m_SceneSettings.tempShadowmapResolution = {sceneSettings["ShadowmapResolution"]["x"], sceneSettings["ShadowmapResolution"]["y"]};
+    m_SceneSettings.sampleCount = sceneSettings["SampleCount"];
+
+    json textureAssets = jsonObject["Assets"]["TextureAssets"];
+    for (json texture : textureAssets)
+    {
+        const Ref<TextureAsset> textureAsset = CreateRef<TextureAsset>(texture["Id"], texture["InternalPath"], texture["FlipVertical"]);
+        textureAsset->DeSerializeObject(texture);
+        AssetManager::GetInstance().AddTexture(texture["Path"], textureAsset);
+    }
+
+    json meshAssets = jsonObject["Assets"]["MeshAssets"];
+    for (json mesh : meshAssets)
+    {
+        const Ref<MeshAsset> meshAsset = CreateRef<MeshAsset>(mesh["Id"], mesh["InternalPath"]);
+        meshAsset->DeSerializeObject(mesh);
+        AssetManager::GetInstance().AddMesh(mesh["Path"], meshAsset);
+    }
+
+    json materialAssets = jsonObject["Assets"]["MaterialAssets"];
+    for (json material : materialAssets)
+    {
+        Ref<MaterialAsset> materialAsset = CreateRef<MaterialAsset>(material["Id"], material["Name"]);
+        materialAsset->DeSerializeObject(material);
+        AssetManager::GetInstance().AddMaterial(materialAsset);
+    }
+
+    json modelAssets = jsonObject["Assets"]["ModelAssets"];
+    for (json model : modelAssets)
+    {
+        Ref<Model> modelAsset = CreateRef<Model>();
+        modelAsset->DeserializeObject(model);
+        AssetManager::GetInstance().AddModel(model["Path"], modelAsset);
+    }
+
+    if (jsonObject.contains("Skybox"))
+    {
+        json skybox = jsonObject["Skybox"];
+        IdManager::GetInstance().SetNextId(skybox["Id"]);
+        AddSkybox();
+        ECSRegistry::GetInstance().GetEntity<SkyboxObject>(m_SkyboxId)->DeSerializeObject(skybox);
+    }
+
+    json sceneLights = jsonObject["SceneLights"];
+    for (json sceneLight : sceneLights)
+    {
+        if (sceneLight["Type"] == "DirectionalLight")
+        {
+            IdManager::GetInstance().SetNextId(sceneLight["Id"]);
+            const uint32_t directionalLightId = AddDirectionalLight();
+            ECSRegistry::GetInstance().GetEntity<DirectionalLightObject>(directionalLightId)->DeSerializeObject(sceneLight);
+        }
+        else if (sceneLight["Type"] == "PointLight")
+        {
+            IdManager::GetInstance().SetNextId(sceneLight["Id"]);
+            const uint32_t pointLightId = AddPointLight();
+            ECSRegistry::GetInstance().GetEntity<PointLightObject>(pointLightId)->DeSerializeObject(sceneLight);
+        }
+    }
+
+    json sceneObjects = jsonObject["SceneObjects"];
+    for (json sceneObject : sceneObjects)
+    {
+        IdManager::GetInstance().SetNextId(sceneObject["Id"]);
+        const uint32_t sceneObjectId = AddEmptySceneObject();
+        ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId)->DeSerializeObject(sceneObject);
+    }
+
+    const uint32_t currentId = jsonObject["CurrentId"];
+    IdManager::GetInstance().SetNextId(currentId + 1);
 }

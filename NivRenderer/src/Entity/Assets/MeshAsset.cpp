@@ -18,6 +18,7 @@ const std::vector<uint32_t>& MeshAsset::GetIndices() const
 ordered_json MeshAsset::SerializeObject()
 {
     ordered_json mesh = {
+        {"Id", GetId()},
         {"InternalPath", m_Path},
     };
 
@@ -35,13 +36,26 @@ ordered_json MeshAsset::SerializeObject()
         i++;
     }
 
-    mesh["Indices"] = json::array();
-    i = 0;
-    for (auto& ind : m_Indices)
-    {
-        mesh["Indices"][i] = ind;
-        i++;
-    }
+    mesh["Indices"] = m_Indices;
 
     return mesh;
+}
+
+void MeshAsset::DeSerializeObject(json jsonObject)
+{
+    {
+        const std::vector<uint32_t> indices = jsonObject["Indices"];
+        m_Indices = indices;
+    }
+    for (json vertex : jsonObject["Vertices"])
+    {
+        MeshVertex vert;
+        vert.Position = {vertex["Position"]["x"], vertex["Position"]["y"], vertex["Position"]["z"]};
+        vert.Normal = {vertex["Normal"]["x"], vertex["Normal"]["y"], vertex["Normal"]["z"]};
+        vert.TexCoords = {vertex["TexCoords"]["x"], vertex["TexCoords"]["y"]};
+        vert.Tangent = {vertex["Tangent"]["x"], vertex["Tangent"]["y"], vertex["Tangent"]["z"]};
+        vert.Bitangent = {vertex["Bitangent"]["x"], vertex["Bitangent"]["y"], vertex["Bitangent"]["z"]};
+
+        m_Vertices.push_back(vert);
+    }
 }

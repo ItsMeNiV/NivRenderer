@@ -1,5 +1,7 @@
 #include "SerializationManager.h"
 
+#include "Entity/ECSRegistry.h"
+
 void SerializationManager::SaveSceneToFile(const std::string& path, const Ref<Scene>& scene)
 {
     std::ofstream oStream(path);
@@ -8,12 +10,16 @@ void SerializationManager::SaveSceneToFile(const std::string& path, const Ref<Sc
     oStream.close();
 }
 
-const Ref<Scene>& SerializationManager::LoadSceneFromFile(const std::string& path)
+Ref<Scene> SerializationManager::LoadSceneFromFile(const std::string& path)
 {
     std::ifstream iStream(path);
     json fileJson;
 
     iStream >> fileJson;
-    std::cout << fileJson["SceneSettings"].dump() << std::endl;
-    return {};
+
+    ECSRegistry::GetInstance().ClearRegistry();
+    Ref<Scene> scene = CreateRef<Scene>();
+    scene->DeSerializeObject(fileJson);
+
+    return scene;
 }

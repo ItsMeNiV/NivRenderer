@@ -13,7 +13,7 @@ public:
     const uint32_t& GetId() const { return m_Id; }
 	virtual std::vector<std::pair<std::string, Property>> GetComponentProperties() = 0;
 
-private:
+protected:
     uint32_t m_Id;
 	const char* m_Name;
 };

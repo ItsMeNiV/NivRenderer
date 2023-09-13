@@ -29,12 +29,19 @@ ordered_json MeshComponent::SerializeObject()
 {
     ordered_json component = {
         {"Id", GetId()},
+        {"Type", "MeshComponent"},
         {"Name", GetName()},
         {"Path", m_Path},
         {"MeshAssetId", m_MeshAsset->GetId()},
     };
 
     return component;
+}
+
+void MeshComponent::DeSerializeObject(json jsonObject)
+{
+    m_Path = jsonObject["Path"];
+    m_MeshAsset = AssetManager::GetInstance().GetMesh(jsonObject["MeshAssetId"]);
 }
 
 void MeshComponent::reloadMesh()

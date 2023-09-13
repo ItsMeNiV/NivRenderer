@@ -23,7 +23,9 @@ struct Model
     std::vector<SubModel> subModels;
 
     ordered_json SerializeObject();
+    void DeserializeObject(json jsonObject);
     static ordered_json addSubModelJson(std::vector<SubModel>& subModels);
+    static std::vector<SubModel>& deserializeSubModels(json subModelsJsonArr);
 };
 
 class AssetManager
@@ -39,7 +41,9 @@ public:
     }
 
     Ref<MeshAsset> LoadMesh(const std::string& path);
+    Ref<MeshAsset> GetMesh(const uint32_t id);
     Ref<TextureAsset> LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel = false, int channelIndex = 0);
+    Ref<TextureAsset> GetTexture(const uint32_t id);
     Ref<Shader> LoadShader(const std::string& path, ShaderType shaderType);
     Ref<Model> LoadModel(const std::string& path);
     Ref<Model> GetModel(const std::string& path);
@@ -54,6 +58,11 @@ public:
     std::vector<std::pair<std::string, Ref<MeshAsset>>> GetMeshes() const;
     std::vector<std::pair<uint32_t, Ref<MaterialAsset>>> GetMaterials() const;
     std::vector<std::pair<std::string, Ref<TextureAsset>>> GetTextures() const;
+    //Used for Deserialization
+    void AddTexture(const std::string& path, const Ref<TextureAsset>& textureAsset);
+    void AddMesh(const std::string& path, const Ref<MeshAsset>& meshAsset);
+    void AddMaterial(const Ref<MaterialAsset>& materialAsset);
+    void AddModel(const std::string& path, const Ref<Model>& model);
 
 private:
     AssetManager();

@@ -119,3 +119,26 @@ ordered_json SkyboxObject::SerializeObject()
 
     return object;
 }
+
+void SkyboxObject::DeSerializeObject(json jsonObject)
+{
+    m_EntityName = jsonObject["Name"];
+    m_TextureFolder = jsonObject["TextureFolder"];
+    m_FlipTextures = jsonObject["FlipTextures"];
+
+    if (jsonObject.contains("TextureAssets"))
+    {
+        uint32_t i = 0;
+        for (const uint32_t textureAssetId : jsonObject["TextureAssets"])
+        {
+            m_TextureAssets[i] = AssetManager::GetInstance().GetTexture(textureAssetId);
+            i++;
+        }
+    }
+    if (jsonObject.contains("TexturePaths"))
+    {
+        uint32_t i = 0;
+        for (const std::string& path : jsonObject["TexturePaths"])
+            m_TexturePaths[i] = path;
+    }
+}

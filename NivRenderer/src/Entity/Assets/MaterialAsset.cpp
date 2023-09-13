@@ -2,9 +2,9 @@
 #include "Entity/Assets/AssetManager.h"
 
 MaterialAsset::MaterialAsset(uint32_t id, const std::string& name) :
-    Asset(id), m_Name(name), m_DiffusePath("default"),
-    m_FlipDiffuseTexture(false), m_FlipNormalTexture(false), m_FlipMetallicTexture(false),
-    m_FlipRoughnessTexture(false), m_FlipAOTexture(false), m_FlipEmissiveTexture(false), m_DirtyFlag(true)
+    Asset(id), m_Name(name), m_DirtyFlag(true),
+    m_DiffusePath("default"), m_FlipDiffuseTexture(false), m_FlipNormalTexture(false),
+    m_FlipMetallicTexture(false), m_FlipRoughnessTexture(false), m_FlipAOTexture(false), m_FlipEmissiveTexture(false)
 {}
 
 void MaterialAsset::reloadDiffuseTexture()
@@ -91,6 +91,7 @@ std::vector<std::pair<std::string, Property>> MaterialAsset::GetAssetProperties(
 ordered_json MaterialAsset::SerializeObject()
 {
     ordered_json material = {
+        {"Id", GetId()},
         {"Name", m_Name},
     };
     if (m_DiffuseTextureAsset)
@@ -143,4 +144,15 @@ ordered_json MaterialAsset::SerializeObject()
     }
 
     return material;
+}
+
+void MaterialAsset::DeSerializeObject(json jsonObject)
+{
+    if (jsonObject.contains("Diffuse"))
+    {
+        json diffuse = jsonObject["Diffuse"];
+        m_DiffusePath = diffuse["Path"];
+        m_FlipDiffuseTexture = diffuse["Flip"];
+        m_DiffuseTextureAsset = AssetManager::GetInstance().LoadTexture(m_DiffusePath, m_FlipDiffuseTexture);
+    }
 }

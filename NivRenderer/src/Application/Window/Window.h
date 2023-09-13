@@ -1,4 +1,6 @@
 #pragma once
+#include <stack>
+
 #include "Base.h"
 
 #include "Application/Window/CameraControllerArcball.h"
@@ -24,6 +26,7 @@ public:
 	void CreateCameraController(Camera* camera);
 	void ProcessInput();
 	void SetCommandHandler(WindowCommandEventCallbackFn commandHandlerCallback);
+    void HandleWindowCommands();
 
 	const uint32_t GetWidth() const { return m_Width; }
 	const uint32_t GetHeight() const { return m_Height; }
@@ -37,6 +40,7 @@ private:
 	float m_DeltaTime, m_LastFrame;
 	WindowCommandEventCallbackFn m_CommandHandlerCallback;
 	bool m_FirstRender;
+    std::stack<WindowCommand> m_WindowCommandStack;
 
 	//Scene-Hierarchy
 	int32_t m_SelectedObject;
