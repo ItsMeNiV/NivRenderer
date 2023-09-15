@@ -14,7 +14,7 @@ public:
     std::array<std::string, 6>& GetTexturePaths() { return m_TexturePaths; }
     std::string* GetTextureFolder() { return &m_TextureFolder; }
     bool* GetFlipTextures() { return &m_FlipTextures; }
-    std::array<Ref<TextureAsset>, 6>& GetTextureAssets() { return m_TextureAssets; }
+    std::array<TextureAsset*, 6>& GetTextureAssets() { return m_TextureAssets; }
     bool HasAllTexturesSet();
 
     std::vector<std::pair<std::string, Property>> GetEntityProperties() override;
@@ -25,6 +25,6 @@ public:
 private:
     std::string m_TextureFolder;
     std::array<std::string, 6> m_TexturePaths;
-    std::array<Ref<TextureAsset>, 6> m_TextureAssets;
+    std::array<TextureAsset*, 6> m_TextureAssets;
     bool m_FlipTextures;
 };

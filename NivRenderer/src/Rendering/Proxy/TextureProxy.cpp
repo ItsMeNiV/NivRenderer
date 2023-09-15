@@ -10,7 +10,7 @@ TextureProxy::~TextureProxy()
 {
 }
 
-void TextureProxy::CreateTextureFromAsset(const Ref<TextureAsset>& textureAsset)
+void TextureProxy::CreateTextureFromAsset(TextureAsset* const textureAsset)
 {
     GLenum format;
     switch (*textureAsset->GetNrComponents())
@@ -39,7 +39,7 @@ void TextureProxy::CreateTextureFromAsset(const Ref<TextureAsset>& textureAsset)
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-const void TextureProxy::BindToSlot(uint32_t slot) const
+void TextureProxy::BindToSlot(uint32_t slot) const
 {
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, m_TextureId);

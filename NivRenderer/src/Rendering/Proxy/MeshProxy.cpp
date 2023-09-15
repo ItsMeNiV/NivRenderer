@@ -15,7 +15,7 @@ MeshProxy::~MeshProxy()
     glDeleteVertexArrays(1, &m_VertexArray);
 }
 
-void MeshProxy::CreateBuffers(const Ref<MeshComponent>& mesh)
+void MeshProxy::CreateBuffers(MeshComponent* const mesh)
 {
     glBindVertexArray(m_VertexArray);
 

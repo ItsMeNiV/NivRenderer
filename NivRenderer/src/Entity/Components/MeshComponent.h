@@ -7,10 +7,11 @@ class MeshComponent : public Component
 {
 public:
     MeshComponent(const uint32_t id);
-	~MeshComponent() = default;
+	~MeshComponent() override = default;
 
-    Ref<MeshAsset>& GetMeshAsset();
+    MeshAsset* GetMeshAsset() const;
     std::string& GetPath();
+    void SetMeshAsset(MeshAsset* asset);
 
     std::vector<std::pair<std::string, Property>> GetComponentProperties() override;
 
@@ -19,7 +20,7 @@ public:
 
 private:
 	std::string m_Path;
-    Ref<MeshAsset> m_MeshAsset;
+    MeshAsset* m_MeshAsset;
 
     void reloadMesh();
 

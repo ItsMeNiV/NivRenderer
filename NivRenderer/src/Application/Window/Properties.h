@@ -116,7 +116,7 @@ bool displayProperty(std::pair<std::string, Property>& property, std::string& na
         break;
     case PropertyType::MATERIALDROPDOWN:
     {
-        auto* materialAsset = static_cast<Ref<MaterialAsset>*>(property.second.valuePtr);
+        auto* materialAsset = static_cast<MaterialAsset**>(property.second.valuePtr);
         if (ImGui::BeginCombo("Material", (*materialAsset)->GetName().c_str()))
         {
             for (const uint32_t materialId : AssetManager::GetInstance().GetMaterialIds(true))
@@ -138,7 +138,7 @@ bool displayProperty(std::pair<std::string, Property>& property, std::string& na
     return wasEdited;
 }
 
-inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>& scene)
+inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
 {
 	ImGui::Begin("Properties", nullptr, ImGuiWindowFlags_NoCollapse);
 
@@ -148,7 +148,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
 		return;
 	}
 
-    if (const Ref<SceneObject> sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(selectedSceneObject))
+    if (const auto sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(selectedSceneObject))
 	{
         for (auto& it : sceneObject->GetEntityProperties())
         {
@@ -156,7 +156,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
                 sceneObject->SetDirtyFlag(true);
         }
 
-        const std::vector<Ref<Component>> components = ECSRegistry::GetInstance().GetAllComponents(selectedSceneObject);
+        const auto components = ECSRegistry::GetInstance().GetAllComponents(selectedSceneObject);
 		for (const auto& component : components)
 		{
             std::string componentName = std::string(component->GetName());
@@ -173,7 +173,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, const Ref<Scene>
 	else
 	{
         const auto materialAsset = AssetManager::GetInstance().GetMaterial(selectedSceneObject);
-        const Ref<Entity> selectedEntity = ECSRegistry::GetInstance().GetEntity<Entity>(selectedSceneObject);
+        const auto selectedEntity = ECSRegistry::GetInstance().GetEntity<Entity>(selectedSceneObject);
         std::vector<std::pair<std::string, Property>> entityProperties;
         if (materialAsset)
             entityProperties = materialAsset->GetAssetProperties();

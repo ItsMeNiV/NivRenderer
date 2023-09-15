@@ -24,20 +24,20 @@ Scene::~Scene() = default;
 uint32_t Scene::AddSceneObject(int32_t parentObjectId)
 {
     AssetManager& am = AssetManager::GetInstance(); //Create Instance first so the default stuff is loaded on Startup
-    const Ref<SceneObject> object = ECSRegistry::GetInstance().CreateEntity<SceneObject>(parentObjectId);
+    const auto object = ECSRegistry::GetInstance().CreateEntity<SceneObject>(parentObjectId);
     if(parentObjectId == -1)
         m_SceneObjectIds.push_back(object->GetId());
     ECSRegistry::GetInstance().AddComponent<TransformComponent>(object->GetId());
     ECSRegistry::GetInstance().AddComponent<MeshComponent>(object->GetId());
     ECSRegistry::GetInstance().AddComponent<MaterialComponent>(object->GetId());
-    ECSRegistry::GetInstance().GetComponent<MaterialComponent>(object->GetId())->GetMaterialAsset() = am.GetMaterial("Default");
+    ECSRegistry::GetInstance().GetComponent<MaterialComponent>(object->GetId())->SetMaterialAsset(am.GetMaterial("Default"));
     return object->GetId();
 }
 
 uint32_t Scene::AddEmptySceneObject(int32_t parentObjectId)
 {
     AssetManager& am = AssetManager::GetInstance(); // Create Instance first so the default stuff is loaded on Startup
-    const Ref<SceneObject> object = ECSRegistry::GetInstance().CreateEntity<SceneObject>(parentObjectId);
+    const auto object = ECSRegistry::GetInstance().CreateEntity<SceneObject>(parentObjectId);
     if (parentObjectId == -1)
         m_SceneObjectIds.push_back(object->GetId());
     return object->GetId();
@@ -45,23 +45,8 @@ uint32_t Scene::AddEmptySceneObject(int32_t parentObjectId)
 
 void Scene::RemoveSceneObject(uint32_t sceneObjectId)
 {
-    const Ref<Entity> object = ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId);
-    if (object->GetChildEntities().size() > 0)
-    {
-        const auto childEntities = object->GetChildEntities();
-        for (const auto& child : childEntities)
-        {
-            const uint32_t childId = child->GetId();
-            RemoveSceneObject(childId);
-            object->RemoveChildEntity(childId);
-        }
-    }
     ECSRegistry::GetInstance().RemoveEntity(sceneObjectId);
-    if (object->GetParentEntityId() != -1)
-        ECSRegistry::GetInstance().GetEntity<SceneObject>(object->GetParentEntityId())->RemoveChildEntity(sceneObjectId);
-
-    if(std::find(m_SceneObjectIds.begin(), m_SceneObjectIds.end(), sceneObjectId) != m_SceneObjectIds.end())
-        m_SceneObjectIds.erase(std::remove(m_SceneObjectIds.begin(), m_SceneObjectIds.end(), sceneObjectId));
+    m_SceneObjectIds.erase(std::ranges::remove(m_SceneObjectIds, sceneObjectId).begin());
 }
 
 void Scene::RemoveSkyboxObject()
@@ -73,7 +58,7 @@ void Scene::RemoveSkyboxObject()
 
 uint32_t Scene::AddDirectionalLight()
 {
-    Ref<Entity> object = ECSRegistry::GetInstance().CreateEntity<DirectionalLightObject>();
+    const auto object = ECSRegistry::GetInstance().CreateEntity<DirectionalLightObject>();
     m_SceneLightIds.push_back(object->GetId());
     m_HasDirectionalLight = true;
     return object->GetId();
@@ -81,14 +66,14 @@ uint32_t Scene::AddDirectionalLight()
 
 uint32_t Scene::AddPointLight()
 {
-    Ref<Entity> object = ECSRegistry::GetInstance().CreateEntity<PointLightObject>();
+    const auto object = ECSRegistry::GetInstance().CreateEntity<PointLightObject>();
     m_SceneLightIds.push_back(object->GetId());
     return object->GetId();
 }
 
 uint32_t Scene::AddSkybox()
 {
-    Ref<Entity> object = ECSRegistry::GetInstance().CreateEntity<SkyboxObject>();
+    const auto object = ECSRegistry::GetInstance().CreateEntity<SkyboxObject>();
     m_SkyboxId = object->GetId();
     m_HasSkybox = true;
     return 0;
@@ -96,7 +81,7 @@ uint32_t Scene::AddSkybox()
 
 uint32_t Scene::AddMaterialAsset()
 {
-    const Ref<MaterialAsset> materialAsset = AssetManager::GetInstance().CreateMaterial();
+    const auto materialAsset = AssetManager::GetInstance().CreateMaterial();
     return materialAsset->GetId();
 }
 
@@ -106,12 +91,10 @@ void Scene::RemoveSceneLight(uint32_t sceneLightId)
         m_HasDirectionalLight = false;
 
     ECSRegistry::GetInstance().RemoveEntity(sceneLightId);
-
-    if (std::ranges::find(m_SceneLightIds, sceneLightId) != m_SceneLightIds.end())
-        m_SceneLightIds.erase(std::ranges::remove(m_SceneLightIds, sceneLightId).begin());
+    m_SceneLightIds.erase(std::ranges::remove(m_SceneLightIds, sceneLightId).begin());
 }
 
-void Scene::RemoveMaterialAsset(uint32_t materialAssetId)
+void Scene::RemoveMaterialAsset(uint32_t materialAssetId) const
 {
     //Remove Material from all SceneObjects that use it (Set Material back to Default)
     const auto defaultMaterial = AssetManager::GetInstance().GetMaterial("Default");
@@ -122,10 +105,10 @@ void Scene::RemoveMaterialAsset(uint32_t materialAssetId)
         if (materialComponent->GetMaterialAsset()->GetId() != materialAssetId)
             continue;
 
-        materialComponent->GetMaterialAsset() = defaultMaterial;
-        if (const Ref<Model> model = AssetManager::GetInstance().GetModel(*sceneObject->GetModelPath()))
+        materialComponent->SetMaterialAsset(defaultMaterial);
+        if (const auto model = AssetManager::GetInstance().GetModel(*sceneObject->GetModelPath()))
         {
-            auto& subModels = model->subModels;
+            auto& subModels = model->subModels; //TODO: After memory refactoring -> Only need to update material, the rest are all pointers to it
             while (!subModels.empty())
             {
                 for (auto& subModel : subModels)
@@ -138,14 +121,14 @@ void Scene::RemoveMaterialAsset(uint32_t materialAssetId)
         sceneObject->SetDirtyFlag(true);
     }
 
-    //Remove Material itsself
+    //Remove Material itself
     AssetManager::GetInstance().RemoveMaterial(materialAssetId);
 }
 
-uint32_t Scene::AddCamera(const Ref<Camera> cameraPtr)
+uint32_t Scene::AddCamera(Camera* cameraPtr)
 {
-    Ref<Entity> object = ECSRegistry::GetInstance().CreateEntity<CameraObject>();
-    std::static_pointer_cast<CameraObject>(object)->SetCameraPtr(cameraPtr);
+    const auto object = ECSRegistry::GetInstance().CreateEntity<CameraObject>();
+    object->SetCameraPtr(cameraPtr);
     m_CameraId = object->GetId();
     return object->GetId();
 }
@@ -255,33 +238,33 @@ void Scene::DeSerializeObject(json jsonObject)
     json textureAssets = jsonObject["Assets"]["TextureAssets"];
     for (json texture : textureAssets)
     {
-        const Ref<TextureAsset> textureAsset = CreateRef<TextureAsset>(texture["Id"], texture["InternalPath"], texture["FlipVertical"]);
+        auto textureAsset = CreateScope<TextureAsset>(texture["Id"], texture["InternalPath"], texture["FlipVertical"]);
         textureAsset->DeSerializeObject(texture);
-        AssetManager::GetInstance().AddTexture(texture["Path"], textureAsset);
+        AssetManager::GetInstance().AddTexture(texture["Path"], std::move(textureAsset));
     }
 
     json meshAssets = jsonObject["Assets"]["MeshAssets"];
     for (json mesh : meshAssets)
     {
-        const Ref<MeshAsset> meshAsset = CreateRef<MeshAsset>(mesh["Id"], mesh["InternalPath"]);
+        auto meshAsset = CreateScope<MeshAsset>(mesh["Id"], mesh["InternalPath"]);
         meshAsset->DeSerializeObject(mesh);
-        AssetManager::GetInstance().AddMesh(mesh["Path"], meshAsset);
+        AssetManager::GetInstance().AddMesh(mesh["Path"], std::move(meshAsset));
     }
 
     json materialAssets = jsonObject["Assets"]["MaterialAssets"];
     for (json material : materialAssets)
     {
-        Ref<MaterialAsset> materialAsset = CreateRef<MaterialAsset>(material["Id"], material["Name"]);
+        auto materialAsset = CreateScope<MaterialAsset>(material["Id"], material["Name"]);
         materialAsset->DeSerializeObject(material);
-        AssetManager::GetInstance().AddMaterial(materialAsset);
+        AssetManager::GetInstance().AddMaterial(std::move(materialAsset));
     }
 
     json modelAssets = jsonObject["Assets"]["ModelAssets"];
     for (json model : modelAssets)
     {
-        Ref<Model> modelAsset = CreateRef<Model>();
+        auto modelAsset = CreateScope<Model>();
         modelAsset->DeserializeObject(model);
-        AssetManager::GetInstance().AddModel(model["Path"], modelAsset);
+        AssetManager::GetInstance().AddModel(model["Path"], std::move(modelAsset));
     }
 
     if (jsonObject.contains("Skybox"))

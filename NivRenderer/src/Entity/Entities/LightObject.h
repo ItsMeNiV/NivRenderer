@@ -23,7 +23,7 @@ public:
 		m_Direction(0.0f, -1.0f, 0.0f)
 	{}
 
-	~DirectionalLightObject() = default;
+	~DirectionalLightObject() override = default;
 
 	void SetDirection(glm::vec3& direction) { m_Direction = direction; }
 	glm::vec3& GetDirection() { return m_Direction; }
@@ -68,7 +68,7 @@ public:
 		m_Position(0.0f, 0.0f, 0.0f), m_Strength(50)
 	{}
 
-	~PointLightObject() = default;
+	~PointLightObject() override = default;
 
 	void SetPosition(glm::vec3& position) { m_Position = position; }
 	glm::vec3& GetPosition() { return m_Position; }

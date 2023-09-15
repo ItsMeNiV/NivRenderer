@@ -9,7 +9,7 @@ Framebuffer::Framebuffer(const int width, const int height, const FramebufferAtt
 
     if (attachmentType == FramebufferAttachmentType::DEPTH_STENCIL_COLOR)
     {
-        m_TextureAttachment = CreateRef<Texture>(width, height, InternalFormat::RGB, sampleCount);
+        m_TextureAttachment = CreateScope<Texture>(width, height, InternalFormat::RGB, sampleCount);
         glGenRenderbuffers(1, &m_RenderBuffer);
         glBindRenderbuffer(GL_RENDERBUFFER, m_RenderBuffer);
         if (sampleCount > 1)
@@ -24,7 +24,7 @@ Framebuffer::Framebuffer(const int width, const int height, const FramebufferAtt
     }
     else if (attachmentType == FramebufferAttachmentType::DEPTH_ONLY)
     {
-        m_TextureAttachment = CreateRef<Texture>(width, height, InternalFormat::DEPTH);
+        m_TextureAttachment = CreateScope<Texture>(width, height, InternalFormat::DEPTH);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_TextureAttachment->GetTextureType(), m_TextureAttachment->GetTextureId(), 0);
         glDrawBuffer(GL_NONE);
         glReadBuffer(GL_NONE);

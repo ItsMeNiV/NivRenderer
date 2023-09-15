@@ -6,9 +6,9 @@ class CameraProxy : public Proxy
 {
 public:
     CameraProxy(uint32_t id) : Proxy(id) {}
-    virtual ~CameraProxy() = default;
+    ~CameraProxy() override = default;
 
-    void UpdateData(Ref<Camera> camera)
+    void UpdateData(Camera* camera)
     {
         m_View = camera->GetView();
         m_Projection = camera->GetProjection();

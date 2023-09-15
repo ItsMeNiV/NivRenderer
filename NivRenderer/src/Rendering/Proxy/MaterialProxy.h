@@ -17,13 +17,13 @@ public:
     void BindAOTexture(const int32_t slot) const;
     void BindEmissiveTexture(const int32_t slot) const;
 
-    Ref<TextureProxy>& GetDiffuseTexture();
-    Ref<TextureProxy>& GetNormalTexture();
-    Ref<TextureProxy>& GetMetallicTexture();
-    Ref<TextureProxy>& GetRoughnessTexture();
-    Ref<TextureProxy>& GetAOTexture();
-    Ref<TextureProxy>& GetEmissiveTexture();
+    TextureProxy** GetDiffuseTexture();
+    TextureProxy** GetNormalTexture();
+    TextureProxy** GetMetallicTexture();
+    TextureProxy** GetRoughnessTexture();
+    TextureProxy** GetAOTexture();
+    TextureProxy** GetEmissiveTexture();
 
 private:
-    Ref<TextureProxy> m_DiffuseTexture, m_NormalTexture, m_MetallicTexture, m_RoughnessTexture, m_AOTexture, m_EmissiveTexture;
+    TextureProxy* m_DiffuseTexture, *m_NormalTexture, *m_MetallicTexture, *m_RoughnessTexture, *m_AOTexture, *m_EmissiveTexture;
 };

@@ -45,7 +45,7 @@ public:
         glDeleteTextures(1, &m_Texture);
     }
 
-    void SetTextures(const std::array<Ref<TextureAsset>, 6>& textures)
+    void SetTextures(const std::array<TextureAsset*, 6>& textures)
     {
         if (m_Texture != UINT32_MAX)
             glDeleteTextures(1, &m_Texture);

@@ -98,7 +98,7 @@ void Window::PrepareFrame()
     ImGuizmo::BeginFrame();
 }
 
-void Window::RenderImGui(Ref<Scene> scene)
+void Window::RenderImGui(Scene* scene)
 {
 	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -218,10 +218,11 @@ void Window::UpdateFramebuffer(uint32_t width, uint32_t height)
 	}
 }
 
-void Window::CreateCameraController(Camera* camera)
+void Window::CreateCameraAndController(glm::ivec2& renderResolution)
 {
-	m_CameraControllerFirstPerson = CreateScope<CameraControllerFirstPerson>(camera, 3.0f, 0.1f);
-	m_CameraControllerArcball = CreateScope<CameraControllerArcball>(camera, 5.0f, 0.3f);
+    m_Camera = CreateScope<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), renderResolution.x, renderResolution.y);
+    m_CameraControllerFirstPerson = CreateScope<CameraControllerFirstPerson>(m_Camera.get(), 3.0f, 0.1f);
+    m_CameraControllerArcball = CreateScope<CameraControllerArcball>(m_Camera.get(), 5.0f, 0.3f);
 }
 
 void Window::ProcessInput()

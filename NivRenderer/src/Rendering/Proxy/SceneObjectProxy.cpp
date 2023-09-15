@@ -16,12 +16,12 @@ void SceneObjectProxy::SetTransform(glm::vec3 position, glm::vec3 scale, glm::ve
     m_ModelMatrix = glm::scale(m_ModelMatrix, scale);
 }
 
-void SceneObjectProxy::SetMesh(const Ref<MeshProxy>& meshProxy)
+void SceneObjectProxy::SetMesh(MeshProxy* const meshProxy)
 {
     m_MeshProxy = meshProxy;
 }
 
-void SceneObjectProxy::SetMaterial(const Ref<MaterialProxy>& materialProxy)
+void SceneObjectProxy::SetMaterial(MaterialProxy* const materialProxy)
 {
     m_MaterialProxy = materialProxy;
 }

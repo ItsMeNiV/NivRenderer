@@ -9,7 +9,7 @@ public:
     MeshProxy(uint32_t id);
     ~MeshProxy();
 
-    void CreateBuffers(const Ref<MeshComponent>& mesh);
+    void CreateBuffers(MeshComponent* const mesh);
 
     void Bind() const;
     void Unbind() const;

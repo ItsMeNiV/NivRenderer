@@ -19,19 +19,20 @@ public:
 	void CreateRenderContext();
 	bool ShouldClose();
 	void PrepareFrame();
-	void RenderImGui(Ref<Scene> scene);
+	void RenderImGui(Scene* scene);
 	void PollEvents();
 	void SwapBuffers();
 	void UpdateFramebuffer(uint32_t width, uint32_t height);
-	void CreateCameraController(Camera* camera);
+    void CreateCameraAndController(glm::ivec2& renderResolution);
 	void ProcessInput();
 	void SetCommandHandler(WindowCommandEventCallbackFn commandHandlerCallback);
     void HandleWindowCommands();
 
-	const uint32_t GetWidth() const { return m_Width; }
-	const uint32_t GetHeight() const { return m_Height; }
+    uint32_t GetWidth() const { return m_Width; }
+    uint32_t GetHeight() const { return m_Height; }
 	Framebuffer* const GetFramebuffer() const { return m_MainFramebuffer.get(); }
     double GetWindowRuntime() const { return glfwGetTime(); }
+    Camera* GetCamera() const { return m_Camera.get(); }
 
 private:
 	GLFWwindow* m_Window;
@@ -49,7 +50,8 @@ private:
 	Scope<Framebuffer> m_MainFramebuffer;
 	bool m_RenderWindowHovered;
 
-	//Camera Controller
+	//Camera & Controller
+    Scope<Camera> m_Camera;
 	Scope<CameraControllerFirstPerson> m_CameraControllerFirstPerson;
 	Scope<CameraControllerArcball> m_CameraControllerArcball;
 	bool m_FirstMouse, m_Sprinting, m_IsFocused, m_ArcballMove;

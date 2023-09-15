@@ -7,22 +7,23 @@
 class Renderer
 {
 public:
-	Renderer(Ref<Window> window);
+	Renderer(Window* window);
 	~Renderer();
 
 	void PrepareFrame() const;
 	void RenderScene() const;
 
-	void SetActiveScene(Ref<Scene> scene) { m_ActiveScene = scene; }
-	void SetActivePipeline(const Ref<RenderPipeline>& renderPipeline) { m_ActiveRenderPipeline = renderPipeline; }
+	Scene* GetScene() const { return m_Scene.get(); }
+	void SetScene(Scene* scene) { m_Scene.reset(scene); }
+	void SetActivePipeline(RenderPipeline* renderPipeline) { m_ActiveRenderPipeline.reset(renderPipeline); }
 
-	const Ref<RenderPipeline>& GetActivePipeline() const { return m_ActiveRenderPipeline; }
+	RenderPipeline* GetActivePipeline() const { return m_ActiveRenderPipeline.get(); }
 
 	void AnimateDirectionalLight() const;
 
 private:
-	Ref<Window> m_ActiveWindow;
-	Ref<Scene> m_ActiveScene;
-	Ref<RenderPipeline> m_ActiveRenderPipeline;
+	Window* m_ActiveWindow;
+	Scope<Scene> m_Scene;
+	Scope<RenderPipeline> m_ActiveRenderPipeline;
 	Scope<ProxyManager> m_ProxyManager;
 };

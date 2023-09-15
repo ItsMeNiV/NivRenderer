@@ -2,7 +2,7 @@
 
 #include "Entity/ECSRegistry.h"
 
-void SerializationManager::SaveSceneToFile(const std::string& path, const Ref<Scene>& scene)
+void SerializationManager::SaveSceneToFile(const std::string& path, Scene* const scene)
 {
     std::ofstream oStream(path);
     const ordered_json sceneJson = scene->SerializeObject();
@@ -10,7 +10,7 @@ void SerializationManager::SaveSceneToFile(const std::string& path, const Ref<Sc
     oStream.close();
 }
 
-Ref<Scene> SerializationManager::LoadSceneFromFile(const std::string& path)
+Scene* SerializationManager::LoadSceneFromFile(const std::string& path)
 {
     std::ifstream iStream(path);
     json fileJson;
@@ -18,7 +18,7 @@ Ref<Scene> SerializationManager::LoadSceneFromFile(const std::string& path)
     iStream >> fileJson;
 
     ECSRegistry::GetInstance().ClearRegistry();
-    Ref<Scene> scene = CreateRef<Scene>();
+    Scene* scene = new Scene();
     scene->DeSerializeObject(fileJson);
 
     return scene;

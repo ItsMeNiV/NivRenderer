@@ -28,7 +28,7 @@ void SceneObject::LoadModel()
         ECSRegistry::GetInstance().AddComponent<TransformComponent>(GetId());
     }
 
-    const Ref<Model> model = AssetManager::GetInstance().LoadModel(m_ModelPath);
+    const auto model = AssetManager::GetInstance().LoadModel(m_ModelPath);
     m_EntityName = model->name;
     for (auto& subModel : model->subModels)
         createChildSceneObjectFromSubModel(subModel, GetId());
@@ -130,14 +130,14 @@ void SceneObject::createChildSceneObjectFromSubModel(const SubModel& subModel, c
     if (subModel.mesh)
     {
         const auto meshComponent = ECSRegistry::GetInstance().AddComponent<MeshComponent>(subObject->GetId());
-        meshComponent->GetMeshAsset() = subModel.mesh;
+        meshComponent->SetMeshAsset(subModel.mesh);
         const std::string meshPath = subModel.mesh->GetPath();
         meshComponent->GetPath() = meshPath;
     }
     if (subModel.material)
     {
         const auto materialComponent = ECSRegistry::GetInstance().AddComponent<MaterialComponent>(subObject->GetId());
-        materialComponent->GetMaterialAsset() = subModel.material;
+        materialComponent->SetMaterialAsset(subModel.material);
     }
     *subObject->GetEntityName() = subModel.name;
     Math::DecomposeMatrix(subModel.modelMatrix, transform->GetScale(), transform->GetRotation(),
