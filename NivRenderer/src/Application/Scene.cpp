@@ -46,7 +46,7 @@ uint32_t Scene::AddEmptySceneObject(int32_t parentObjectId)
 void Scene::RemoveSceneObject(uint32_t sceneObjectId)
 {
     ECSRegistry::GetInstance().RemoveEntity(sceneObjectId);
-    m_SceneObjectIds.erase(std::ranges::remove(m_SceneObjectIds, sceneObjectId).begin());
+    std::erase(m_SceneObjectIds, sceneObjectId);
 }
 
 void Scene::RemoveSkyboxObject()
@@ -91,7 +91,7 @@ void Scene::RemoveSceneLight(uint32_t sceneLightId)
         m_HasDirectionalLight = false;
 
     ECSRegistry::GetInstance().RemoveEntity(sceneLightId);
-    m_SceneLightIds.erase(std::ranges::remove(m_SceneLightIds, sceneLightId).begin());
+    std::erase(m_SceneLightIds, sceneLightId);
 }
 
 void Scene::RemoveMaterialAsset(uint32_t materialAssetId) const
@@ -108,7 +108,7 @@ void Scene::RemoveMaterialAsset(uint32_t materialAssetId) const
         materialComponent->SetMaterialAsset(defaultMaterial);
         if (const auto model = AssetManager::GetInstance().GetModel(*sceneObject->GetModelPath()))
         {
-            auto& subModels = model->subModels; //TODO: After memory refactoring -> Only need to update material, the rest are all pointers to it
+            auto& subModels = model->subModels;
             while (!subModels.empty())
             {
                 for (auto& subModel : subModels)

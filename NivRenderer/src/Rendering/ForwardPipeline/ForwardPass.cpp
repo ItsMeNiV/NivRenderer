@@ -106,18 +106,15 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
         m_PassShader->SetBool("hasDirectionalLight", hasDirectionalLight);
         m_PassShader->SetInt("amountPointLights", pointLightIndex);
 
-        for (const auto& sceneObjectProxy : proxyManager.GetSceneObjectsToRender(scene))
+        for (const auto& sceneObjectMaterialProxy : proxyManager.GetSceneObjectsToRenderByMaterial(scene))
         {
-
-            sceneObjectProxy->Bind();
-            m_PassShader->SetMat4("model", sceneObjectProxy->GetModelMatrix());
-
-            sceneObjectProxy->GetMaterialProxy()->BindDiffuseTexture(0);
+            const auto materialProxy = dynamic_cast<MaterialProxy*>(proxyManager.GetProxy(sceneObjectMaterialProxy.first));
+            materialProxy->BindDiffuseTexture(0);
             m_PassShader->SetTexture("diffuseTexture", 0);
 
-            if (sceneObjectProxy->GetMaterialProxy()->HasNormalTexture())
+            if (materialProxy->HasNormalTexture())
             {
-                sceneObjectProxy->GetMaterialProxy()->BindNormalTexture(1);
+                materialProxy->BindNormalTexture(1);
                 m_PassShader->SetBool("hasNormalTexture", true);
                 m_PassShader->SetTexture("normalTexture", 1);
             }
@@ -126,23 +123,29 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
                 m_PassShader->SetBool("hasNormalTexture", false);
             }
 
-            sceneObjectProxy->GetMaterialProxy()->BindMetallicTexture(2);
+            materialProxy->BindMetallicTexture(2);
             m_PassShader->SetTexture("metallicTexture", 2);
 
-            sceneObjectProxy->GetMaterialProxy()->BindRoughnessTexture(3);
+            materialProxy->BindRoughnessTexture(3);
             m_PassShader->SetTexture("roughnessTexture", 3);
 
-            sceneObjectProxy->GetMaterialProxy()->BindAOTexture(4);
+            materialProxy->BindAOTexture(4);
             m_PassShader->SetTexture("aoTexture", 4);
 
-            sceneObjectProxy->GetMaterialProxy()->BindEmissiveTexture(5);
+            materialProxy->BindEmissiveTexture(5);
             m_PassShader->SetTexture("emissiveTexture", 5);
 
-            const auto meshProxy = sceneObjectProxy->GetMeshProxy();
-            if (meshProxy->GetIndexCount())
-                glDrawElements(GL_TRIANGLES, meshProxy->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
-            else
-                glDrawArrays(GL_TRIANGLES, 0, meshProxy->GetVerticesCount());
+            for (const auto& sceneObjectProxy : sceneObjectMaterialProxy.second)
+            {
+                sceneObjectProxy->Bind();
+                m_PassShader->SetMat4("model", sceneObjectProxy->GetModelMatrix());
+
+                const auto meshProxy = sceneObjectProxy->GetMeshProxy();
+                if (meshProxy->GetIndexCount())
+                    glDrawElements(GL_TRIANGLES, meshProxy->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
+                else
+                    glDrawArrays(GL_TRIANGLES, 0, meshProxy->GetVerticesCount());
+            }
         }
 
         if (scene->GetSceneSettings().visualizeLights && pointLightIndex)

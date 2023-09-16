@@ -18,9 +18,12 @@ public:
     Proxy* GetProxy(const uint32_t id);
 
     std::vector<SceneObjectProxy*> GetSceneObjectsToRender(const Scene* const scene);
+    std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>> GetSceneObjectsToRenderByMaterial(const Scene* const scene);
 
 private:
     std::unordered_map<uint32_t, Scope<Proxy>> m_Proxies;
+    std::vector<SceneObjectProxy*> m_SceneObjectsToRender;
+    std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>> m_SceneObjectsToRenderByMaterial;
 
     void updateSceneObjectProxy(const uint32_t sceneObjectId, SceneObjectProxy* const parentProxy);
     void updateMaterialProxy(const uint32_t materialId);

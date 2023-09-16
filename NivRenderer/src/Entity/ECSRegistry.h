@@ -37,6 +37,8 @@ public:
 private:
     ECSRegistry() = default;
 
+    void doRemoveEntity(uint32_t entityId, bool deleteFromParent);
+
 	std::unordered_map<uint32_t, std::pair<Entity*, std::vector<Component*>>> m_EntityComponentsMap;
     std::unordered_map<uint32_t, Scope<Entity>> m_Entities;
     std::unordered_map<uint32_t, Scope<Component>> m_Components;
@@ -55,9 +57,9 @@ T* ECSRegistry::AddComponent(const uint32_t entityId)
     }
 
     const uint32_t id = IdManager::GetInstance().CreateNewId();
+    m_Components[id] = CreateScope<T>(id);
     Component* component = m_Components[id].get();
 
-    m_Components[id] = CreateScope<T>(id);
     m_EntityComponentsMap[entityId].second.push_back(component);
 
     return static_cast<T*>(component);

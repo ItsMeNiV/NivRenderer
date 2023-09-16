@@ -123,7 +123,7 @@ Model* AssetManager::LoadModel(const std::string& path)
 
     const aiScene* scene = m_Importer->ReadFile(
         path,
-        aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
+        aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
             aiProcess_RemoveRedundantMaterials | aiProcess_FixInfacingNormals);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
@@ -494,7 +494,7 @@ void AssetManager::processMaterials(const aiScene* scene, SubModel& subModel, co
 
     const uint32_t materialAssetId = IdManager::GetInstance().CreateNewId();
     m_LoadedMaterialAssets[materialAssetId] = CreateScope<MaterialAsset>(materialAssetId, materialName);
-    materialAsset = m_LoadedMaterialAssets[materialAsset->GetId()].get();
+    materialAsset = m_LoadedMaterialAssets[materialAssetId].get();
 
     auto& diffusePath = materialAsset->GetDiffusePath();
     auto& normalPath = materialAsset->GetNormalPath();

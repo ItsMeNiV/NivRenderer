@@ -16,6 +16,9 @@ public:
 	}
 	void RemoveChildEntity(uint32_t childId)
 	{
+        if (m_ChildEntities.empty())
+            return;
+
 		m_ChildEntities.erase(std::ranges::remove_if(m_ChildEntities, [childId](const Entity* e) {
             return e->GetId() == childId;
         }).begin());

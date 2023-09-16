@@ -16,6 +16,8 @@ void ProxyManager::UpdateProxies(const Scene* const scene)
     for (const uint32_t sceneLightId : scene->GetSceneLightIds())
         updateSceneLightProxies(sceneLightId);
 
+    m_SceneObjectsToRender.clear();
+    m_SceneObjectsToRenderByMaterial.clear();
     for (const uint32_t sceneObjectId : scene->GetSceneObjectIds())
         updateSceneObjectProxy(sceneObjectId, nullptr);
 }
@@ -30,11 +32,12 @@ Proxy* ProxyManager::GetProxy(const uint32_t id)
 
 std::vector<SceneObjectProxy*> ProxyManager::GetSceneObjectsToRender(const Scene* const scene)
 {
-    std::vector<SceneObjectProxy*> returnVector;
-    for (const uint32_t sceneObjectId : scene->GetSceneObjectIds())
-        addSceneObjectProxyAndChildrenToList(returnVector, ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId));
+    return m_SceneObjectsToRender;
+}
 
-    return returnVector;
+std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>> ProxyManager::GetSceneObjectsToRenderByMaterial(const Scene* const scene)
+{
+    return m_SceneObjectsToRenderByMaterial;
 }
 
 void ProxyManager::updateSceneObjectProxy(const uint32_t sceneObjectId, SceneObjectProxy* const parentProxy)
@@ -105,6 +108,12 @@ void ProxyManager::updateSceneObjectProxy(const uint32_t sceneObjectId, SceneObj
 
     for (const auto& childEntity : childEntities)
         updateSceneObjectProxy(childEntity->GetId(), dynamic_cast<SceneObjectProxy*>(m_Proxies[sceneObjectId].get()));
+
+    if (meshComponent)
+    {
+        m_SceneObjectsToRender.push_back(dynamic_cast<SceneObjectProxy*>(m_Proxies[sceneObjectId].get()));
+        m_SceneObjectsToRenderByMaterial[materialComponent->GetMaterialAsset()->GetId()].push_back(dynamic_cast<SceneObjectProxy*>(m_Proxies[sceneObjectId].get()));
+    }
 }
 
 void ProxyManager::updateMaterialProxy(const uint32_t materialId)
@@ -124,17 +133,17 @@ void ProxyManager::updateMaterialProxy(const uint32_t materialId)
     const auto whiteTextureProxy = AssetManager::GetInstance().LoadTexture(whitePath, false);
     std::string blackPath("black");
     const auto blackTextureProxy = AssetManager::GetInstance().LoadTexture(blackPath, false);
-    setupMaterialProxy(materialAsset->GetDiffusePath(), materialProxy->GetDiffuseTexture(),
+    setupMaterialProxy(materialAsset->GetDiffusePath(), materialProxy->GetDiffuseTexturePtr(),
                        *materialAsset->GetDiffuseTextureAsset(), whiteTextureProxy);
-    setupMaterialProxy(materialAsset->GetNormalPath(), materialProxy->GetNormalTexture(),
+    setupMaterialProxy(materialAsset->GetNormalPath(), materialProxy->GetNormalTexturePtr(),
                        *materialAsset->GetNormalTextureAsset(), nullptr);
-    setupMaterialProxy(materialAsset->GetMetallicPath(), materialProxy->GetMetallicTexture(),
+    setupMaterialProxy(materialAsset->GetMetallicPath(), materialProxy->GetMetallicTexturePtr(),
                        *materialAsset->GetMetallicTextureAsset(), blackTextureProxy);
-    setupMaterialProxy(materialAsset->GetRoughnessPath(), materialProxy->GetRoughnessTexture(),
+    setupMaterialProxy(materialAsset->GetRoughnessPath(), materialProxy->GetRoughnessTexturePtr(),
                        *materialAsset->GetRoughnessTextureAsset(), blackTextureProxy);
-    setupMaterialProxy(materialAsset->GetAOPath(), materialProxy->GetAOTexture(),
+    setupMaterialProxy(materialAsset->GetAOPath(), materialProxy->GetAOTexturePtr(),
                        *materialAsset->GetAOTextureAsset(), whiteTextureProxy);
-    setupMaterialProxy(materialAsset->GetEmissivePath(), materialProxy->GetEmissiveTexture(),
+    setupMaterialProxy(materialAsset->GetEmissivePath(), materialProxy->GetEmissiveTexturePtr(),
                        *materialAsset->GetEmissiveTextureAsset(), blackTextureProxy);
 
     materialAsset->SetDirtyFlag(false);
@@ -212,6 +221,10 @@ void ProxyManager::setupMaterialProxy(const std::string& assetPath, TextureProxy
             m_Proxies[assetId] = CreateScope<TextureProxy>(assetId);
             *textureProxy = dynamic_cast<TextureProxy*>(m_Proxies[assetId].get());
             (*textureProxy)->CreateTextureFromAsset(assetToUse);
+        }
+        else
+        {
+            *textureProxy = dynamic_cast<TextureProxy*>(m_Proxies[assetId].get());
         }
     }
 }
