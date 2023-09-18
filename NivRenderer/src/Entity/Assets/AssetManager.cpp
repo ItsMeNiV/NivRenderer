@@ -382,15 +382,15 @@ void AssetManager::loadDefaultMeshAndTextures()
     *defaultMaterial->GetDiffuseTextureAsset() = defaultTextureAsset;
  
     //White 1x1 Texture
-    std::string path("assets/textures/default_white.png");
-    const auto whiteTextureAsset = LoadTexture(path, false);
+    std::string whiteTexturePath("assets/textures/default_white.png");
+    const auto whiteTextureAsset = LoadTexture(whiteTexturePath, false);
     auto nodeHandleWhite = m_LoadedTextureAssets.extract("assets/textures/default_white.png");
     nodeHandleWhite.key() = "white";
     m_LoadedTextureAssets.insert(std::move(nodeHandleWhite));
 
     //Black 1x1 Texture
-    path = "assets/textures/default_black.png";
-    const auto blackTextureAsset = LoadTexture(path, false);
+    std::string blackTexturePath("assets/textures/default_black.png");
+    const auto blackTextureAsset = LoadTexture(blackTexturePath, false);
     auto nodeHandleBlack = m_LoadedTextureAssets.extract("assets/textures/default_black.png");
     nodeHandleBlack.key() = "black";
     m_LoadedTextureAssets.insert(std::move(nodeHandleBlack));

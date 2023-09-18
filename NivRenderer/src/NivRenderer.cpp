@@ -11,9 +11,13 @@
 #include "imgui.h"
 #include "backends/imgui_impl_opengl3.h"
 
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_ERROR
+
 int main()
 {
-	Application* app = new Application();
+    spdlog::set_level(spdlog::level::err);
+
+    auto* app = new Application();
 
 	app->Run();
 

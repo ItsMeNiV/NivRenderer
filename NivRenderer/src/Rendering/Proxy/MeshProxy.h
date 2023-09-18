@@ -9,10 +9,10 @@ public:
     MeshProxy(uint32_t id);
     ~MeshProxy();
 
-    void CreateBuffers(MeshComponent* const mesh);
+    void CreateBuffers(const MeshComponent* const mesh);
 
     void Bind() const;
-    void Unbind() const;
+    static void Unbind();
 
     const uint32_t GetIndexCount() const { return m_IndexCount; }
     const uint32_t GetVerticesCount() const { return m_VerticesCount; }
