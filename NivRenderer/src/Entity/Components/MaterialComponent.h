@@ -11,11 +11,12 @@ public:
 
     std::vector<std::pair<std::string, Property>> GetComponentProperties() override;
 
-    Ref<MaterialAsset>& GetMaterialAsset() { return m_MaterialAsset; }
+    MaterialAsset* GetMaterialAsset() const { return m_MaterialAsset; }
+    void SetMaterialAsset(MaterialAsset* asset) { m_MaterialAsset = asset; }
 
     ordered_json SerializeObject() override;
     void DeSerializeObject(json jsonObject) override;
 
 private:
-    Ref<MaterialAsset> m_MaterialAsset;
+    MaterialAsset* m_MaterialAsset;
 };

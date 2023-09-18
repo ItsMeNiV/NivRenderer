@@ -19,13 +19,13 @@ public:
 
 	void BlitFramebuffer(const unsigned int targetFramebuffer, const int targetWidth, const int targetHeight) const;
 
-    Ref<Texture> GetTextureAttachment() { return m_TextureAttachment; }
+    Texture* GetTextureAttachment() { return m_TextureAttachment.get(); }
 	int GetWidth() const { return m_CurrentWidth; }
 	int GetHeight() const { return m_CurrentHeight; }
 	unsigned int GetId() const { return m_FrameBuffer; }
 
 private:
 	unsigned int m_FrameBuffer, m_RenderBuffer;
-	Ref<Texture> m_TextureAttachment;
+	Scope<Texture> m_TextureAttachment;
 	int m_CurrentWidth, m_CurrentHeight;
 };

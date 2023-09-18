@@ -11,9 +11,13 @@
 #include "imgui.h"
 #include "backends/imgui_impl_opengl3.h"
 
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_ERROR
+
 int main()
 {
-	Application* app = new Application();
+    spdlog::set_level(spdlog::level::err);
+
+    auto* app = new Application();
 
 	app->Run();
 
@@ -21,22 +25,24 @@ int main()
 }
 
 Application::Application()
-	: m_Window(CreateRef<Window>(1600, 900, "NivRenderer")), m_Scene(CreateRef<Scene>())
+	: m_Window(CreateScope<Window>(1600, 900, "NivRenderer"))
 {
 	m_Window->SetCommandHandler([&](WindowCommandEvent command) { handleWindowCommand(command); });
 
-	m_Renderer = CreateRef<Renderer>(m_Window);
+	m_Renderer = CreateScope<Renderer>(m_Window.get());
+    Scene* scene = m_Renderer->GetScene();
 
 	setupDefaultScene();
 
-	Ref<RenderPass> forwardPass = CreateRef<ForwardPass>(
-        AssetManager::GetInstance().LoadShader(std::string("assets/shaders/forwardrender.glsl"),
-                                               ShaderType::VERTEX_AND_FRAGMENT), m_Scene->GetSceneSettings().renderResolution.x, m_Scene->GetSceneSettings().renderResolution.y, m_Scene->GetSceneSettings().sampleCount);
-	std::vector<Ref<RenderPass>> renderPasses;
-	renderPasses.push_back(forwardPass);
+	std::vector<Scope<RenderPass>> renderPasses;
+    renderPasses.push_back(
+        CreateScope<ForwardPass>(AssetManager::GetInstance().LoadShader(
+                                     std::string("assets/shaders/forwardrender.glsl"), ShaderType::VERTEX_AND_FRAGMENT),
+                                 scene->GetSceneSettings().renderResolution.x,
+                                 scene->GetSceneSettings().renderResolution.y, scene->GetSceneSettings().sampleCount));
+    std::vector<Scope<RenderPass>> postProcessingPasses;
 
-	m_Renderer->SetActivePipeline(CreateRef<RenderPipeline>(renderPasses, std::vector<Ref<RenderPass>>(), m_Scene->GetSceneSettings().renderResolution.x, m_Scene->GetSceneSettings().renderResolution.y));
-	m_Renderer->SetActiveScene(m_Scene);
+	m_Renderer->SetActivePipeline(new RenderPipeline(renderPasses, postProcessingPasses, scene->GetSceneSettings().renderResolution.x, scene->GetSceneSettings().renderResolution.y));
 }
 
 void Application::Run()
@@ -48,7 +54,7 @@ void Application::Run()
 		m_Window->PollEvents();
 		m_Window->PrepareFrame();
 
-		m_Window->RenderImGui(m_Scene);
+		m_Window->RenderImGui(m_Renderer->GetScene());
 
 		m_Window->ProcessInput();
 		m_Renderer->PrepareFrame();
@@ -63,24 +69,20 @@ void Application::handleWindowCommand(WindowCommandEvent command)
 	if (command.GetCommand() == WindowCommand::RecompileShaders)
 		m_Renderer->GetActivePipeline()->RecompileShaders();
     if (command.GetCommand() == WindowCommand::SaveScene)
-        SerializationManager::SaveSceneToFile("default.json", m_Scene);
+        SerializationManager::SaveSceneToFile("default.json", m_Renderer->GetScene());
     if (command.GetCommand() == WindowCommand::LoadScene)
     {
-        const auto newScene = SerializationManager::LoadSceneFromFile("default.json");
-        const Ref<Camera> camera(CreateRef<Camera>(glm::vec3(0.0f, 0.0f, 5.0f),
-                                                   newScene->GetSceneSettings().renderResolution.x,
-                                                   newScene->GetSceneSettings().renderResolution.y));
-        newScene->AddCamera(camera);
-        m_Scene = newScene;
-        m_Renderer->SetActiveScene(newScene);
+        Scene* newScene = SerializationManager::LoadSceneFromFile("default.json");
+        newScene->AddCamera(m_Window->GetCamera());
+        m_Renderer->SetScene(newScene);
     }
 }
 
-void Application::setupDefaultScene()
+void Application::setupDefaultScene() const
 {
-	m_Scene->AddSceneObject();
-	m_Scene->AddDirectionalLight();
-    const Ref<Camera> camera(CreateRef<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), m_Scene->GetSceneSettings().renderResolution.x, m_Scene->GetSceneSettings().renderResolution.y));
-	m_Scene->AddCamera(camera);
-	m_Window->CreateCameraController(camera.get());
+    Scene* scene = m_Renderer->GetScene();
+    scene->AddSceneObject();
+    scene->AddDirectionalLight();
+    m_Window->CreateCameraAndController(scene->GetSceneSettings().renderResolution);
+    scene->AddCamera(m_Window->GetCamera());
 }

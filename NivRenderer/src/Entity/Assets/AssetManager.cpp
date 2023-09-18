@@ -11,11 +11,11 @@ AssetManager::AssetManager()
     loadDefaultMeshAndTextures();
 }
 
-Ref<MeshAsset> AssetManager::LoadMesh(const std::string& path)
+MeshAsset* AssetManager::LoadMesh(const std::string& path)
 {
     if (m_LoadedMeshAssets.contains(path))
     {
-        return m_LoadedMeshAssets[path];
+        return m_LoadedMeshAssets[path].get();
     }
 
     const aiScene* scene = m_Importer->ReadFile(
@@ -26,32 +26,33 @@ Ref<MeshAsset> AssetManager::LoadMesh(const std::string& path)
         SPDLOG_DEBUG(std::string("ERROR::ASSIMP::") + m_Importer->GetErrorString());
         return nullptr;
     }
-    SubModel tempSubModel;
+    const SubModel tempSubModel;
     std::vector tempVector = {tempSubModel};
     processNode(scene->mRootNode, scene, tempVector, path);
 
     return tempSubModel.mesh;
 }
 
-Ref<MeshAsset> AssetManager::GetMesh(const uint32_t id)
+MeshAsset* AssetManager::GetMesh(const uint32_t id)
 {
-    for (auto meshAsset : m_LoadedMeshAssets | std::views::values)
+    for (const auto& meshAsset : m_LoadedMeshAssets | std::views::values)
     {
         if (meshAsset->GetId() == id)
-            return meshAsset;
+            return meshAsset.get();
     }
     return nullptr;
 }
 
-Ref<TextureAsset> AssetManager::LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel, int channelIndex)
+TextureAsset* AssetManager::LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel, int channelIndex)
 {
     const bool textureExists = m_LoadedTextureAssets.contains(path);
     if (textureExists && m_LoadedTextureAssets[path]->GetFlipVertical() == flipVertical)
-        return m_LoadedTextureAssets[path];
+        return m_LoadedTextureAssets[path].get();
 
     std::string pathToUse = textureExists ? m_LoadedTextureAssets[path]->GetPath() : path;
 
-    Ref<TextureAsset> textureAsset = CreateRef<TextureAsset>(IdManager::GetInstance().CreateNewId(), pathToUse, flipVertical);
+    m_LoadedTextureAssets[path] = CreateScope<TextureAsset>(IdManager::GetInstance().CreateNewId(), pathToUse, flipVertical);
+    const auto textureAsset = m_LoadedTextureAssets[path].get();
 
     stbi_set_flip_vertically_on_load(textureAsset->GetFlipVertical());
     if (loadOnlyOneChannel)
@@ -88,44 +89,41 @@ Ref<TextureAsset> AssetManager::LoadTexture(std::string& path, bool flipVertical
         stbi_image_free(loadedData);
     }
 
-    m_LoadedTextureAssets[path] = textureAsset;
-
     return textureAsset;
 }
 
-Ref<TextureAsset> AssetManager::GetTexture(const uint32_t id)
+TextureAsset* AssetManager::GetTexture(const uint32_t id)
 {
-    for (auto textureAsset : m_LoadedTextureAssets | std::views::values)
+    for (const auto& textureAsset : m_LoadedTextureAssets | std::views::values)
     {
         if (textureAsset->GetId() == id)
-            return textureAsset;
+            return textureAsset.get();
     }
 
     return nullptr;
 }
 
-Ref<Shader> AssetManager::LoadShader(const std::string& path, ShaderType shaderType)
+Shader* AssetManager::LoadShader(const std::string& path, ShaderType shaderType)
 {
     if (m_LoadedShaders.contains(path))
     {
-        return m_LoadedShaders[path];
+        return m_LoadedShaders[path].get();
     }
 
-    Ref<Shader> shader = CreateRef<Shader>(path.c_str(), shaderType);
-    m_LoadedShaders[path] = shader;
-    return shader;
+    m_LoadedShaders[path] = CreateScope<Shader>(path.c_str(), shaderType);
+    return m_LoadedShaders[path].get();
 }
 
-Ref<Model> AssetManager::LoadModel(const std::string& path)
+Model* AssetManager::LoadModel(const std::string& path)
 {
     if (m_LoadedModels.contains(path))
     {
-        return m_LoadedModels[path];
+        return m_LoadedModels[path].get();
     }
 
     const aiScene* scene = m_Importer->ReadFile(
         path,
-        aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
+        aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
             aiProcess_RemoveRedundantMaterials | aiProcess_FixInfacingNormals);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
@@ -134,49 +132,50 @@ Ref<Model> AssetManager::LoadModel(const std::string& path)
         return nullptr;
     }
 
-    m_LoadedModels[path] = CreateRef<Model>();
-    Ref<Model> model = m_LoadedModels[path];
+    m_LoadedModels[path] = CreateScope<Model>();
+    Model* model = m_LoadedModels[path].get();
     processNode(scene->mRootNode, scene, model->subModels, path);
     model->name = path.substr(path.find_last_of('/')+1, path.find_last_of('.'));
 
     return model;
 }
 
-Ref<Model> AssetManager::GetModel(const std::string& path)
+Model* AssetManager::GetModel(const std::string& path)
 {
     if (m_LoadedModels.contains(path))
-        return m_LoadedModels[path];
+        return m_LoadedModels[path].get();
 
     return nullptr;
 }
 
-Ref<MaterialAsset> AssetManager::GetMaterial(const std::string& name)
+MaterialAsset* AssetManager::GetMaterial(const std::string& name)
 {
-    for (auto& asset : m_LoadedMaterialAssets | std::views::values)
+    for (const auto& asset : m_LoadedMaterialAssets | std::views::values)
     {
         if (asset->GetName() == name)
-            return asset;
+            return asset.get();
     }
 
     return nullptr;
 }
 
-Ref<MaterialAsset> AssetManager::GetMaterial(uint32_t id)
+MaterialAsset* AssetManager::GetMaterial(uint32_t id)
 {
     if (m_LoadedMaterialAssets.contains(id))
-        return m_LoadedMaterialAssets[id];
+        return m_LoadedMaterialAssets[id].get();
 
     return nullptr;
 }
 
-Ref<MaterialAsset> AssetManager::CreateMaterial()
+MaterialAsset* AssetManager::CreateMaterial()
 {
-    const Ref<MaterialAsset> newMaterial = CreateRef<MaterialAsset>(IdManager::GetInstance().CreateNewId(), "New Material");
+    const uint32_t id = IdManager::GetInstance().CreateNewId();
+    m_LoadedMaterialAssets[id] = CreateScope<MaterialAsset>(id, "New Material");
+    const auto newMaterial = m_LoadedMaterialAssets[id].get();
     newMaterial->GetDiffusePath() = "default";
-    newMaterial->GetDiffuseTextureAsset() = m_LoadedTextureAssets["default"];
-    m_LoadedMaterialAssets[newMaterial->GetId()] = newMaterial;
+    *newMaterial->GetDiffuseTextureAsset() = m_LoadedTextureAssets["default"].get();
 
-    return m_LoadedMaterialAssets[newMaterial->GetId()];
+    return newMaterial;
 }
 
 void AssetManager::RemoveMaterial(uint32_t id)
@@ -198,77 +197,81 @@ std::vector<uint32_t> AssetManager::GetMaterialIds(bool includeDefault) const
     return returnVector;
 }
 
-std::vector<std::pair<std::string, Ref<Model>>> AssetManager::GetModels() const
+std::vector<std::pair<std::string, Model*>> AssetManager::GetModels() const
 {
-    std::vector<std::pair<std::string, Ref<Model>>> returnVector;
+    std::vector<std::pair<std::string, Model*>> returnVector;
     for (const auto& model : m_LoadedModels)
     {
-        returnVector.emplace_back(model);
+        std::pair pair = {model.first, model.second.get()};
+        returnVector.emplace_back(pair);
     }
 
     return returnVector;
 }
 
-std::vector<std::pair<std::string, Ref<MeshAsset>>> AssetManager::GetMeshes() const
+std::vector<std::pair<std::string, MeshAsset*>> AssetManager::GetMeshes() const
 {
-    std::vector<std::pair<std::string, Ref<MeshAsset>>> returnVector;
+    std::vector<std::pair<std::string, MeshAsset*>> returnVector;
     for (const auto& mesh : m_LoadedMeshAssets)
     {
         if (mesh.first == "default")
             continue;
 
-        returnVector.emplace_back(mesh);
+        std::pair pair = {mesh.first, mesh.second.get()};
+        returnVector.emplace_back(pair);
     }
 
     return returnVector;
 }
 
-std::vector<std::pair<uint32_t, Ref<MaterialAsset>>> AssetManager::GetMaterials() const
+std::vector<std::pair<uint32_t, MaterialAsset*>> AssetManager::GetMaterials() const
 {
-    std::vector<std::pair<uint32_t, Ref<MaterialAsset>>> returnVector;
+    std::vector<std::pair<uint32_t, MaterialAsset*>> returnVector;
     for (const auto& material : m_LoadedMaterialAssets)
     {
         if (material.second->GetName() == "Default")
             continue;
 
-        returnVector.push_back(material);
+        std::pair pair = { material.first, material.second.get() };
+        returnVector.push_back(pair);
     }
 
     return returnVector;
 }
 
-std::vector<std::pair<std::string, Ref<TextureAsset>>> AssetManager::GetTextures() const
+std::vector<std::pair<std::string, TextureAsset*>> AssetManager::GetTextures() const
 {
-    std::vector<std::pair<std::string, Ref<TextureAsset>>> returnVector;
+    std::vector<std::pair<std::string, TextureAsset*>> returnVector;
     for (const auto& texture : m_LoadedTextureAssets)
     {
         if (texture.first == "default" || texture.first == "white" || texture.first == "black")
             continue;
 
-        returnVector.emplace_back(texture);
+        std::pair pair = { texture.first, texture.second.get() };
+        returnVector.emplace_back(pair);
     }
 
     return returnVector;
 }
 
-void AssetManager::AddTexture(const std::string& path, const Ref<TextureAsset>& textureAsset)
+void AssetManager::AddTexture(const std::string& path, Scope<TextureAsset>&& textureAsset)
 {
-    m_LoadedTextureAssets[path] = textureAsset;
+    m_LoadedTextureAssets[path] = std::move(textureAsset);
 }
 
-void AssetManager::AddMesh(const std::string& path, const Ref<MeshAsset>& meshAsset)
+void AssetManager::AddMesh(const std::string& path, Scope<MeshAsset>&& meshAsset)
 {
-    m_LoadedMeshAssets[path] = meshAsset;
+    m_LoadedMeshAssets[path] = std::move(meshAsset);
 }
 
-void AssetManager::AddMaterial(const Ref<MaterialAsset>& materialAsset)
+void AssetManager::AddMaterial(Scope<MaterialAsset>&& materialAsset)
 {
-    m_LoadedMaterialAssets[materialAsset->GetId()] = materialAsset;
+    m_LoadedMaterialAssets[materialAsset->GetId()] = std::move(materialAsset);
 }
 
-void AssetManager::AddModel(const std::string& path, const Ref<Model>& model)
+void AssetManager::AddModel(const std::string& path, Scope<Model>&& model)
 {
-    m_LoadedModels[path] = model;
+    m_LoadedModels[path] = std::move(model);
 }
 
 void AssetManager::loadDefaultMeshAndTextures()
@@ -363,30 +366,31 @@ void AssetManager::loadDefaultMeshAndTextures()
     std::vector<uint32_t> defaultIndices;
 
     const std::string defaultMeshPath = std::string("default");
-    const Ref<MeshAsset> defaultMeshAsset = CreateRef<MeshAsset>(IdManager::GetInstance().CreateNewId(), defaultMeshPath, defaultVertices, defaultIndices);
-    m_LoadedMeshAssets[defaultMeshPath] = defaultMeshAsset;
+    m_LoadedMeshAssets[defaultMeshPath] =
+        CreateScope<MeshAsset>(IdManager::GetInstance().CreateNewId(), defaultMeshPath, defaultVertices, defaultIndices);
 
     //Default "Prototype" Texture
     std::string defaultTexturePath("assets/textures/default.png");
-    const Ref<TextureAsset> defaultTextureAsset = LoadTexture(defaultTexturePath, false);
+    const auto defaultTextureAsset = LoadTexture(defaultTexturePath, false);
     auto nodeHandle = m_LoadedTextureAssets.extract("assets/textures/default.png");
     nodeHandle.key() = "default";
     m_LoadedTextureAssets.insert(std::move(nodeHandle));
-    const Ref<MaterialAsset> defaultMaterial = CreateRef<MaterialAsset>(IdManager::GetInstance().CreateNewId(), "Default");
+    const uint32_t defaultMaterialId = IdManager::GetInstance().CreateNewId();
+    m_LoadedMaterialAssets[defaultMaterialId] = CreateScope<MaterialAsset>(defaultMaterialId, "Default");
+    const auto defaultMaterial = m_LoadedMaterialAssets[defaultMaterialId].get();
     defaultMaterial->GetDiffusePath() = "default";
-    defaultMaterial->GetDiffuseTextureAsset() = defaultTextureAsset;
-    m_LoadedMaterialAssets[defaultMaterial->GetId()] = defaultMaterial;
+    *defaultMaterial->GetDiffuseTextureAsset() = defaultTextureAsset;
  
     //White 1x1 Texture
-    std::string path("assets/textures/default_white.png");
-    const Ref<TextureAsset> whiteTextureAsset = LoadTexture(path, false);
+    std::string whiteTexturePath("assets/textures/default_white.png");
+    const auto whiteTextureAsset = LoadTexture(whiteTexturePath, false);
     auto nodeHandleWhite = m_LoadedTextureAssets.extract("assets/textures/default_white.png");
     nodeHandleWhite.key() = "white";
     m_LoadedTextureAssets.insert(std::move(nodeHandleWhite));
 
     //Black 1x1 Texture
-    path = "assets/textures/default_black.png";
-    const Ref<TextureAsset> blackTextureAsset = LoadTexture(path, false);
+    std::string blackTexturePath("assets/textures/default_black.png");
+    const auto blackTextureAsset = LoadTexture(blackTexturePath, false);
     auto nodeHandleBlack = m_LoadedTextureAssets.extract("assets/textures/default_black.png");
     nodeHandleBlack.key() = "black";
     m_LoadedTextureAssets.insert(std::move(nodeHandleBlack));
@@ -419,7 +423,7 @@ void AssetManager::processNode(const aiNode* node, const aiScene* scene, std::ve
     subModels.push_back(subModelNode);
 }
 
-Ref<MeshAsset> AssetManager::processMesh(aiMesh* mesh, const aiScene* scene, const std::string& path)
+MeshAsset* AssetManager::processMesh(aiMesh* mesh, const aiScene* scene, const std::string& path)
 {
     std::vector<MeshVertex> vertices;
     std::vector<uint32_t> indices;
@@ -473,23 +477,25 @@ Ref<MeshAsset> AssetManager::processMesh(aiMesh* mesh, const aiScene* scene, con
 
     // return a MeshAsset created from the extracted mesh data
     std::string meshPath = path + '@' + mesh->mName.C_Str();
-    auto meshAsset = CreateRef<MeshAsset>(IdManager::GetInstance().CreateNewId(), meshPath, vertices, indices);
-    m_LoadedMeshAssets[meshPath] = meshAsset;
-    return meshAsset;
+    m_LoadedMeshAssets[meshPath] = CreateScope<MeshAsset>(IdManager::GetInstance().CreateNewId(), meshPath, vertices, indices);
+    return m_LoadedMeshAssets[meshPath].get();
 }
 
 void AssetManager::processMaterials(const aiScene* scene, SubModel& subModel, const std::string& path, const uint32_t materialIndex)
 {
     const std::string directory = path.substr(0, path.find_last_of('/'));
     const std::string materialName = path + '@' + std::to_string(materialIndex);
-    Ref<MaterialAsset> materialAsset = GetMaterial(materialName);
+    MaterialAsset* materialAsset = GetMaterial(materialName);
     if (materialAsset)
     {
         subModel.material = materialAsset;
         return;
     }
 
-    materialAsset = CreateRef<MaterialAsset>(IdManager::GetInstance().CreateNewId(), materialName);
+    const uint32_t materialAssetId = IdManager::GetInstance().CreateNewId();
+    m_LoadedMaterialAssets[materialAssetId] = CreateScope<MaterialAsset>(materialAssetId, materialName);
+    materialAsset = m_LoadedMaterialAssets[materialAssetId].get();
+
     auto& diffusePath = materialAsset->GetDiffusePath();
     auto& normalPath = materialAsset->GetNormalPath();
     auto& metallicPath = materialAsset->GetMetallicPath();
@@ -550,21 +556,17 @@ void AssetManager::processMaterials(const aiScene* scene, SubModel& subModel, co
 
     const bool metalRoughnessIsShared = metallicPath == roughnessPath;
     if (!diffusePath.empty())
-        materialAsset->GetDiffuseTextureAsset() = LoadTexture(diffusePath, materialAsset->GetFlipDiffuseTexture());
+        *materialAsset->GetDiffuseTextureAsset() = LoadTexture(diffusePath, materialAsset->GetFlipDiffuseTexture());
     if (!normalPath.empty())
-        materialAsset->GetNormalTextureAsset() = LoadTexture(normalPath, materialAsset->GetFlipNormalTexture());
+        *materialAsset->GetNormalTextureAsset() = LoadTexture(normalPath, materialAsset->GetFlipNormalTexture());
     if (!metallicPath.empty())
-        materialAsset->GetMetallicTextureAsset() =
-            LoadTexture(metallicPath, materialAsset->GetFlipMetallicTexture(), metalRoughnessIsShared, 2);
+        *materialAsset->GetMetallicTextureAsset() = LoadTexture(metallicPath, materialAsset->GetFlipMetallicTexture(), metalRoughnessIsShared, 2);
     if (!roughnessPath.empty())
-        materialAsset->GetRoughnessTextureAsset() =
-            LoadTexture(roughnessPath, materialAsset->GetFlipRoughnessTexture(), metalRoughnessIsShared, 1);
+        *materialAsset->GetRoughnessTextureAsset() = LoadTexture(roughnessPath, materialAsset->GetFlipRoughnessTexture(), metalRoughnessIsShared, 1);
     if (!aoPath.empty())
-        materialAsset->GetAOTextureAsset() = LoadTexture(aoPath, materialAsset->GetFlipAOTexture());
+        *materialAsset->GetAOTextureAsset() = LoadTexture(aoPath, materialAsset->GetFlipAOTexture());
     if (!emissivePath.empty())
-        materialAsset->GetEmissiveTextureAsset() = LoadTexture(emissivePath, materialAsset->GetFlipEmissiveTexture());
-
-    m_LoadedMaterialAssets[materialAsset->GetId()] = materialAsset;
+        *materialAsset->GetEmissiveTextureAsset() = LoadTexture(emissivePath, materialAsset->GetFlipEmissiveTexture());
 
     subModel.material = materialAsset;
 }
@@ -585,7 +587,7 @@ void Model::DeserializeObject(json jsonObject)
     subModels = deserializeSubModels(jsonObject["SubModels"]);
 }
 
-std::vector<SubModel>& Model::deserializeSubModels(json subModelsJsonArr)
+std::vector<SubModel>&& Model::deserializeSubModels(json subModelsJsonArr)
 {
     std::vector<SubModel> returnVector;
     for (json subModelJson : subModelsJsonArr)
@@ -625,7 +627,7 @@ std::vector<SubModel>& Model::deserializeSubModels(json subModelsJsonArr)
         returnVector.push_back(subModel);
     }
 
-    return returnVector;
+    return std::move(returnVector);
 }
 
 ordered_json Model::addSubModelJson(std::vector<SubModel>& subModels)

@@ -6,7 +6,7 @@ MeshComponent::MeshComponent(const uint32_t id)
     reloadMesh();
 }
 
-Ref<MeshAsset>& MeshComponent::GetMeshAsset()
+MeshAsset* MeshComponent::GetMeshAsset() const
 {
     return m_MeshAsset;
 }
@@ -14,6 +14,11 @@ Ref<MeshAsset>& MeshComponent::GetMeshAsset()
 std::string& MeshComponent::GetPath()
 {
     return m_Path;
+}
+
+void MeshComponent::SetMeshAsset(MeshAsset* asset)
+{
+    m_MeshAsset = asset;
 }
 
 std::vector<std::pair<std::string, Property>> MeshComponent::GetComponentProperties()

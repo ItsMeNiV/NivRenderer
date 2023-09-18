@@ -5,10 +5,10 @@
 class CameraObject : public Entity
 {
 public:
-	CameraObject(uint32_t id)
-		: Entity(id, std::string("Camera (") + std::to_string(id) + std::string(")"))
-	{
-	}
+	CameraObject(uint32_t id) :
+        Entity(id, std::string("Camera (") + std::to_string(id) + std::string(")")), m_CameraPtr(nullptr)
+    {
+    }
 
     ~CameraObject() override = default;
 
@@ -18,13 +18,13 @@ public:
         return returnVector;
     }
 
-	void SetCameraPtr(const Ref<Camera> cameraPtr) { m_CameraPtr = cameraPtr; }
-	const Ref<Camera>& GetCameraPtr() const { return m_CameraPtr; }
+	void SetCameraPtr(Camera* cameraPtr) { m_CameraPtr = cameraPtr; }
+    Camera* GetCameraPtr() const { return m_CameraPtr; }
 
     ordered_json SerializeObject() override { return {}; }
     void DeSerializeObject(json jsonObject) override {}
 
 private:
-	Ref<Camera> m_CameraPtr;
+	Camera* m_CameraPtr;
 
 };

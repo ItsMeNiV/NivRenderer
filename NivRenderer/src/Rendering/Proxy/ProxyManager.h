@@ -14,22 +14,25 @@ class ProxyManager
 public:
     ProxyManager();
 
-    void UpdateProxies(const Ref<Scene>& scene);
-    Ref<Proxy> GetProxy(const uint32_t id);
+    void UpdateProxies(const Scene* const scene);
+    Proxy* GetProxy(const uint32_t id);
 
-    std::vector<Ref<SceneObjectProxy>> GetSceneObjectsToRender(const Ref<Scene>& scene);
+    std::vector<SceneObjectProxy*> GetSceneObjectsToRender(const Scene* const scene);
+    std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>> GetSceneObjectsToRenderByMaterial(const Scene* const scene);
 
 private:
-    std::unordered_map<uint32_t, Ref<Proxy>> m_Proxies;
+    std::unordered_map<uint32_t, Scope<Proxy>> m_Proxies;
+    std::vector<SceneObjectProxy*> m_SceneObjectsToRender;
+    std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>> m_SceneObjectsToRenderByMaterial;
 
-    void updateSceneObjectProxy(const uint32_t sceneObjectId, const Ref<SceneObjectProxy>& parentProxy, std::unordered_map<uint32_t, Ref<Proxy>>& proxyMap);
-    void updateMaterialProxy(const uint32_t materialId, std::unordered_map<uint32_t, Ref<Proxy>>& proxyMap);
-    void updateCameraProxy(const uint32_t cameraId, std::unordered_map<uint32_t, Ref<Proxy>>& proxyMap);
-    void updateSkyboxProxy(const uint32_t skyboxId, std::unordered_map<uint32_t, Ref<Proxy>>& proxyMap);
-    void updateSceneLightProxies(const uint32_t sceneLightId, std::unordered_map<uint32_t, Ref<Proxy>>& proxyMap);
-    void setupMaterialProxy(const std::string& assetPath, Ref<TextureProxy>& textureProxy,
-                            const Ref<TextureAsset>& textureAsset, const Ref<TextureAsset>& alternativeTextureAsset,
-                            std::unordered_map<uint32_t, Ref<Proxy>>& proxyMap);
+    void updateSceneObjectProxy(const uint32_t sceneObjectId, SceneObjectProxy* const parentProxy);
+    void updateMaterialProxy(const uint32_t materialId);
+    void updateCameraProxy(const uint32_t cameraId);
+    void updateSkyboxProxy(const uint32_t skyboxId);
+    void updateSceneLightProxies(const uint32_t sceneLightId);
+    void setupMaterialProxy(const std::string& assetPath, TextureProxy** const textureProxy,
+                            TextureAsset* const textureAsset, TextureAsset* const alternativeTextureAsset);
 
-    void addSceneObjectProxyAndChildrenToList(std::vector<Ref<SceneObjectProxy>>& list, const Ref<SceneObject>& sceneObject);
+    void addSceneObjectProxyAndChildrenToList(std::vector<SceneObjectProxy*>& list,
+                                              const SceneObject* const sceneObject);
 };

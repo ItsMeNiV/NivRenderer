@@ -10,10 +10,10 @@ enum TextureType
 };
 enum InternalFormat
 {
-    RGB = GL_RGB,
-	RGBA = GL_RGBA,
-	R = GL_R,
-	DEPTH = GL_DEPTH_COMPONENT
+    RGB = GL_RGB16,
+	RGBA = GL_RGBA16,
+	R = GL_R16,
+    DEPTH = GL_DEPTH_COMPONENT32
 };
 
 class Texture

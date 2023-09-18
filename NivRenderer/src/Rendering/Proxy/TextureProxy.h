@@ -9,9 +9,9 @@ public:
     TextureProxy(const uint32_t id);
     ~TextureProxy();
 
-    void CreateTextureFromAsset(const Ref<TextureAsset>& textureAsset);
+    void CreateTextureFromAsset(TextureAsset* const textureAsset) const;
 
-    const void BindToSlot(uint32_t slot) const;
+    void BindToSlot(uint32_t slot) const;
 
 private:
     //TODO: Abstract

@@ -3,44 +3,44 @@
 TextureProxy::TextureProxy(const uint32_t id)
     : Proxy(id)
 {
-    glGenTextures(1, &m_TextureId);
+    glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureId);
 }
 
-TextureProxy::~TextureProxy()
-{
-}
+TextureProxy::~TextureProxy() = default;
 
-void TextureProxy::CreateTextureFromAsset(const Ref<TextureAsset>& textureAsset)
+void TextureProxy::CreateTextureFromAsset(TextureAsset* const textureAsset) const
 {
     GLenum format;
+    GLenum sizedFormat;
     switch (*textureAsset->GetNrComponents())
     {
     case 1:
         format = GL_RED;
+        sizedFormat = GL_R16;
         break;
     case 3:
         format = GL_RGB;
+        sizedFormat = GL_RGB16;
         break;
     case 4:
     default:
         format = GL_RGBA;
+        sizedFormat = GL_RGBA16;
         break;
     }
-    glBindTexture(GL_TEXTURE_2D, m_TextureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, format, *textureAsset->GetWidth(), *textureAsset->GetHeight(), 0, format,
-                 GL_UNSIGNED_BYTE, textureAsset->GetTextureData());
-    glGenerateMipmap(GL_TEXTURE_2D);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureStorage2D(m_TextureId, 1, sizedFormat, *textureAsset->GetWidth(), *textureAsset->GetHeight());
+    glTextureSubImage2D(m_TextureId, 0, 0, 0, *textureAsset->GetWidth(), *textureAsset->GetHeight(), format,
+                        GL_UNSIGNED_BYTE, textureAsset->GetTextureData());
+    glGenerateTextureMipmap(m_TextureId);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glTextureParameteri(m_TextureId, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(m_TextureId, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTextureParameteri(m_TextureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTextureParameteri(m_TextureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
-const void TextureProxy::BindToSlot(uint32_t slot) const
+void TextureProxy::BindToSlot(uint32_t slot) const
 {
-    glActiveTexture(GL_TEXTURE0 + slot);
-    glBindTexture(GL_TEXTURE_2D, m_TextureId);
+    glBindTextureUnit(slot, m_TextureId);
 }

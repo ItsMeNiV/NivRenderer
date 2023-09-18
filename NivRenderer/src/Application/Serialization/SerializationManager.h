@@ -5,6 +5,6 @@
 class SerializationManager
 {
 public:
-    static void SaveSceneToFile(const std::string& path, const Ref<Scene>& scene);
-    static Ref<Scene> LoadSceneFromFile(const std::string& path);
+    static void SaveSceneToFile(const std::string& path, Scene* const scene);
+    static Scene* LoadSceneFromFile(const std::string& path);
 };

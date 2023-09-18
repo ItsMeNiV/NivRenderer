@@ -20,12 +20,12 @@ public:
     std::string& GetRoughnessPath() { return m_RoughnessPath; }
     std::string& GetAOPath() { return m_AOPath; }
     std::string& GetEmissivePath() { return m_EmissivePath; }
-    Ref<TextureAsset>& GetDiffuseTextureAsset() { return m_DiffuseTextureAsset; }
-    Ref<TextureAsset>& GetNormalTextureAsset() { return m_NormalTextureAsset; }
-    Ref<TextureAsset>& GetMetallicTextureAsset() { return m_MetallicTextureAsset; }
-    Ref<TextureAsset>& GetRoughnessTextureAsset() { return m_RoughnessTextureAsset; }
-    Ref<TextureAsset>& GetAOTextureAsset() { return m_AOTextureAsset; }
-    Ref<TextureAsset>& GetEmissiveTextureAsset() { return m_EmissiveTextureAsset; }
+    TextureAsset** GetDiffuseTextureAsset() { return &m_DiffuseTextureAsset; }
+    TextureAsset** GetNormalTextureAsset() { return &m_NormalTextureAsset; }
+    TextureAsset** GetMetallicTextureAsset() { return &m_MetallicTextureAsset; }
+    TextureAsset** GetRoughnessTextureAsset() { return &m_RoughnessTextureAsset; }
+    TextureAsset** GetAOTextureAsset() { return &m_AOTextureAsset; }
+    TextureAsset** GetEmissiveTextureAsset() { return &m_EmissiveTextureAsset; }
     bool& GetFlipDiffuseTexture() { return m_FlipDiffuseTexture; }
     bool& GetFlipNormalTexture() { return m_FlipNormalTexture; }
     bool& GetFlipMetallicTexture() { return m_FlipMetallicTexture; }
@@ -44,27 +44,27 @@ private:
 
     // Diffuse/Albedo
     std::string m_DiffusePath;
-    Ref<TextureAsset> m_DiffuseTextureAsset;
+    TextureAsset* m_DiffuseTextureAsset;
     bool m_FlipDiffuseTexture;
     // Normal
     std::string m_NormalPath;
-    Ref<TextureAsset> m_NormalTextureAsset;
+    TextureAsset* m_NormalTextureAsset;
     bool m_FlipNormalTexture;
     // Metallic
     std::string m_MetallicPath;
-    Ref<TextureAsset> m_MetallicTextureAsset;
+    TextureAsset* m_MetallicTextureAsset;
     bool m_FlipMetallicTexture;
     // Roughness
     std::string m_RoughnessPath;
-    Ref<TextureAsset> m_RoughnessTextureAsset;
+    TextureAsset* m_RoughnessTextureAsset;
     bool m_FlipRoughnessTexture;
     // AO
     std::string m_AOPath;
-    Ref<TextureAsset> m_AOTextureAsset;
+    TextureAsset* m_AOTextureAsset;
     bool m_FlipAOTexture;
     // Emissive
     std::string m_EmissivePath;
-    Ref<TextureAsset> m_EmissiveTextureAsset;
+    TextureAsset* m_EmissiveTextureAsset;
     bool m_FlipEmissiveTexture;
 
     void reloadDiffuseTexture();

@@ -1,11 +1,11 @@
 #include "RenderPipeline.h"
 
-RenderPipeline::RenderPipeline(std::vector<Ref<RenderPass>> renderPasses, std::vector<Ref<RenderPass>> postProcessingPasses, uint32_t resolutionWidth, uint32_t resolutionHeight)
-    : m_RenderPasses(renderPasses), m_PostProcessingPasses(postProcessingPasses), m_OutputFramebuffer(nullptr), m_ResolutionWidth(resolutionWidth), m_ResolutionHeight(resolutionHeight)
+RenderPipeline::RenderPipeline(std::vector<Scope<RenderPass>>& renderPasses, std::vector<Scope<RenderPass>>& postProcessingPasses, uint32_t resolutionWidth, uint32_t resolutionHeight)
+    : m_RenderPasses(std::move(renderPasses)), m_PostProcessingPasses(std::move(postProcessingPasses)), m_OutputFramebuffer(nullptr), m_ResolutionWidth(resolutionWidth), m_ResolutionHeight(resolutionHeight)
 {
 }
 
-Framebuffer& RenderPipeline::Run(Ref<Scene> scene, ProxyManager& proxyManager)
+Framebuffer& RenderPipeline::Run(Scene* scene, ProxyManager& proxyManager)
 {
     if (!m_OutputFramebuffer)
     {
@@ -13,24 +13,24 @@ Framebuffer& RenderPipeline::Run(Ref<Scene> scene, ProxyManager& proxyManager)
                                                        FramebufferAttachmentType::DEPTH_STENCIL_COLOR);
     }
 
-    for (auto currentPass : m_RenderPasses)
+    for (auto& currentPass : m_RenderPasses)
     {
         //Map input
         currentPass->Run(scene, proxyManager);
         //Get output
 
         //If last pass:
-        currentPass->GetOutputFramebuffer()->BlitFramebuffer(
+        currentPass->GetOutputFramebuffer()->get()->BlitFramebuffer(
             m_OutputFramebuffer->GetId(), m_OutputFramebuffer->GetWidth(), m_OutputFramebuffer->GetHeight());
     }
 
-    for (auto currentPass : m_PostProcessingPasses)
+    for (auto& currentPass : m_PostProcessingPasses)
     {
         //Map input
         currentPass->Run(scene, proxyManager);
 
         //If last pass:
-        currentPass->GetOutputFramebuffer()->BlitFramebuffer(
+        currentPass->GetOutputFramebuffer()->get()->BlitFramebuffer(
             m_OutputFramebuffer->GetId(), m_OutputFramebuffer->GetWidth(), m_OutputFramebuffer->GetHeight());
     }
 
@@ -39,12 +39,12 @@ Framebuffer& RenderPipeline::Run(Ref<Scene> scene, ProxyManager& proxyManager)
 
 void RenderPipeline::RecompileShaders()
 {
-    for (auto currentPass : m_RenderPasses)
+    for (auto& currentPass : m_RenderPasses)
     {
         currentPass->RecompilePassShader();
     }
 
-    for (auto currentPass : m_PostProcessingPasses)
+    for (auto& currentPass : m_PostProcessingPasses)
     {
         currentPass->RecompilePassShader();
     }
@@ -54,7 +54,7 @@ void RenderPipeline::RecompileShaders()
 void RenderPipeline::UpdateResolution(uint32_t width, uint32_t height)
 {
     m_OutputFramebuffer = CreateScope<Framebuffer>(width, height, FramebufferAttachmentType::DEPTH_STENCIL_COLOR);
-    for (auto currentPass : m_RenderPasses)
+    for (auto& currentPass : m_RenderPasses)
     {
         currentPass->UpdateResolution(width, height);
     }
@@ -62,7 +62,7 @@ void RenderPipeline::UpdateResolution(uint32_t width, uint32_t height)
 
 void RenderPipeline::UpdateSampleCount(uint32_t sampleCount)
 {
-        for (auto currentPass : m_RenderPasses)
+        for (auto& currentPass : m_RenderPasses)
         {
             currentPass->UpdateSampleCount(sampleCount);
         }

@@ -7,9 +7,9 @@
 class RenderPipeline
 {
 public:
-    RenderPipeline(std::vector<Ref<RenderPass>> renderPasses, std::vector<Ref<RenderPass>> postProcessingPasses, uint32_t resolutionWidth, uint32_t resolutionHeight);
+    RenderPipeline(std::vector<Scope<RenderPass>>& renderPasses, std::vector<Scope<RenderPass>>& postProcessingPasses, uint32_t resolutionWidth, uint32_t resolutionHeight);
 
-    Framebuffer& Run(Ref<Scene> scene, ProxyManager& proxyManager);
+    Framebuffer& Run(Scene* scene, ProxyManager& proxyManager);
 
     void RecompileShaders();
     void UpdateResolution(uint32_t width, uint32_t height);
@@ -17,8 +17,8 @@ public:
     uint32_t GetSampleCount();
 
 private:
-    std::vector<Ref<RenderPass>> m_RenderPasses;
-    std::vector<Ref<RenderPass>> m_PostProcessingPasses;
+    std::vector<Scope<RenderPass>> m_RenderPasses;
+    std::vector<Scope<RenderPass>> m_PostProcessingPasses;
     Scope<Framebuffer> m_OutputFramebuffer;
 
     //TEST

@@ -28,13 +28,13 @@ public:
     void RemoveSceneObject(uint32_t sceneObjectId);
     void RemoveSkyboxObject();
     void RemoveSceneLight(uint32_t sceneLightId);
-    void RemoveMaterialAsset(uint32_t materialAssetId);
+    void RemoveMaterialAsset(uint32_t materialAssetId) const;
     uint32_t AddDirectionalLight();
     uint32_t AddPointLight();
     uint32_t AddSkybox();
-    uint32_t AddMaterialAsset();
+    static uint32_t AddMaterialAsset();
 
-    uint32_t AddCamera(const Ref<Camera> cameraPtr);
+    uint32_t AddCamera(Camera* cameraPtr);
 
     const uint32_t GetId() const { return m_Id; }
     const std::vector<uint32_t>& GetSceneObjectIds() const { return m_SceneObjectIds; }

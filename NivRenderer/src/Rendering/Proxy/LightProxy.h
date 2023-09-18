@@ -9,31 +9,33 @@ public:
     {
         if (m_VertexArray == UINT32_MAX)
         {
-            glGenVertexArrays(1, &m_VertexArray);
-            glGenBuffers(1, &m_VertexBuffer);
-
-            glBindVertexArray(m_VertexArray);
+            glCreateBuffers(1, &m_VertexBuffer);
 
             const auto& vertices = AssetManager::GetInstance().LoadMesh("default")->GetVertices();
             m_VerticesCount = vertices.size();
 
-            glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
-            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(MeshVertex), vertices.data(), GL_DYNAMIC_DRAW);
+            glNamedBufferStorage(m_VertexBuffer, m_VerticesCount * sizeof(MeshVertex), vertices.data(), GL_DYNAMIC_STORAGE_BIT);
 
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, Position));
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, Normal));
-            glEnableVertexAttribArray(1);
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, TexCoords));
-            glEnableVertexAttribArray(2);
-            glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, Tangent));
-            glEnableVertexAttribArray(3);
-            glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, Bitangent));
-            glEnableVertexAttribArray(4);
+            glCreateVertexArrays(1, &m_VertexArray);
+            glVertexArrayVertexBuffer(m_VertexArray, 0, m_VertexBuffer, 0, sizeof(MeshVertex));
 
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glEnableVertexArrayAttrib(m_VertexArray, 0);
+            glEnableVertexArrayAttrib(m_VertexArray, 1);
+            glEnableVertexArrayAttrib(m_VertexArray, 2);
+            glEnableVertexArrayAttrib(m_VertexArray, 3);
+            glEnableVertexArrayAttrib(m_VertexArray, 4);
 
-            glBindVertexArray(0);
+            glVertexArrayAttribFormat(m_VertexArray, 0, 3, GL_FLOAT, GL_FALSE, offsetof(MeshVertex, Position));
+            glVertexArrayAttribFormat(m_VertexArray, 1, 3, GL_FLOAT, GL_FALSE, offsetof(MeshVertex, Normal));
+            glVertexArrayAttribFormat(m_VertexArray, 2, 2, GL_FLOAT, GL_FALSE, offsetof(MeshVertex, TexCoords));
+            glVertexArrayAttribFormat(m_VertexArray, 3, 3, GL_FLOAT, GL_FALSE, offsetof(MeshVertex, Tangent));
+            glVertexArrayAttribFormat(m_VertexArray, 4, 3, GL_FLOAT, GL_FALSE, offsetof(MeshVertex, Bitangent));
+
+            glVertexArrayAttribBinding(m_VertexArray, 0, 0);
+            glVertexArrayAttribBinding(m_VertexArray, 1, 0);
+            glVertexArrayAttribBinding(m_VertexArray, 2, 0);
+            glVertexArrayAttribBinding(m_VertexArray, 3, 0);
+            glVertexArrayAttribBinding(m_VertexArray, 4, 0);
         }
     }
 
@@ -43,7 +45,6 @@ public:
     static void Bind()
     {
         glBindVertexArray(m_VertexArray);
-        glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
     }
 
     void SetLightColor(const glm::vec3& color) { m_LightColor = color; }

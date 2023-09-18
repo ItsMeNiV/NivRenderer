@@ -3,9 +3,14 @@
 
 MaterialAsset::MaterialAsset(uint32_t id, const std::string& name) :
     Asset(id), m_Name(name), m_DirtyFlag(true),
-    m_DiffusePath("default"), m_FlipDiffuseTexture(false), m_FlipNormalTexture(false),
-    m_FlipMetallicTexture(false), m_FlipRoughnessTexture(false), m_FlipAOTexture(false), m_FlipEmissiveTexture(false)
-{}
+    m_DiffusePath("default"), m_DiffuseTextureAsset(nullptr), m_FlipDiffuseTexture(false),
+    m_NormalTextureAsset(nullptr), m_FlipNormalTexture(false),
+    m_MetallicTextureAsset(nullptr),
+    m_FlipMetallicTexture(false), m_RoughnessTextureAsset(nullptr), m_FlipRoughnessTexture(false),
+    m_AOTextureAsset(nullptr), m_FlipAOTexture(false),
+    m_EmissiveTextureAsset(nullptr), m_FlipEmissiveTexture(false)
+{
+}
 
 void MaterialAsset::reloadDiffuseTexture()
 {

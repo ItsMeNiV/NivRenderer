@@ -3,9 +3,9 @@
 MeshProxy::MeshProxy(uint32_t id) :
     Proxy(id), m_VertexArray(UINT32_MAX), m_VertexBuffer(UINT32_MAX), m_IndexBuffer(UINT32_MAX), m_VerticesCount(0), m_IndexCount(0)
 {
-    glGenVertexArrays(1, &m_VertexArray);
-    glGenBuffers(1, &m_VertexBuffer);
-    glGenBuffers(1, &m_IndexBuffer);
+    glCreateVertexArrays(1, &m_VertexArray);
+    glCreateBuffers(1, &m_VertexBuffer);
+    glCreateBuffers(1, &m_IndexBuffer);
 }
 
 MeshProxy::~MeshProxy()
@@ -15,49 +15,46 @@ MeshProxy::~MeshProxy()
     glDeleteVertexArrays(1, &m_VertexArray);
 }
 
-void MeshProxy::CreateBuffers(const Ref<MeshComponent>& mesh)
+void MeshProxy::CreateBuffers(const MeshComponent* const mesh)
 {
-    glBindVertexArray(m_VertexArray);
-
     const auto& vertices = mesh->GetMeshAsset()->GetVertices();
     const auto& indices = mesh->GetMeshAsset()->GetIndices();
 
     m_IndexCount = indices.size();
     m_VerticesCount = vertices.size();
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IndexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(MeshVertex), vertices.data(), GL_DYNAMIC_DRAW);
+    glNamedBufferStorage(m_VertexBuffer, vertices.size() * sizeof(MeshVertex), vertices.data(), GL_DYNAMIC_STORAGE_BIT);
     if (m_IndexCount)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_IndexCount * sizeof(uint32_t), indices.data(), GL_DYNAMIC_DRAW);
+        glNamedBufferStorage(m_IndexBuffer, m_IndexCount * sizeof(uint32_t), indices.data(), GL_DYNAMIC_STORAGE_BIT);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), reinterpret_cast<void*>(offsetof(MeshVertex, Position)));
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), reinterpret_cast<void*>(offsetof(MeshVertex, Normal)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), reinterpret_cast<void*>(offsetof(MeshVertex, TexCoords)));
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), reinterpret_cast<void*>(offsetof(MeshVertex, Tangent)));
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), reinterpret_cast<void*>(offsetof(MeshVertex, Bitangent)));
-    glEnableVertexAttribArray(4);
+    glVertexArrayVertexBuffer(m_VertexArray, 0, m_VertexBuffer, 0, sizeof(MeshVertex));
+    glVertexArrayElementBuffer(m_VertexArray, m_IndexBuffer);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glEnableVertexArrayAttrib(m_VertexArray, 0);
+    glEnableVertexArrayAttrib(m_VertexArray, 1);
+    glEnableVertexArrayAttrib(m_VertexArray, 2);
+    glEnableVertexArrayAttrib(m_VertexArray, 3);
+    glEnableVertexArrayAttrib(m_VertexArray, 4);
 
-    glBindVertexArray(0);
+    glVertexArrayAttribFormat(m_VertexArray, 0, 3, GL_FLOAT, GL_FALSE, offsetof(MeshVertex, Position));
+    glVertexArrayAttribFormat(m_VertexArray, 1, 3, GL_FLOAT, GL_FALSE, offsetof(MeshVertex, Normal));
+    glVertexArrayAttribFormat(m_VertexArray, 2, 2, GL_FLOAT, GL_FALSE, offsetof(MeshVertex, TexCoords));
+    glVertexArrayAttribFormat(m_VertexArray, 3, 3, GL_FLOAT, GL_FALSE, offsetof(MeshVertex, Tangent));
+    glVertexArrayAttribFormat(m_VertexArray, 4, 3, GL_FLOAT, GL_FALSE, offsetof(MeshVertex, Bitangent));
+
+    glVertexArrayAttribBinding(m_VertexArray, 0, 0);
+    glVertexArrayAttribBinding(m_VertexArray, 1, 0);
+    glVertexArrayAttribBinding(m_VertexArray, 2, 0);
+    glVertexArrayAttribBinding(m_VertexArray, 3, 0);
+    glVertexArrayAttribBinding(m_VertexArray, 4, 0);
 }
 
 void MeshProxy::Bind() const
 {
     glBindVertexArray(m_VertexArray);
-    glBindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IndexBuffer);
 }
 
-void MeshProxy::Unbind() const
+void MeshProxy::Unbind()
 {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
 }

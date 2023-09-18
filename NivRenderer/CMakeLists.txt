@@ -2,8 +2,6 @@
 # project specific logic here.
 #
 
-set(LOG_LEVEL "DEBUG")
-
 # ASSIMP SETTINGS
 OPTION( BUILD_SHARED_LIBS
   "Build package with shared libraries."
@@ -188,7 +186,6 @@ add_executable (${CMAKE_PROJECT_NAME} ${SRC_FILES})
 include_directories(${INCLUDE_DIRS})
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE glfw assimp spdlog::spdlog_header_only nlohmann_json::nlohmann_json)
 
-add_compile_definitions(SPDLOG_ACTIVE_LEVEL=${LOG_LEVEL})
 add_compile_definitions(CMAKE_CXX_STANDARD_REQUIRED=ON)
 
 add_custom_target(copy_assets

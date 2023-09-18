@@ -42,14 +42,14 @@ void MaterialProxy::BindEmissiveTexture(const int32_t slot) const
     m_EmissiveTexture->BindToSlot(slot);
 }
 
-Ref<TextureProxy>& MaterialProxy::GetDiffuseTexture() { return m_DiffuseTexture; }
+TextureProxy** MaterialProxy::GetDiffuseTexturePtr() { return &m_DiffuseTexture; }
 
-Ref<TextureProxy>& MaterialProxy::GetNormalTexture() { return m_NormalTexture; }
+TextureProxy** MaterialProxy::GetNormalTexturePtr() { return &m_NormalTexture; }
 
-Ref<TextureProxy>& MaterialProxy::GetMetallicTexture() { return m_MetallicTexture; }
+TextureProxy** MaterialProxy::GetMetallicTexturePtr() { return &m_MetallicTexture; }
 
-Ref<TextureProxy>& MaterialProxy::GetRoughnessTexture() { return m_RoughnessTexture; }
+TextureProxy** MaterialProxy::GetRoughnessTexturePtr() { return &m_RoughnessTexture; }
 
-Ref<TextureProxy>& MaterialProxy::GetAOTexture() { return m_AOTexture; }
+TextureProxy** MaterialProxy::GetAOTexturePtr() { return &m_AOTexture; }
 
-Ref<TextureProxy>& MaterialProxy::GetEmissiveTexture() { return m_EmissiveTexture; }
+TextureProxy** MaterialProxy::GetEmissiveTexturePtr() { return &m_EmissiveTexture; }

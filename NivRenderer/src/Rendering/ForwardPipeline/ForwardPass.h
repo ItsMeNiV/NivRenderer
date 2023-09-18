@@ -11,13 +11,13 @@
 class ForwardPass : public RenderPass
 {
 public:
-    ForwardPass(const Ref<Shader>& passShader, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount);
+    ForwardPass(Shader* passShader, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount);
 
-    void Run(const Ref<Scene>& scene, ProxyManager& proxyManager) override;
+    void Run(Scene* scene, ProxyManager& proxyManager) override;
 
 private:
     Ref<Framebuffer> m_ShadowmapFramebuffer;
     Ref<Shader> m_ShadowmapShader;
 
-    void updateShadowmapFramebuffer(const Ref<Scene>& scene);
+    void updateShadowmapFramebuffer(Scene* scene);
 };

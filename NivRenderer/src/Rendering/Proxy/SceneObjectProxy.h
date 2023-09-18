@@ -12,17 +12,17 @@ public:
     ~SceneObjectProxy() override;
 
     void SetTransform(glm::vec3 position, glm::vec3 scale, glm::vec3 rotation);
-    void SetMesh(const Ref<MeshProxy>& meshProxy);
-    void SetMaterial(const Ref<MaterialProxy>& materialProxy);
+    void SetMesh(MeshProxy* const meshProxy);
+    void SetMaterial(MaterialProxy* const materialProxy);
     void Bind() const;
     void Unbind() const;
 
     glm::mat4& GetModelMatrix() { return m_ModelMatrix; }
-    const Ref<MeshProxy>& GetMeshProxy() const { return m_MeshProxy; }
-    const Ref<MaterialProxy>& GetMaterialProxy() const { return m_MaterialProxy; }
+    const MeshProxy* GetMeshProxy() const { return m_MeshProxy; }
+    const MaterialProxy* GetMaterialProxy() const { return m_MaterialProxy; }
 
 private:
     glm::mat4 m_ModelMatrix;
-    Ref<MaterialProxy> m_MaterialProxy;
-    Ref<MeshProxy> m_MeshProxy;
+    MaterialProxy* m_MaterialProxy;
+    MeshProxy* m_MeshProxy;
 };

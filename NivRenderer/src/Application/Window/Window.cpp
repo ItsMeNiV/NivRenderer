@@ -37,6 +37,82 @@ Window::~Window()
 	glfwTerminate();
 }
 
+void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message,
+                      void const* user_param)
+{
+    auto const src_str = [source]()
+    {
+        switch (source)
+        {
+        case GL_DEBUG_SOURCE_API:
+            return "API";
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+            return "WINDOW SYSTEM";
+        case GL_DEBUG_SOURCE_SHADER_COMPILER:
+            return "SHADER COMPILER";
+        case GL_DEBUG_SOURCE_THIRD_PARTY:
+            return "THIRD PARTY";
+        case GL_DEBUG_SOURCE_APPLICATION:
+            return "APPLICATION";
+        case GL_DEBUG_SOURCE_OTHER:
+            return "OTHER";
+        }
+    }();
+
+    auto const type_str = [type]()
+    {
+        switch (type)
+        {
+        case GL_DEBUG_TYPE_ERROR:
+            return "ERROR";
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+            return "DEPRECATED_BEHAVIOR";
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+            return "UNDEFINED_BEHAVIOR";
+        case GL_DEBUG_TYPE_PORTABILITY:
+            return "PORTABILITY";
+        case GL_DEBUG_TYPE_PERFORMANCE:
+            return "PERFORMANCE";
+        case GL_DEBUG_TYPE_MARKER:
+            return "MARKER";
+        case GL_DEBUG_TYPE_OTHER:
+            return "OTHER";
+        }
+    }();
+
+    auto const severity_str = [severity]()
+    {
+        switch (severity)
+        {
+        case GL_DEBUG_SEVERITY_NOTIFICATION:
+            return "NOTIFICATION";
+        case GL_DEBUG_SEVERITY_LOW:
+            return "LOW";
+        case GL_DEBUG_SEVERITY_MEDIUM:
+            return "MEDIUM";
+        case GL_DEBUG_SEVERITY_HIGH:
+            return "HIGH";
+        }
+    }();
+    const std::string logMessage =
+        std::format("{}, {}, {}, {}: {}\n", src_str, type_str, severity_str, std::to_string(id), message);
+    switch (severity)
+    {
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        SPDLOG_DEBUG(logMessage);
+        break;
+    case GL_DEBUG_SEVERITY_LOW:
+        SPDLOG_WARN(logMessage);
+        break;
+    case GL_DEBUG_SEVERITY_MEDIUM:
+        SPDLOG_WARN(logMessage);
+        break;
+    case GL_DEBUG_SEVERITY_HIGH:
+        SPDLOG_ERROR(logMessage);
+        break;
+    }
+}
+
 void Window::CreateRenderContext()
 {
 	glfwMakeContextCurrent(m_Window);
@@ -50,6 +126,8 @@ void Window::CreateRenderContext()
 	glfwSwapInterval(0); // Disable vsync
     glEnable(GL_CULL_FACE);
 	glViewport(0, 0, m_Width, m_Height);
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(message_callback, nullptr);
 
 	glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
 		Window* thisClass = (Window*)glfwGetWindowUserPointer(window);
@@ -98,7 +176,7 @@ void Window::PrepareFrame()
     ImGuizmo::BeginFrame();
 }
 
-void Window::RenderImGui(Ref<Scene> scene)
+void Window::RenderImGui(Scene* scene)
 {
 	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -218,10 +296,11 @@ void Window::UpdateFramebuffer(uint32_t width, uint32_t height)
 	}
 }
 
-void Window::CreateCameraController(Camera* camera)
+void Window::CreateCameraAndController(glm::ivec2& renderResolution)
 {
-	m_CameraControllerFirstPerson = CreateScope<CameraControllerFirstPerson>(camera, 3.0f, 0.1f);
-	m_CameraControllerArcball = CreateScope<CameraControllerArcball>(camera, 5.0f, 0.3f);
+    m_Camera = CreateScope<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), renderResolution.x, renderResolution.y);
+    m_CameraControllerFirstPerson = CreateScope<CameraControllerFirstPerson>(m_Camera.get(), 3.0f, 0.1f);
+    m_CameraControllerArcball = CreateScope<CameraControllerArcball>(m_Camera.get(), 5.0f, 0.3f);
 }
 
 void Window::ProcessInput()

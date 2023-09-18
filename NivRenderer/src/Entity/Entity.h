@@ -7,37 +7,37 @@
 class Entity : public Serializable
 {
 public:
-    virtual ~Entity() {}
+    virtual ~Entity() = default;
 
-	void AddChildEntity(Ref<Entity> entity)
+    void AddChildEntity(Entity* entity)
 	{
 		m_ChildEntities.push_back(entity);
 		entity->SetParentEntityId(m_EntityId);
 	}
 	void RemoveChildEntity(uint32_t childId)
 	{
-		if (std::find_if(m_ChildEntities.begin(), m_ChildEntities.end(), [childId](Ref<Entity> e) { return e->GetId() == childId; }) == m_ChildEntities.end())
-			return;
+        if (m_ChildEntities.empty())
+            return;
 
-		m_ChildEntities.erase(std::remove_if(begin(m_ChildEntities), end(m_ChildEntities), [childId](Ref<Entity> e) {
-			return e->GetId() == childId;
-		}));
+		m_ChildEntities.erase(std::ranges::remove_if(m_ChildEntities, [childId](const Entity* e) {
+            return e->GetId() == childId;
+        }).begin());
 	}
 
 	virtual std::vector<std::pair<std::string, Property>> GetEntityProperties() = 0;
 
-	const uint32_t GetId() const { return m_EntityId; }
-	std::string* const GetEntityName() { return &m_EntityName; }
-	const std::vector<Ref<Entity>>& GetChildEntities() const { return m_ChildEntities; }
-	const int32_t GetParentEntityId() const { return m_ParentEntityId; }
-	void SetParentEntityId(uint32_t parentId) { m_ParentEntityId = parentId; }
+    uint32_t GetId() const { return m_EntityId; }
+	std::string* GetEntityName() { return &m_EntityName; }
+	const std::vector<Entity*>& GetChildEntities() const { return m_ChildEntities; }
+    int32_t GetParentEntityId() const { return m_ParentEntityId; }
+	void SetParentEntityId(const uint32_t parentId) { m_ParentEntityId = parentId; }
 	bool GetDirtyFlag() const { return m_DirtyFlag; }
 	void SetDirtyFlag(bool dirtyFlag) { m_DirtyFlag = dirtyFlag; }
 
 protected:
 	Entity(uint32_t id, std::string&& entityName)
-		: m_EntityId(id), m_EntityName(std::move(entityName)), m_ChildEntities(), m_ParentEntityId(-1), m_DirtyFlag(true)
-	{}
+		: m_EntityName(std::move(entityName)), m_EntityId(id), m_DirtyFlag(true), m_ParentEntityId(-1)
+    {}
 
 protected:
     std::string m_EntityName;
@@ -47,5 +47,5 @@ private:
 	bool m_DirtyFlag;
 
 	int32_t m_ParentEntityId;
-	std::vector<Ref<Entity>> m_ChildEntities;
+	std::vector<Entity*> m_ChildEntities;
 };
