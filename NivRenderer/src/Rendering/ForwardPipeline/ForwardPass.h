@@ -16,8 +16,8 @@ public:
     void Run(Scene* scene, ProxyManager& proxyManager) override;
 
 private:
-    Ref<Framebuffer> m_ShadowmapFramebuffer;
-    Ref<Shader> m_ShadowmapShader;
+    Scope<Framebuffer> m_ShadowmapFramebuffer;
+    Shader* m_ShadowmapShader;
 
     void updateShadowmapFramebuffer(Scene* scene);
 };

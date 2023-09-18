@@ -199,7 +199,7 @@ void ForwardPass::updateShadowmapFramebuffer(Scene* scene)
         scene->GetSceneSettings().shadowmapResolution.x != m_ShadowmapFramebuffer->GetWidth() ||
         scene->GetSceneSettings().shadowmapResolution.y != m_ShadowmapFramebuffer->GetHeight())
     {
-        m_ShadowmapFramebuffer = CreateRef<Framebuffer>(scene->GetSceneSettings().shadowmapResolution.x,
+        m_ShadowmapFramebuffer = CreateScope<Framebuffer>(scene->GetSceneSettings().shadowmapResolution.x,
                                                         scene->GetSceneSettings().shadowmapResolution.y,
                                                         FramebufferAttachmentType::DEPTH_ONLY);
     }

@@ -11,11 +11,20 @@
 #include "imgui.h"
 #include "backends/imgui_impl_opengl3.h"
 
+#include "Rendering/RenderQueue.h"
+
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_ERROR
 
 int main()
 {
     spdlog::set_level(spdlog::level::err);
+
+    CommandBuffer* buffer = new CommandBuffer();
+
+    for (int i = 0; i <= 300; i++)
+    {
+        buffer->submit(RenderCommand::BIND_BUFFER);
+    }
 
     auto* app = new Application();
 

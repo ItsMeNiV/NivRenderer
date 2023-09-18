@@ -111,6 +111,7 @@ set(SRC_FILES
  "src/Application/Event.h"
  "src/Application/Input.h"
  "src/Application/Serialization/Serializable.h"
+ "src/Application/Serialization/SerializationManager.h" "src/Application/Serialization/SerializationManager.cpp"
  "src/Application/Util/Instrumentor.h"
  "src/Application/Util/Math.h"
  "src/Application/Window/Window.cpp" "src/Application/Window/Window.h" 
@@ -129,7 +130,7 @@ set(SRC_FILES
  "src/Entity/Assets/MeshAsset.h" "src/Entity/Assets/MeshAsset.cpp"
  "src/Entity/Assets/TextureAsset.h" "src/Entity/Assets/TextureAsset.cpp"
  "src/Entity/Assets/MaterialAsset.h" "src/Entity/Assets/MaterialAsset.cpp"
- "src/Entity/Components/TransformComponent.h"
+ "src/Entity/Components/TransformComponent.h" "src/Entity/Components/TransformComponent.cpp"
  "src/Entity/Components/MeshComponent.h" "src/Entity/Components/MeshComponent.cpp"
  "src/Entity/Components/MaterialComponent.h" "src/Entity/Components/MaterialComponent.cpp"
  "src/Entity/Entities/SceneObject.h" "src/Entity/Entities/SceneObject.cpp"
@@ -141,6 +142,7 @@ set(SRC_FILES
  "src/Rendering/OpenGL/Texture.h" "src/Rendering/OpenGL/Texture.cpp"
  "src/Rendering/RenderPipeline.cpp" "src/Rendering/RenderPipeline.h"
  "src/Rendering/RenderPass.h"
+ "src/Rendering/RenderQueue.h"
  "src/Rendering/Proxy/Proxy.h"
  "src/Rendering/Proxy/ProxyManager.cpp" "src/Rendering/Proxy/ProxyManager.h"
  "src/Rendering/Proxy/SceneObjectProxy.h" "src/Rendering/Proxy/SceneObjectProxy.cpp"
@@ -152,7 +154,7 @@ set(SRC_FILES
  "src/Rendering/Proxy/MaterialProxy.h" "src/Rendering/Proxy/MaterialProxy.cpp"
  "src/Rendering/ForwardPipeline/ForwardPass.h"
  "src/Rendering/OpenGL/VertexLayout.h"
- "src/Rendering/ForwardPipeline/ForwardPass.cpp" "src/Application/Serialization/SerializationManager.h" "src/Application/Serialization/SerializationManager.cpp" "src/Entity/Components/TransformComponent.cpp")
+ "src/Rendering/ForwardPipeline/ForwardPass.cpp")
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp
