@@ -1,6 +1,7 @@
 #pragma once
 #include "Base.h"
 #include "MaterialAsset.h"
+#include "Entity/Assets/ShaderAsset.h"
 #include "Entity/Assets/MeshAsset.h"
 #include "Entity/Assets/TextureAsset.h"
 #include "assimp/Importer.hpp"
@@ -43,8 +44,9 @@ public:
     MeshAsset* LoadMesh(const std::string& path);
     MeshAsset* GetMesh(const uint32_t id);
     TextureAsset* LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel = false, int channelIndex = 0);
+    void ReloadTexture(TextureAsset* textureAsset);
     TextureAsset* GetTexture(const uint32_t id);
-    Shader* LoadShader(const std::string& path, ShaderType shaderType);
+    ShaderAsset* LoadShader(const std::string& path, ShaderType shaderType);
     Model* LoadModel(const std::string& path);
     Model* GetModel(const std::string& path);
     MaterialAsset* GetMaterial(const std::string& name);
@@ -70,10 +72,11 @@ private:
     Scope<Assimp::Importer> m_Importer;
     std::unordered_map<std::string, Scope<MeshAsset>> m_LoadedMeshAssets;
     std::unordered_map<std::string, Scope<TextureAsset>> m_LoadedTextureAssets;
-    std::unordered_map<std::string, Scope<Shader>> m_LoadedShaders;
+    std::unordered_map<std::string, Scope<ShaderAsset>> m_LoadedShaders;
     std::unordered_map<std::string, Scope<Model>> m_LoadedModels;
     std::unordered_map<uint32_t, Scope<MaterialAsset>> m_LoadedMaterialAssets;
 
+    void importTexture(TextureAsset* textureAsset);
     void loadDefaultMeshAndTextures();
     void processNode(const aiNode* node, const aiScene* scene, std::vector<SubModel>& subModels, const std::string& path);
     MeshAsset* processMesh(aiMesh* mesh, const aiScene* scene, const std::string& path);

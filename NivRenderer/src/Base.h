@@ -15,6 +15,9 @@
 #include "glm/glm.hpp"
 #include "spdlog/spdlog.h"
 
+#define SHIFTBITL(x) (1 << x)
+#define SHIFTBITR(x) (1 >> x)
+
 template<typename T>
 using Scope = std::unique_ptr<T>;
 template<typename T, typename ... Args>

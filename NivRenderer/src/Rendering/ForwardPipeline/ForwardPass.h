@@ -11,13 +11,13 @@
 class ForwardPass : public RenderPass
 {
 public:
-    ForwardPass(Shader* passShader, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount);
+    ForwardPass(ShaderAsset* passShader, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount);
 
     void Run(Scene* scene, ProxyManager& proxyManager) override;
 
 private:
     Scope<Framebuffer> m_ShadowmapFramebuffer;
-    Shader* m_ShadowmapShader;
+    ShaderAsset* m_ShadowmapShader;
 
     void updateShadowmapFramebuffer(Scene* scene);
 };

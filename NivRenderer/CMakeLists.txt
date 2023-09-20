@@ -83,6 +83,10 @@ OPTION (ASSIMP_BUILD_OBJ_IMPORTER
    "Don't build all importers."
    ON
 )
+OPTION (ASSIMP_BUILD_FBX_IMPORTER
+   "Don't build all importers."
+   ON
+)
 #Json Settings
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 
@@ -130,6 +134,7 @@ set(SRC_FILES
  "src/Entity/Assets/MeshAsset.h" "src/Entity/Assets/MeshAsset.cpp"
  "src/Entity/Assets/TextureAsset.h" "src/Entity/Assets/TextureAsset.cpp"
  "src/Entity/Assets/MaterialAsset.h" "src/Entity/Assets/MaterialAsset.cpp"
+ "src/Entity/Assets/ShaderAsset.h"
  "src/Entity/Components/TransformComponent.h" "src/Entity/Components/TransformComponent.cpp"
  "src/Entity/Components/MeshComponent.h" "src/Entity/Components/MeshComponent.cpp"
  "src/Entity/Components/MaterialComponent.h" "src/Entity/Components/MaterialComponent.cpp"
@@ -154,7 +159,7 @@ set(SRC_FILES
  "src/Rendering/Proxy/MaterialProxy.h" "src/Rendering/Proxy/MaterialProxy.cpp"
  "src/Rendering/ForwardPipeline/ForwardPass.h"
  "src/Rendering/OpenGL/VertexLayout.h"
- "src/Rendering/ForwardPipeline/ForwardPass.cpp")
+ "src/Rendering/ForwardPipeline/ForwardPass.cpp" "src/Entity/Assets/ShaderAsset.cpp")
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp
@@ -170,6 +175,8 @@ list(APPEND SRC_FILES
     "vendor/glad/src/glad.c"
     "vendor/stb_image/stb_image.cpp"
     "vendor/stb_image/stb_image.h"
+    "vendor/stb_image/stb_image_resize.cpp"
+    "vendor/stb_image/stb_image_resize.h"
 )
 
 #GLFW
@@ -197,3 +204,7 @@ add_dependencies(${CMAKE_PROJECT_NAME} copy_assets)
 
 set(CMAKE_CXX_STANDARD 20)
 set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 20)
+
+if(MSVC)
+    target_link_options(${CMAKE_PROJECT_NAME} PRIVATE $<$<CONFIG:RELWITHDEBINFO>:/PROFILE>)
+endif()

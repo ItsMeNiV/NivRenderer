@@ -10,6 +10,9 @@ TextureProxy::~TextureProxy() = default;
 
 void TextureProxy::CreateTextureFromAsset(TextureAsset* const textureAsset) const
 {
+    if (textureAsset->isUnloaded())
+        textureAsset->ReloadData();
+
     GLenum format;
     GLenum sizedFormat;
     switch (*textureAsset->GetNrComponents())
@@ -38,6 +41,8 @@ void TextureProxy::CreateTextureFromAsset(TextureAsset* const textureAsset) cons
     glTextureParameteri(m_TextureId, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTextureParameteri(m_TextureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTextureParameteri(m_TextureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    textureAsset->UnloadData();
 }
 
 void TextureProxy::BindToSlot(uint32_t slot) const

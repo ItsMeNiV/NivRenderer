@@ -4,6 +4,7 @@
 
 #include "IdManager.h"
 #include "stb_image.h"
+#include "stb_image_resize.h"
 
 AssetManager::AssetManager()
 {
@@ -51,45 +52,26 @@ TextureAsset* AssetManager::LoadTexture(std::string& path, bool flipVertical, bo
 
     std::string pathToUse = textureExists ? m_LoadedTextureAssets[path]->GetPath() : path;
 
-    m_LoadedTextureAssets[path] = CreateScope<TextureAsset>(IdManager::GetInstance().CreateNewId(), pathToUse, flipVertical);
+    m_LoadedTextureAssets[path] = CreateScope<TextureAsset>(IdManager::GetInstance().CreateNewId(), pathToUse, flipVertical, loadOnlyOneChannel, channelIndex);
     const auto textureAsset = m_LoadedTextureAssets[path].get();
 
     stbi_set_flip_vertically_on_load(textureAsset->GetFlipVertical());
+
+    importTexture(textureAsset);
     if (loadOnlyOneChannel)
     {
-        unsigned char* loadedData = stbi_load(pathToUse.c_str(), textureAsset->GetWidth(), textureAsset->GetHeight(), textureAsset->GetNrComponents(), 0);
-        const size_t dataSize = (*textureAsset->GetWidth()) * (*textureAsset->GetHeight());
-        auto* data = new unsigned char[dataSize];
-
-        for (int32_t y = 0; y < *textureAsset->GetHeight(); y++)
-        {
-            for (int32_t x = 0; x < *textureAsset->GetWidth(); x++)
-            {
-
-                const unsigned char* pixelOffset = *textureAsset->GetNrComponents() * (y * *textureAsset->GetWidth() + x) + loadedData;
-                data[y * (*textureAsset->GetWidth()) + x] = pixelOffset[channelIndex];
-            }
-        }
-        *textureAsset->GetNrComponents() = 1;
-        textureAsset->SetTextureData(data);
-
-        stbi_image_free(loadedData);
-        delete[] data;
-
         std::string fileName = path.substr(0, path.find_last_of('.'));
         const std::string fileEnding = path.substr(path.find_last_of('.'), path.size());
         fileName += "_@" + std::to_string(channelIndex);
         path = fileName + fileEnding;
     }
-    else
-    {
-        unsigned char* loadedData = stbi_load(pathToUse.c_str(), textureAsset->GetWidth(), textureAsset->GetHeight(),
-                                              textureAsset->GetNrComponents(), 0);
-        textureAsset->SetTextureData(loadedData);
-        stbi_image_free(loadedData);
-    }
 
     return textureAsset;
+}
+
+void AssetManager::ReloadTexture(TextureAsset* textureAsset)
+{
+    importTexture(textureAsset);
 }
 
 TextureAsset* AssetManager::GetTexture(const uint32_t id)
@@ -103,14 +85,14 @@ TextureAsset* AssetManager::GetTexture(const uint32_t id)
     return nullptr;
 }
 
-Shader* AssetManager::LoadShader(const std::string& path, ShaderType shaderType)
+ShaderAsset* AssetManager::LoadShader(const std::string& path, ShaderType shaderType)
 {
     if (m_LoadedShaders.contains(path))
     {
         return m_LoadedShaders[path].get();
     }
 
-    m_LoadedShaders[path] = CreateScope<Shader>(path.c_str(), shaderType);
+    m_LoadedShaders[path] = CreateScope<ShaderAsset>(path.c_str(), shaderType);
     return m_LoadedShaders[path].get();
 }
 
@@ -272,6 +254,50 @@ void AssetManager::AddMaterial(Scope<MaterialAsset>&& materialAsset)
 void AssetManager::AddModel(const std::string& path, Scope<Model>&& model)
 {
     m_LoadedModels[path] = std::move(model);
+}
+
+void AssetManager::importTexture(TextureAsset* textureAsset)
+{
+    const std::string pathToUse = textureAsset->GetPath();
+    unsigned char* loadedData = stbi_load(pathToUse.c_str(), textureAsset->GetWidth(), textureAsset->GetHeight(),
+                                          textureAsset->GetNrComponents(), 0);
+
+    unsigned char* resizedData = nullptr;
+    if (*textureAsset->GetWidth() > 4000 && *textureAsset->GetHeight() > 4000)
+    {
+        resizedData = new unsigned char[1920 * 1080 * *textureAsset->GetNrComponents()];
+        stbir_resize_uint8(loadedData, *textureAsset->GetWidth(), *textureAsset->GetHeight(), 0, resizedData,
+                                   1920, 1080, 0, *textureAsset->GetNrComponents());
+        *textureAsset->GetWidth() = 1920;
+        *textureAsset->GetHeight() = 1080;
+        stbi_image_free(loadedData);
+    }
+
+    if (textureAsset->GetLoadOnlyOneChannel())
+    {
+        const size_t dataSize = (*textureAsset->GetWidth()) * (*textureAsset->GetHeight());
+        auto* data = new unsigned char[dataSize];
+
+        for (int32_t y = 0; y < *textureAsset->GetHeight(); y++)
+        {
+            for (int32_t x = 0; x < *textureAsset->GetWidth(); x++)
+            {
+                const unsigned char* pixelOffset =
+                    *textureAsset->GetNrComponents() * (y * *textureAsset->GetWidth() + x) + (resizedData ? resizedData : loadedData);
+                data[y * (*textureAsset->GetWidth()) + x] = pixelOffset[*textureAsset->GetChannelIndex()];
+            }
+        }
+        *textureAsset->GetNrComponents() = 1;
+        textureAsset->SetTextureData(data);
+
+        stbi_image_free(resizedData ? resizedData : loadedData);
+        delete[] data;
+    }
+    else
+    {
+        textureAsset->SetTextureData(resizedData ? resizedData : loadedData);
+        stbi_image_free(resizedData ? resizedData : loadedData);
+    }
 }
 
 void AssetManager::loadDefaultMeshAndTextures()

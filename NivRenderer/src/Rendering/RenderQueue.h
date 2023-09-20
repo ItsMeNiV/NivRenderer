@@ -2,55 +2,107 @@
 #include "Base.h"
 #include <queue>
 
-enum class RenderCommand
+/*
+    RenderCommand:
+    ClearColor, ClearColorAndDepth, Draw, DrawIndexed
+
+    RenderState (size: 160 bit <-> 20 byte):
+    uint32_t BoundVertexArray
+    uint32_t BoundUniformBuffer
+    uint32_t BoundShader
+    uint32_t  BoundFramebuffer; (0 means default framebuffer for viewport we always use the framebuffer's size)
+
+    uint32_t flags: 1 = on, 0 = off
+    bit-index-definition
+    0 : DEPTH_TEST
+    1 : CULL_FACE_FRONT (Cannot be on at the same time as 2)
+    2 : CULL_FACE_BACK  (Cannot be on at the same time as 1)
+    3 : 
+    4 : 
+    5 : 
+    6 : 
+    7 : 
+    8 : 
+    9 : 
+    10 : 
+    11 : 
+    12 : 
+    13 : 
+    14 : 
+    15 : 
+    16 : 
+    17 : 
+    18 : 
+    19 : 
+    20 : 
+    21 : 
+    22 : 
+    23 : 
+    24 : 
+    25 : 
+    26 : 
+    27 : 
+    28 : 
+    29 : 
+    30 : 
+    31 : 
+ */
+
+enum class CommandType
 {
-    SET_CLEAR_COLOR,
     CLEAR_COLOR_BUFFER,
     CLEAR_COLOR_DEPTH_BUFFER,
-    SET_VIEWPORT,
-    ENABLE_CAPABILITY, SET_CULL_FACE,
-    BIND_BUFFER, BIND_FRAMEBUFFER, BIND_SHADERPROGRAM,
-    DRAW_BUFFER, DRAW_INDEXED_BUFFER,
+    DRAW, DRAW_INDEXED,
 };
 
-enum class Capability : GLenum
+enum RendererStateFlag
 {
-    DEPTHTEST = GL_DEPTH_TEST,
-    FACECULLING = GL_CULL_FACE
+    DEPTH_TEST =        SHIFTBITL(0),
+    CULL_FACE_FRONT =   SHIFTBITL(1),
+    CULL_FACE_BACK =    SHIFTBITL(2)
 };
 
-enum class ComparisonFunction : GLenum
+struct RendererState
 {
-    NEVER = GL_NEVER, 
-    LESS = GL_LESS,
-    EQUAL = GL_EQUAL,
-    LEQUAL = GL_LEQUAL,
-    GREATER = GL_GREATER,
-    NOTEQUAL = GL_NOTEQUAL,
-    GEQUAL = GL_GEQUAL,
-    ALWAYS = GL_ALWAYS
+    uint32_t BoundVertexArray = 0;
+    uint32_t BoundUniformBuffer = 0;
+    uint32_t BoundShader = 0;
+    uint32_t BoundFramebuffer = 0;
+    uint32_t Flags = 0;
 };
 
-constexpr size_t PRE_ALLOC_SIZE = 150;
+struct RenderCommand
+{
+    CommandType Type;
+    RendererState State;
+};
+
+constexpr size_t PRE_ALLOC_SIZE = 50;
 constexpr size_t RE_ALLOC_SIZE = 50;
 
 struct CommandBuffer
 {
-    RenderCommand* buffer = new RenderCommand[PRE_ALLOC_SIZE];
-    RenderCommand* currentItem = buffer;
+    RenderCommand* Buffer;
 
-    size_t count() const { return (currentItem - buffer); }
-    size_t size() const { return count() * sizeof(RenderCommand); }
-    void submit(const RenderCommand command)
+    CommandBuffer()
     {
-        const size_t currentCount = count();
+        Buffer = new RenderCommand[PRE_ALLOC_SIZE];
+        currentItem = Buffer;
+    }
+    ~CommandBuffer() { delete[] Buffer; }
+
+    size_t Count() const { return (currentItem - Buffer); }
+    size_t Size() const { return Count() * sizeof(RenderCommand); }
+    void Submit(const RenderCommand& command)
+    {
+        const size_t currentCount = Count();
         if (currentCount == currentMaxSize)
         {
             currentMaxSize = currentCount + RE_ALLOC_SIZE;
             const auto newBuffer = new RenderCommand[currentMaxSize];
-            memcpy(newBuffer, buffer, (currentCount) * sizeof(RenderCommand));
-            delete[] buffer;
-            buffer = newBuffer;
+            memcpy(newBuffer, Buffer, (currentCount) * sizeof(RenderCommand));
+            delete[] Buffer;
+            Buffer = newBuffer;
             currentItem = &newBuffer[currentCount];
         }
 
@@ -60,5 +112,6 @@ struct CommandBuffer
 
 private:
     size_t currentMaxSize = PRE_ALLOC_SIZE;
+    RenderCommand* currentItem;
 };
 

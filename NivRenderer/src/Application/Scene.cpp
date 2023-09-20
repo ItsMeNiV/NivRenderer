@@ -238,7 +238,8 @@ void Scene::DeSerializeObject(json jsonObject)
     json textureAssets = jsonObject["Assets"]["TextureAssets"];
     for (json texture : textureAssets)
     {
-        auto textureAsset = CreateScope<TextureAsset>(texture["Id"], texture["InternalPath"], texture["FlipVertical"]);
+        auto textureAsset = CreateScope<TextureAsset>(texture["Id"], texture["InternalPath"], texture["FlipVertical"],
+                                                      texture["LoadOnlyOneChannel"], texture["ChannelIndex"]);
         textureAsset->DeSerializeObject(texture);
         AssetManager::GetInstance().AddTexture(texture["Path"], std::move(textureAsset));
     }

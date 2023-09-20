@@ -19,11 +19,11 @@ int main()
 {
     spdlog::set_level(spdlog::level::err);
 
-    CommandBuffer* buffer = new CommandBuffer();
+    const auto buffer = new CommandBuffer();
 
     for (int i = 0; i <= 300; i++)
     {
-        buffer->submit(RenderCommand::BIND_BUFFER);
+        buffer->Submit({CommandType::DRAW, {}});
     }
 
     auto* app = new Application();
