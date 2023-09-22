@@ -16,9 +16,12 @@ out vec3 v_FragPos;
 out vec4 v_FragPosLightSpace;
 out mat3 v_TBN;
 
-uniform mat4 model;
-uniform mat4 viewProjection;
-uniform mat4 lightSpaceMatrix;
+layout (std140, binding = 0) uniform MatricesBlock
+{
+    uniform mat4 model;
+    uniform mat4 viewProjection;
+    uniform mat4 lightSpaceMatrix;
+}
 
 void main()
 {
@@ -53,47 +56,36 @@ in mat3 v_TBN;
 
 out vec4 FragColor;
 
-#ifdef USE_PBR
-// ==== Material Textures ====
-uniform sampler2D diffuseTexture;
-uniform sampler2D normalTexture;
-uniform sampler2D metallicTexture;
-uniform sampler2D roughnessTexture;
-uniform sampler2D aoTexture;
-uniform sampler2D emissiveTexture;
-uniform bool hasNormalTexture;
-//============================
-uniform vec3 viewPos;
+layout (std140, binding = 1) uniform TextureSamplerBlock
+{
+    uniform sampler2D diffuseTexture;
+    uniform sampler2D normalTexture;
+    uniform sampler2D metallicTexture;
+    uniform sampler2D roughnessTexture;
+    uniform sampler2D aoTexture;
+    uniform sampler2D emissiveTexture;
+}
 
-// ==== Lights ====
-uniform DirectionalLight directionalLight;
-uniform PointLight pointLights[MAX_POINT_LIGHTS];
-uniform bool hasDirectionalLight;
-uniform int amountPointLights;
-uniform bool hasShadowMap;
-uniform sampler2D shadowMap;
-//============================
+layout (std140, binding = 2) uniform LightBlock
+{
+    uniform DirectionalLight directionalLight;
+    uniform PointLight pointLights[MAX_POINT_LIGHTS];
+    uniform bool hasDirectionalLight;
+    uniform int amountPointLights;
+    uniform vec3 viewPos;
+}
 
-#else
-uniform sampler2D diffuseTexture;
-uniform sampler2D specularTexture;
-uniform sampler2D normalTexture;
-uniform vec3 viewPos;
-uniform DirectionalLight directionalLight;
-uniform PointLight pointLights[MAX_POINT_LIGHTS];
-uniform bool hasDirectionalLight;
-uniform int amountPointLights;
-uniform bool hasShadowMap;
-uniform sampler2D shadowMap;
-uniform bool hasSpecularTexture;
-uniform bool hasNormalTexture;
-#endif
+layout (std140, binding = 3) uniform SettingsBlock
+{
+    uniform bool hasNormalTexture;
+    uniform bool hasShadowMap;
+    uniform sampler2D shadowMap;
+}
 
 bool calculateShadow(vec4 fragPosLightSpace);
 
 void main()
 {
-#ifdef USE_PBR
     vec3 N;
     if(hasNormalTexture)
     {
@@ -136,30 +128,6 @@ void main()
     color = pow(color, vec3(1.0/2.2));
 
     FragColor = vec4(color, 1.0);
-
-#else
-    vec3 normal;
-    if(hasNormalTexture)
-    {
-        normal = texture(normalTexture, v_TextureCoords).rgb * 2.0 - 1.0;
-        normal = normalize(v_TBN * normal);
-    }
-    else
-    {
-        normal = v_Normal;
-    }
-    vec3 viewDir = normalize(viewPos - v_FragPos);
-
-    bool fragmentInShadow = hasShadowMap && calculateShadow(v_FragPosLightSpace);
-    vec3 result = vec3(0.0, 0.0, 0.0);
-    if(hasDirectionalLight)
-        result += CalcDirLight(directionalLight, normal, viewDir, diffuseTexture, hasSpecularTexture, specularTexture, v_TextureCoords);
-
-    for(int i = 0; i < amountPointLights; i++)
-        result += CalcPointLight(pointLights[i], normal, viewDir, v_FragPos, diffuseTexture, hasSpecularTexture, specularTexture, v_TextureCoords);
-
-    FragColor = vec4(result, 1.0);
-#endif
 }
 
 bool calculateShadow(vec4 fragPosLightSpace)

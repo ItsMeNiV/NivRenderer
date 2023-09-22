@@ -14,7 +14,7 @@ public:
             const auto& vertices = AssetManager::GetInstance().LoadMesh("default")->GetVertices();
             m_VerticesCount = vertices.size();
 
-            glNamedBufferStorage(m_VertexBuffer, m_VerticesCount * sizeof(MeshVertex), vertices.data(), GL_DYNAMIC_STORAGE_BIT);
+            glNamedBufferData(m_VertexBuffer, m_VerticesCount * sizeof(MeshVertex), vertices.data(), GL_STATIC_DRAW);
 
             glCreateVertexArrays(1, &m_VertexArray);
             glVertexArrayVertexBuffer(m_VertexArray, 0, m_VertexBuffer, 0, sizeof(MeshVertex));

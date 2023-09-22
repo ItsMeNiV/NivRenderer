@@ -26,6 +26,7 @@ out vec4 FragColor;
 
 in vec3 v_TextureCoords;
 
+
 uniform samplerCube skybox;
 
 void main()

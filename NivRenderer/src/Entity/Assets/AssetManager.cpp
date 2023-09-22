@@ -85,14 +85,14 @@ TextureAsset* AssetManager::GetTexture(const uint32_t id)
     return nullptr;
 }
 
-ShaderAsset* AssetManager::LoadShader(const std::string& path, ShaderType shaderType)
+Shader* AssetManager::LoadShader(const std::string& path, ShaderType shaderType)
 {
     if (m_LoadedShaders.contains(path))
     {
         return m_LoadedShaders[path].get();
     }
 
-    m_LoadedShaders[path] = CreateScope<ShaderAsset>(path.c_str(), shaderType);
+    m_LoadedShaders[path] = CreateScope<Shader>(path.c_str(), shaderType);
     return m_LoadedShaders[path].get();
 }
 

@@ -23,9 +23,9 @@ void MeshProxy::CreateBuffers(const MeshComponent* const mesh)
     m_IndexCount = indices.size();
     m_VerticesCount = vertices.size();
 
-    glNamedBufferStorage(m_VertexBuffer, vertices.size() * sizeof(MeshVertex), vertices.data(), GL_DYNAMIC_STORAGE_BIT);
+    glNamedBufferData(m_VertexBuffer, vertices.size() * sizeof(MeshVertex), vertices.data(), GL_DYNAMIC_DRAW);
     if (m_IndexCount)
-        glNamedBufferStorage(m_IndexBuffer, m_IndexCount * sizeof(uint32_t), indices.data(), GL_DYNAMIC_STORAGE_BIT);
+        glNamedBufferData(m_IndexBuffer, m_IndexCount * sizeof(uint32_t), indices.data(), GL_DYNAMIC_DRAW);
 
     glVertexArrayVertexBuffer(m_VertexArray, 0, m_VertexBuffer, 0, sizeof(MeshVertex));
     glVertexArrayElementBuffer(m_VertexArray, m_IndexBuffer);

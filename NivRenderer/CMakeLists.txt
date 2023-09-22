@@ -134,7 +134,7 @@ set(SRC_FILES
  "src/Entity/Assets/MeshAsset.h" "src/Entity/Assets/MeshAsset.cpp"
  "src/Entity/Assets/TextureAsset.h" "src/Entity/Assets/TextureAsset.cpp"
  "src/Entity/Assets/MaterialAsset.h" "src/Entity/Assets/MaterialAsset.cpp"
- "src/Entity/Assets/ShaderAsset.h"
+ 
  "src/Entity/Components/TransformComponent.h" "src/Entity/Components/TransformComponent.cpp"
  "src/Entity/Components/MeshComponent.h" "src/Entity/Components/MeshComponent.cpp"
  "src/Entity/Components/MaterialComponent.h" "src/Entity/Components/MaterialComponent.cpp"
@@ -159,7 +159,7 @@ set(SRC_FILES
  "src/Rendering/Proxy/MaterialProxy.h" "src/Rendering/Proxy/MaterialProxy.cpp"
  "src/Rendering/ForwardPipeline/ForwardPass.h"
  "src/Rendering/OpenGL/VertexLayout.h"
- "src/Rendering/ForwardPipeline/ForwardPass.cpp" "src/Entity/Assets/ShaderAsset.cpp")
+ "src/Rendering/ForwardPipeline/ForwardPass.cpp"   "src/Rendering/OpenGL/Buffer.h" "src/Rendering/OpenGL/Buffer.cpp")
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp

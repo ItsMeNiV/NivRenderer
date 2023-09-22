@@ -30,7 +30,7 @@ public:
         glCreateBuffers(1, &m_VertexBuffer);
         glVertexArrayVertexBuffer(m_VertexArray, 0, m_VertexBuffer, 0, 3 * sizeof(float));
 
-        glNamedBufferStorage(m_VertexBuffer, sizeof(skyboxVertices), &skyboxVertices, GL_DYNAMIC_STORAGE_BIT);
+        glNamedBufferData(m_VertexBuffer, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
 
         glEnableVertexArrayAttrib(m_VertexArray, 0);
         glVertexArrayAttribFormat(m_VertexArray, 0, 3, GL_FLOAT, GL_FALSE, 0);

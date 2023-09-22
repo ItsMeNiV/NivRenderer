@@ -8,7 +8,7 @@
 class RenderPass
 {
 public:
-    RenderPass(ShaderAsset* passShader, const uint32_t resolutionWidth, const uint32_t resolutionHeight, const uint32_t sampleCount, Framebuffer* inputFramebuffer = nullptr) :
+    RenderPass(Shader* passShader, const uint32_t resolutionWidth, const uint32_t resolutionHeight, const uint32_t sampleCount, Framebuffer* inputFramebuffer = nullptr) :
         m_InputFramebuffer(inputFramebuffer),
         m_OutputFramebuffer(CreateScope<Framebuffer>(resolutionWidth, resolutionHeight, FramebufferAttachmentType::DEPTH_STENCIL_COLOR, sampleCount)),
         m_PassShader(passShader),
@@ -20,7 +20,7 @@ public:
     Scope<Framebuffer>* GetOutputFramebuffer() { return &m_OutputFramebuffer; }
     uint32_t GetSampleCount() const { return m_SampleCount; }
 
-    void RecompilePassShader() const { m_PassShader->GetShader()->RecompileFromSource(); }
+    void RecompilePassShader() const { m_PassShader->RecompileFromSource(); }
     void UpdateResolution(uint32_t width, uint32_t height)
     {
         m_OutputFramebuffer = CreateScope<Framebuffer>(width, height, FramebufferAttachmentType::DEPTH_STENCIL_COLOR, m_SampleCount);
@@ -35,7 +35,7 @@ public:
 protected:
     Framebuffer* m_InputFramebuffer;
     Scope<Framebuffer> m_OutputFramebuffer;
-    ShaderAsset* m_PassShader;
+    Shader* m_PassShader;
     glm::ivec2 m_RenderResolution;
     uint32_t m_SampleCount;
 
