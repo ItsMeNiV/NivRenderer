@@ -8,9 +8,16 @@ ForwardPass::ForwardPass(Shader* passShader, uint32_t resolutionWidth, uint32_t 
 {
     // Test
     m_UniformBufferMatrices = CreateScope<Buffer>(BufferType::UniformBuffer);
+    m_UniformBufferMatrices->BufferData(nullptr, 3 * sizeof(glm::mat4));
+
     m_UniformBufferLight = CreateScope<Buffer>(BufferType::UniformBuffer);
+    m_UniformBufferLight->BufferData(nullptr, 67 * sizeof(glm::vec3) + 34 * sizeof(uint32_t));
+
     m_UniformBufferTextureSampler = CreateScope<Buffer>(BufferType::UniformBuffer);
+    // m_UniformBufferTextureSampler->BufferData(nullptr, ) Not possible?
+
     m_UniformBufferSettings = CreateScope<Buffer>(BufferType::UniformBuffer);
+    m_UniformBufferSettings->BufferData(nullptr, 2 * sizeof(uint32_t)); // Sampler also not possible?
 }
 
 void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
