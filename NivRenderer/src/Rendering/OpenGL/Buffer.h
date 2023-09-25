@@ -13,7 +13,11 @@ enum class BufferElementType
     FLOAT4,
     FLOAT3X3,
     FLOAT4X4,
-    BOOL
+    BOOL,
+    STRUCT1,
+    STRUCT2,
+    STRUCT3,
+    STRUCT4
 };
 
 class BufferLayout
@@ -36,9 +40,53 @@ private:
     std::vector<BufferElementType> m_Elements;
     std::vector<uint32_t> m_Offsets;
 
+    uint32_t getBaseOffsetByElementType(const BufferElementType& elementType)
+    {
+        switch (elementType)
+        {
+        case BufferElementType::INT:
+        case BufferElementType::FLOAT:
+        case BufferElementType::BOOL:
+            return 4;
+        case BufferElementType::INT2:
+        case BufferElementType::FLOAT2:
+            return 8;
+        case BufferElementType::INT3:
+        case BufferElementType::INT4:
+        case BufferElementType::FLOAT3:
+        case BufferElementType::FLOAT4:
+        case BufferElementType::STRUCT1:
+            return 16;
+        case BufferElementType::STRUCT2:
+            return 32;
+        case BufferElementType::STRUCT3:
+            return 48;
+        case BufferElementType::FLOAT3X3:
+        case BufferElementType::FLOAT4X4:
+        case BufferElementType::STRUCT4:
+            return 64;
+        }
+    }
+
     void calculateOffsets()
     {
-        
+        uint32_t alignedOffset = 0;
+        uint32_t baseOffsetLast = 0;
+        for (auto& element : m_Elements)
+        {
+            const uint32_t baseOffset = getBaseOffsetByElementType(element);
+            alignedOffset += baseOffsetLast;
+
+            if (alignedOffset != 0 || alignedOffset % baseOffset != 0)
+            {
+                while (alignedOffset % baseOffset != 0)
+                    alignedOffset++;
+            }
+
+            m_Offsets.push_back(alignedOffset);
+
+            baseOffsetLast = baseOffset;
+        }
     }
 };
 

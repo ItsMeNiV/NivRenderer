@@ -17,6 +17,15 @@ ForwardPass::ForwardPass(Shader* passShader, uint32_t resolutionWidth, uint32_t 
 
     m_UniformBufferSettings = CreateScope<Buffer>(BufferType::UniformBuffer);
     m_UniformBufferSettings->BufferData(nullptr, sizeof(glm::vec4));
+
+    BufferLayout layout = {
+        BufferElementType::FLOAT,
+        BufferElementType::FLOAT3,
+        BufferElementType::FLOAT4, BufferElementType::FLOAT4, BufferElementType::FLOAT4, BufferElementType::FLOAT4, // mat4
+        BufferElementType::FLOAT4, BufferElementType::FLOAT4, BufferElementType::FLOAT4, // float array [3]
+        BufferElementType::BOOL,
+        BufferElementType::INT
+    }; // Test for offset calculation
 }
 
 void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
