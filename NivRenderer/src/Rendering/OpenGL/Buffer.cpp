@@ -1,7 +1,13 @@
 #include "Buffer.h"
 
-Buffer::Buffer(const BufferType bufferType)
-    : m_BufferType(bufferType)
+Buffer::Buffer(const BufferType bufferType) :
+    m_BufferType(bufferType)
+{
+    glCreateBuffers(1, &m_Id);
+}
+
+Buffer::Buffer(const BufferType bufferType, const BufferLayout& bufferLayout)
+    : m_BufferType(bufferType), m_BufferLayout(bufferLayout)
 {
     glCreateBuffers(1, &m_Id);
 }
@@ -9,6 +15,11 @@ Buffer::Buffer(const BufferType bufferType)
 Buffer::~Buffer()
 {
     glDeleteBuffers(1, &m_Id);
+}
+
+void Buffer::BufferData(const void* data, BufferElementType dataType, uint32_t elementOffset) const
+{
+    size_t dataSize = GetUniformBufferElementSize(dataType);
 }
 
 void Buffer::BufferData(const void* data, size_t dataSize, size_t bufferOffset) const

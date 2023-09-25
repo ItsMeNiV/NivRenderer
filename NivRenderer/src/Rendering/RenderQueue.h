@@ -6,17 +6,19 @@
     RenderCommand:
     ClearColor, ClearColorAndDepth, Draw, DrawIndexed
 
-    RenderState (size: XXX bit <-> XX byte):
-    uint32_t BoundVertexArray
-    uint32_t BoundShader
-    uint32_t  BoundFramebuffer; (0 means default framebuffer for viewport we always use the framebuffer's size)
+    RenderState (size: 320 bit <-> 40 byte):
+    uint32_t    BoundVertexArray
+    uint32_t    BoundShader
+    uint32_t    BoundFramebuffer; (0 means default framebuffer for viewport we always use the framebuffer's size)
+    uint32_t    UsedMaterial
+    uint32_t[5] BoundUniformBuffers
 
     uint32_t flags: 1 = on, 0 = off
     bit-index-definition
     0 : DEPTH_TEST
     1 : CULL_FACE_FRONT (Cannot be on at the same time as 2)
     2 : CULL_FACE_BACK  (Cannot be on at the same time as 1)
-    3 : USE_SHADOWMAP
+    3 :
     4 : 
     5 : 
     6 : 
@@ -64,9 +66,10 @@ enum RendererStateFlag
 struct RendererState
 {
     uint32_t BoundVertexArray = 0;
-    uint32_t BoundUniformBuffer = 0;
     uint32_t BoundShader = 0;
     uint32_t BoundFramebuffer = 0;
+    uint32_t UsedMaterial = 0;
+    uint32_t BoundUniformBuffers[5] = {0, 0, 0, 0, 0};
     uint32_t Flags = 0;
 };
 

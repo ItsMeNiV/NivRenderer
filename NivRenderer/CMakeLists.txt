@@ -158,7 +158,7 @@ set(SRC_FILES
  "src/Rendering/Proxy/TextureProxy.h" "src/Rendering/Proxy/TextureProxy.cpp"
  "src/Rendering/Proxy/MaterialProxy.h" "src/Rendering/Proxy/MaterialProxy.cpp"
  "src/Rendering/ForwardPipeline/ForwardPass.h"
- "src/Rendering/OpenGL/VertexLayout.h"
+ 
  "src/Rendering/ForwardPipeline/ForwardPass.cpp"   "src/Rendering/OpenGL/Buffer.h" "src/Rendering/OpenGL/Buffer.cpp")
 
 list(APPEND SRC_FILES
