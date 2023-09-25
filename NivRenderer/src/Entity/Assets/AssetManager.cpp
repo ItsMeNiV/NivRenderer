@@ -63,7 +63,10 @@ TextureAsset* AssetManager::LoadTexture(std::string& path, bool flipVertical, bo
         std::string fileName = path.substr(0, path.find_last_of('.'));
         const std::string fileEnding = path.substr(path.find_last_of('.'), path.size());
         fileName += "_@" + std::to_string(channelIndex);
+        auto nodeHandleTexture = m_LoadedTextureAssets.extract(path);
         path = fileName + fileEnding;
+        nodeHandleTexture.key() = path;
+        m_LoadedTextureAssets.insert(std::move(nodeHandleTexture));
     }
 
     return textureAsset;
@@ -105,8 +108,10 @@ Model* AssetManager::LoadModel(const std::string& path)
 
     const aiScene* scene = m_Importer->ReadFile(
         path,
-        aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
-            aiProcess_RemoveRedundantMaterials | aiProcess_FixInfacingNormals);
+        aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals |
+        aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
+        aiProcess_RemoveRedundantMaterials | aiProcess_FixInfacingNormals | aiProcess_ImproveCacheLocality | aiProcess_FindDegenerates |
+        aiProcess_FindInvalidData | aiProcess_FindInstances);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         SPDLOG_DEBUG(std::string("ERROR::ASSIMP::") + m_Importer->GetErrorString());

@@ -10,7 +10,8 @@ TextureAsset::TextureAsset(const uint32_t id, const std::string& path, bool flip
 
 TextureAsset::~TextureAsset()
 {
-    delete[] m_TextureData;
+    if (!m_IsUnloaded)
+        delete[] m_TextureData;
 }
 
 unsigned char* TextureAsset::GetTextureData() const
@@ -58,7 +59,7 @@ int* TextureAsset::GetChannelIndex()
     return &m_ChannelIndex;
 }
 
-const std::string& TextureAsset::GetPath()
+std::string& TextureAsset::GetPath()
 {
     return m_Path;
 }

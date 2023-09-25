@@ -20,7 +20,6 @@ private:
     Scope<Framebuffer> m_ShadowmapFramebuffer;
     Shader* m_ShadowmapShader;
     Scope<Buffer> m_UniformBufferMatrices;
-    Scope<Buffer> m_UniformBufferTextureSampler;
     Scope<Buffer> m_UniformBufferLight;
     Scope<Buffer> m_UniformBufferSettings;
 

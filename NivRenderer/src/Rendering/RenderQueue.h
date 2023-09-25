@@ -6,9 +6,8 @@
     RenderCommand:
     ClearColor, ClearColorAndDepth, Draw, DrawIndexed
 
-    RenderState (size: 160 bit <-> 20 byte):
+    RenderState (size: XXX bit <-> XX byte):
     uint32_t BoundVertexArray
-    uint32_t BoundUniformBuffer
     uint32_t BoundShader
     uint32_t  BoundFramebuffer; (0 means default framebuffer for viewport we always use the framebuffer's size)
 
@@ -17,7 +16,7 @@
     0 : DEPTH_TEST
     1 : CULL_FACE_FRONT (Cannot be on at the same time as 2)
     2 : CULL_FACE_BACK  (Cannot be on at the same time as 1)
-    3 : 
+    3 : USE_SHADOWMAP
     4 : 
     5 : 
     6 : 

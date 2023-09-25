@@ -9,9 +9,6 @@ struct PointLight {
     int strength;
 };
 
-#ifdef USE_PBR
-// Using Cook-Torrance BRDF
-
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
     float a2 = roughness * roughness * roughness * roughness; // According to Disney
@@ -60,10 +57,11 @@ vec3 CalcDirLight(DirectionalLight light, vec3 N, vec3 V, vec3 fragPos, vec3 alb
     vec3 kS = F;
     vec3 kD = 1.0 - kS;
     vec3 specularBRDF = (D * G * F) / 4 * NdotL * NdotV + 0.0001;
+    kD = mix(kD, vec3(0.0), metallic);
 
-    vec3 fLambert = mix(albedo, vec3(0.0), metallic);
+    vec3 fLambert = albedo / PI;
 
-    vec3 diffuseBRDF = kD * fLambert / PI;
+    vec3 diffuseBRDF = kD * fLambert;
 
     return emissive + ((diffuseBRDF + specularBRDF) * lightIntensity * NdotL);
 }
@@ -89,71 +87,11 @@ vec3 CalcPointLight(PointLight light, vec3 N, vec3 V, vec3 fragPos, vec3 albedo,
     vec3 kS = F;
     vec3 kD = 1.0 - kS;
     vec3 specularBRDF = (D * G * F) / 4 * NdotL * NdotV + 0.0001;
+    kD = mix(kD, vec3(0.0), metallic);
 
-    vec3 fLambert = mix(albedo, vec3(0.0), metallic);
+    vec3 fLambert = albedo / PI;
 
-    vec3 diffuseBRDF = kD * fLambert / PI;
+    vec3 diffuseBRDF = kD * fLambert;
 
     return emissive + ((diffuseBRDF + specularBRDF) * lightIntensity * NdotL);
 }
-
-#else
-
-float map(float value, float min1, float max1, float min2, float max2) {
-  return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
-}
-
-float calcLinearTerm(float distance)
-{
-    return map(distance, 1, 3250, 0.5, 0.0014);
-}
-
-float calcQuadraticTerm(float distance)
-{
-    return map(distance, 1, 3250, 0.5, 0.000007);
-}
-
-vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir, sampler2D diffuseTexture, bool hasSpecularTexture, sampler2D specularTexture, vec2 textureCoords)
-{
-    vec3 lightDir = normalize(-light.direction);
-    // diffuse shading
-    float diff = max(dot(normal, lightDir), 0.0);
-    // specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64.0);
-    // combine results
-    vec3 ambient = 0.2 * light.color * texture(diffuseTexture, textureCoords).rgb;
-    vec3 diffuse = light.color * diff * texture(diffuseTexture, textureCoords).rgb;
-    float specularValue = hasSpecularTexture ? texture(specularTexture, textureCoords).r : 0.0;
-    vec3 specular = light.color * spec * specularValue;
-    return ambient + diffuse + specular;
-}
-
-
-vec3 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir, vec3 fragPos, sampler2D diffuseTexture, bool hasSpecularTexture, sampler2D specularTexture, vec2 textureCoords)
-{
-    // ambient
-    vec3 ambient = 0.2 * light.color * texture(diffuseTexture, textureCoords).rgb;
-  	
-    // diffuse 
-    vec3 lightDir = normalize(light.position - fragPos);
-    float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = light.color * diff * texture(diffuseTexture, textureCoords).rgb;  
-    
-    // specular
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64.0);
-    float specularValue = hasSpecularTexture ? texture(specularTexture, textureCoords).r : 0.0;
-    vec3 specular = light.color * spec * specularValue;
-    
-    // attenuation
-    float distance    = length(light.position - fragPos);
-    float attenuation = ((light.strength/100.0) * 10.0) * (0.4 / (1.0 + calcLinearTerm(distance) * distance + calcQuadraticTerm(distance) * (distance * distance)));
-
-    ambient  *= attenuation;  
-    diffuse   *= attenuation;
-    specular *= attenuation;   
-        
-    return ambient + diffuse + specular;
-}
-#endif

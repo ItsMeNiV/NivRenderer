@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 #define USE_PBR
 
@@ -18,10 +18,10 @@ out mat3 v_TBN;
 
 layout (std140, binding = 0) uniform MatricesBlock
 {
-    uniform mat4 model;
-    uniform mat4 viewProjection;
-    uniform mat4 lightSpaceMatrix;
-}
+    mat4 model;
+    mat4 viewProjection;
+    mat4 lightSpaceMatrix;
+};
 
 void main()
 {
@@ -56,31 +56,28 @@ in mat3 v_TBN;
 
 out vec4 FragColor;
 
-layout (std140, binding = 1) uniform TextureSamplerBlock
-{
-    uniform sampler2D diffuseTexture;
-    uniform sampler2D normalTexture;
-    uniform sampler2D metallicTexture;
-    uniform sampler2D roughnessTexture;
-    uniform sampler2D aoTexture;
-    uniform sampler2D emissiveTexture;
-}
+uniform sampler2D diffuseTexture;
+uniform sampler2D normalTexture;
+uniform sampler2D metallicTexture;
+uniform sampler2D roughnessTexture;
+uniform sampler2D aoTexture;
+uniform sampler2D emissiveTexture;
+uniform sampler2D shadowMap;
 
-layout (std140, binding = 2) uniform LightBlock
+layout (std140, binding = 1) uniform LightBlock
 {
-    uniform DirectionalLight directionalLight;
-    uniform PointLight pointLights[MAX_POINT_LIGHTS];
-    uniform bool hasDirectionalLight;
-    uniform int amountPointLights;
-    uniform vec3 viewPos;
-}
+    bool hasDirectionalLight;
+    int amountPointLights;
+    vec3 viewPos;
+    DirectionalLight directionalLight;
+    PointLight pointLights[MAX_POINT_LIGHTS];
+};
 
-layout (std140, binding = 3) uniform SettingsBlock
+layout (std140, binding = 2) uniform SettingsBlock
 {
-    uniform bool hasNormalTexture;
-    uniform bool hasShadowMap;
-    uniform sampler2D shadowMap;
-}
+    bool hasNormalTexture;
+    bool hasShadowMap;
+};
 
 bool calculateShadow(vec4 fragPosLightSpace);
 

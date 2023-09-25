@@ -14,8 +14,8 @@ public:
     Buffer(const BufferType bufferType);
     ~Buffer();
 
-    void BufferData(const void* data, uint32_t dataSize, int32_t bufferOffset = -1);
-    void BindUniformBufferToBindingPoint(uint32_t bindingPoint, int32_t rangeFrom = -1, int32_t rangeTo = -1);
+    void BufferData(const void* data, size_t dataSize, size_t bufferOffset = -1) const;
+    void BindUniformBufferToBindingPoint(uint32_t bindingPoint, int32_t rangeFrom = -1, int32_t rangeTo = -1) const;
 
 private:
     uint32_t m_Id;

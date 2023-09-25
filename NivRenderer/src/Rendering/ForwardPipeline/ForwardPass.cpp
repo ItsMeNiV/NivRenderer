@@ -6,18 +6,17 @@ ForwardPass::ForwardPass(Shader* passShader, uint32_t resolutionWidth, uint32_t 
     RenderPass(passShader, resolutionWidth, resolutionHeight, sampleCount),
     m_ShadowmapShader(AssetManager::GetInstance().LoadShader("assets/shaders/shadowmap.glsl", ShaderType::VERTEX_AND_FRAGMENT))
 {
+    GLint uniformBufferAlignSize = 0;
+    glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uniformBufferAlignSize);
     // Test
     m_UniformBufferMatrices = CreateScope<Buffer>(BufferType::UniformBuffer);
     m_UniformBufferMatrices->BufferData(nullptr, 3 * sizeof(glm::mat4));
 
     m_UniformBufferLight = CreateScope<Buffer>(BufferType::UniformBuffer);
-    m_UniformBufferLight->BufferData(nullptr, 67 * sizeof(glm::vec3) + 34 * sizeof(uint32_t));
-
-    m_UniformBufferTextureSampler = CreateScope<Buffer>(BufferType::UniformBuffer);
-    // m_UniformBufferTextureSampler->BufferData(nullptr, ) Not possible?
+    m_UniformBufferLight->BufferData(nullptr, 67 * sizeof(glm::vec4) + 34 * sizeof(uint32_t));
 
     m_UniformBufferSettings = CreateScope<Buffer>(BufferType::UniformBuffer);
-    m_UniformBufferSettings->BufferData(nullptr, 2 * sizeof(uint32_t)); // Sampler also not possible?
+    m_UniformBufferSettings->BufferData(nullptr, sizeof(glm::vec4));
 }
 
 void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
@@ -80,13 +79,15 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
         glm::mat4 view = camera->GetView();
         glm::mat4 projection = camera->GetProjection();
         glm::mat4 viewProj = projection * view;
-        m_PassShader->SetMat4("viewProjection", viewProj);
+        //m_PassShader->SetMat4("viewProjection", viewProj);
         const glm::vec3 viewPos = camera->GetPosition();
-        m_PassShader->SetVec3("viewPos", viewPos);
+        //m_PassShader->SetVec3("viewPos", viewPos);
+
+        m_UniformBufferMatrices->BufferData(glm::value_ptr(viewProj), sizeof(glm::mat4), sizeof(glm::mat4));
 
         // Set Shadowmap uniforms
         const bool hasShadowMap = lightSpaceMatrix != glm::mat4(1.0f);
-        m_PassShader->SetBool("hasShadowMap", hasShadowMap);
+        //m_PassShader->SetBool("hasShadowMap", hasShadowMap);
         m_PassShader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
         if (hasShadowMap)
         {
@@ -105,23 +106,42 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
             if (directionalLightProxy)
             {
                 hasDirectionalLight = true;
-                m_PassShader->SetVec3("directionalLight.color", directionalLightProxy->GetLightColor());
-                m_PassShader->SetVec3("directionalLight.direction",
-                                                   directionalLightProxy->GetLightDirection());
+                //m_PassShader->SetVec3("directionalLight.color", directionalLightProxy->GetLightColor());
+                //m_PassShader->SetVec3("directionalLight.direction",
+                //                                   directionalLightProxy->GetLightDirection());
+
+                m_UniformBufferLight->BufferData(glm::value_ptr(directionalLightProxy->GetLightDirection()), sizeof(glm::vec3), 2 * sizeof(glm::vec4));
+                m_UniformBufferLight->BufferData(glm::value_ptr(directionalLightProxy->GetLightColor()), sizeof(glm::vec3), 3 * sizeof(glm::vec4));
             }
             else if (pointLightProxy)
             {
-                m_PassShader->SetVec3("pointLights[" + std::to_string(pointLightIndex) + "].color",
-                                      pointLightProxy->GetLightColor());
-                m_PassShader->SetVec3("pointLights[" + std::to_string(pointLightIndex) + "].position",
-                                      pointLightProxy->GetLightPosition());
-                m_PassShader->SetInt("pointLights[" + std::to_string(pointLightIndex) + "].strength",
-                                     pointLightProxy->GetLightStrength());
+          //      m_PassShader->SetVec3("pointLights[" + std::to_string(pointLightIndex) + "].color",
+        //                              pointLightProxy->GetLightColor());
+      //          m_PassShader->SetVec3("pointLights[" + std::to_string(pointLightIndex) + "].position",
+    //                                  pointLightProxy->GetLightPosition());
+  //              m_PassShader->SetInt("pointLights[" + std::to_string(pointLightIndex) + "].strength",
+//                                     pointLightProxy->GetLightStrength());
+
+                constexpr size_t pointLightBase = 4 * sizeof(glm::vec4);
+                constexpr size_t pointLightSize = 2 * sizeof(glm::vec4);
+                m_UniformBufferLight->BufferData(glm::value_ptr(pointLightProxy->GetLightPosition()), sizeof(glm::vec3),
+                                                 pointLightBase + pointLightIndex * pointLightSize);
+                m_UniformBufferLight->BufferData(glm::value_ptr(pointLightProxy->GetLightColor()), sizeof(glm::vec3),
+                                                 pointLightBase + pointLightIndex * pointLightSize + sizeof(glm::vec4));
+                uint32_t lightStrength = pointLightProxy->GetLightStrength();
+                m_UniformBufferLight->BufferData(&lightStrength, sizeof(uint32_t),
+                                                 pointLightBase + pointLightIndex * pointLightSize + sizeof(glm::vec4) +
+                                                     sizeof(glm::vec3));
+
                 pointLightIndex++;
             }
         }
-        m_PassShader->SetBool("hasDirectionalLight", hasDirectionalLight);
-        m_PassShader->SetInt("amountPointLights", pointLightIndex);
+        int setting = hasDirectionalLight;
+        m_UniformBufferLight->BufferData(&setting, sizeof(uint32_t), 0);
+        m_UniformBufferLight->BufferData(&pointLightIndex, sizeof(uint32_t), sizeof(uint32_t));
+        m_UniformBufferLight->BufferData(glm::value_ptr(viewPos), sizeof(glm::vec3), sizeof(glm::vec4));
+        //m_PassShader->SetBool("hasDirectionalLight", hasDirectionalLight);
+        //m_PassShader->SetInt("amountPointLights", pointLightIndex);
 
         for (const auto& sceneObjectMaterialProxy : proxyManager.GetSceneObjectsToRenderByMaterial(scene))
         {
@@ -132,13 +152,17 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
             if (materialProxy->HasNormalTexture())
             {
                 materialProxy->BindNormalTexture(1);
-                m_PassShader->SetBool("hasNormalTexture", true);
+                //m_PassShader->SetBool("hasNormalTexture", true);
                 m_PassShader->SetTexture("normalTexture", 1);
             }
             else
             {
-                m_PassShader->SetBool("hasNormalTexture", false);
+                //m_PassShader->SetBool("hasNormalTexture", false);
             }
+            setting = hasShadowMap;
+            m_UniformBufferSettings->BufferData(&setting, 4, 0);
+            setting = materialProxy->HasNormalTexture();
+            m_UniformBufferSettings->BufferData(&setting, 4, 4);
 
             materialProxy->BindMetallicTexture(2);
             m_PassShader->SetTexture("metallicTexture", 2);
@@ -155,7 +179,12 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
             for (const auto& sceneObjectProxy : sceneObjectMaterialProxy.second)
             {
                 sceneObjectProxy->Bind();
-                m_PassShader->SetMat4("model", sceneObjectProxy->GetModelMatrix());
+                m_UniformBufferMatrices->BufferData(glm::value_ptr(sceneObjectProxy->GetModelMatrix()),
+                                                    sizeof(glm::mat4), 0);
+                //m_PassShader->SetMat4("model", sceneObjectProxy->GetModelMatrix());
+                m_UniformBufferMatrices->BindUniformBufferToBindingPoint(0);
+                m_UniformBufferLight->BindUniformBufferToBindingPoint(1);
+                m_UniformBufferSettings->BindUniformBufferToBindingPoint(2);
 
                 const auto meshProxy = sceneObjectProxy->GetMeshProxy();
                 if (meshProxy->GetIndexCount())

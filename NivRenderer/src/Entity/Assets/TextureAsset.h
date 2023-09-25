@@ -18,7 +18,7 @@ public:
     int* GetHeight();
     int* GetNrComponents();
     int* GetChannelIndex();
-    const std::string& GetPath();
+    std::string& GetPath();
 
     bool isUnloaded() const;
     void UnloadData();

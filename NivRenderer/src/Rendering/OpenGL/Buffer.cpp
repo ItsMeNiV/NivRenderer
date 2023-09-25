@@ -11,15 +11,15 @@ Buffer::~Buffer()
     glDeleteBuffers(1, &m_Id);
 }
 
-void Buffer::BufferData(const void* data, uint32_t dataSize, int32_t bufferOffset)
+void Buffer::BufferData(const void* data, size_t dataSize, size_t bufferOffset) const
 {
-    if (bufferOffset != -1)
+    if (bufferOffset == -1)
         glNamedBufferData(m_Id, dataSize, data, GL_DYNAMIC_DRAW);
     else
         glNamedBufferSubData(m_Id, bufferOffset, dataSize, data);
 }
 
-void Buffer::BindUniformBufferToBindingPoint(uint32_t bindingPoint, int32_t rangeFrom, int32_t rangeTo)
+void Buffer::BindUniformBufferToBindingPoint(uint32_t bindingPoint, int32_t rangeFrom, int32_t rangeTo) const
 {
     if (m_BufferType != BufferType::UniformBuffer)
         return;
