@@ -14,6 +14,7 @@ Buffer::~Buffer()
 void Buffer::SetBufferLayout(const std::initializer_list<BufferElementType> elements)
 {
     m_BufferLayout = elements;
+    BufferData(nullptr, m_BufferLayout.GetLayoutSize());
 }
 
 void Buffer::BufferData(const void* data, size_t dataSize, uint32_t bufferElementOffset) const

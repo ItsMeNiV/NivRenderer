@@ -4,12 +4,12 @@
 
 /*
     RenderCommand:
-    ClearColor, ClearColorAndDepth, Draw, DrawIndexed
+    ClearColor, ClearColorAndDepth, Draw, DrawIndexed, BlitFramebuffer
 
     RenderState (size: 320 bit <-> 40 byte):
-    uint32_t    BoundVertexArray
+    uint32_t    BoundVertexArray / In case of BlitFramebuffer BoundReadFramebuffer
     uint32_t    BoundShader
-    uint32_t    BoundFramebuffer; (0 means default framebuffer for viewport we always use the framebuffer's size)
+    uint32_t    BoundFramebuffer (0 means default Framebuffer for viewport we always use the Framebuffer's size) / In case of BlitFramebuffer BoundWriteFramebuffer
     uint32_t    UsedMaterial
     uint32_t[5] BoundUniformBuffers
 
@@ -54,6 +54,7 @@ enum class CommandType
     CLEAR_COLOR_BUFFER,
     CLEAR_COLOR_DEPTH_BUFFER,
     DRAW, DRAW_INDEXED,
+    BLIT_FRAMEBUFFER
 };
 
 enum RendererStateFlag

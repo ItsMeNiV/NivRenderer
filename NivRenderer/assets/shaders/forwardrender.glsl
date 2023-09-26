@@ -56,12 +56,15 @@ in mat3 v_TBN;
 
 out vec4 FragColor;
 
-uniform sampler2D diffuseTexture;
-uniform sampler2D normalTexture;
-uniform sampler2D metallicTexture;
-uniform sampler2D roughnessTexture;
-uniform sampler2D aoTexture;
-uniform sampler2D emissiveTexture;
+// ============= Material =============
+uniform sampler2D diffuseTexture;//   |
+uniform sampler2D normalTexture;//    |
+uniform sampler2D metallicTexture;//  |
+uniform sampler2D roughnessTexture;// |
+uniform sampler2D aoTexture;//        |
+uniform sampler2D emissiveTexture;//  |
+// ============= Material =============
+
 uniform sampler2D shadowMap;
 
 layout (std140, binding = 1) uniform LightBlock

@@ -13,7 +13,7 @@ Framebuffer& RenderPipeline::Run(Scene* scene, ProxyManager& proxyManager)
                                                        FramebufferAttachmentType::DEPTH_STENCIL_COLOR);
     }
 
-    for (auto& currentPass : m_RenderPasses)
+    for (const auto& currentPass : m_RenderPasses)
     {
         //Map input
         currentPass->Run(scene, proxyManager);
@@ -24,7 +24,7 @@ Framebuffer& RenderPipeline::Run(Scene* scene, ProxyManager& proxyManager)
             m_OutputFramebuffer->GetId(), m_OutputFramebuffer->GetWidth(), m_OutputFramebuffer->GetHeight());
     }
 
-    for (auto& currentPass : m_PostProcessingPasses)
+    for (const auto& currentPass : m_PostProcessingPasses)
     {
         //Map input
         currentPass->Run(scene, proxyManager);
@@ -39,12 +39,12 @@ Framebuffer& RenderPipeline::Run(Scene* scene, ProxyManager& proxyManager)
 
 void RenderPipeline::RecompileShaders()
 {
-    for (auto& currentPass : m_RenderPasses)
+    for (const auto& currentPass : m_RenderPasses)
     {
         currentPass->RecompilePassShader();
     }
 
-    for (auto& currentPass : m_PostProcessingPasses)
+    for (const auto& currentPass : m_PostProcessingPasses)
     {
         currentPass->RecompilePassShader();
     }
@@ -54,13 +54,13 @@ void RenderPipeline::RecompileShaders()
 void RenderPipeline::UpdateResolution(uint32_t width, uint32_t height)
 {
     m_OutputFramebuffer = CreateScope<Framebuffer>(width, height, FramebufferAttachmentType::DEPTH_STENCIL_COLOR);
-    for (auto& currentPass : m_RenderPasses)
+    for (const auto& currentPass : m_RenderPasses)
     {
         currentPass->UpdateResolution(width, height);
     }
 }
 
-void RenderPipeline::UpdateSampleCount(uint32_t sampleCount)
+void RenderPipeline::UpdateSampleCount(uint32_t sampleCount) const
 {
         for (auto& currentPass : m_RenderPasses)
         {
@@ -68,10 +68,34 @@ void RenderPipeline::UpdateSampleCount(uint32_t sampleCount)
         }
 }
 
-uint32_t RenderPipeline::GetSampleCount()
+uint32_t RenderPipeline::GetSampleCount() const
 {
-    if (m_RenderPasses.size() == 0)
+    if (m_RenderPasses.empty())
         return 0;
 
     return m_RenderPasses[0]->GetSampleCount();
+}
+
+void RenderPipeline::CreateUniformBuffer(const std::string& name,
+    const std::initializer_list<BufferElementType>& elements)
+{
+    m_UniformBuffers[name] = CreateScope<Buffer>(BufferType::UniformBuffer);
+    m_UniformBuffers[name]->SetBufferLayout(elements);
+}
+
+std::vector<RenderPass*> RenderPipeline::GetRenderPasses() const
+{
+    std::vector<RenderPass*> returnVector;
+    returnVector.reserve(m_RenderPasses.size() + m_PostProcessingPasses.size());
+    for (auto& pass : m_RenderPasses)
+        returnVector.push_back(pass.get());
+    for (auto& pass : m_PostProcessingPasses)
+        returnVector.push_back(pass.get());
+
+    return returnVector;
+}
+
+Buffer* RenderPipeline::GetUniformBuffer(const std::string& name) const
+{
+    return m_UniformBuffers.at(name).get();
 }

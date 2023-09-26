@@ -19,9 +19,6 @@ public:
 private:
     Scope<Framebuffer> m_ShadowmapFramebuffer;
     Shader* m_ShadowmapShader;
-    Scope<Buffer> m_UniformBufferMatrices;
-    Scope<Buffer> m_UniformBufferLight;
-    Scope<Buffer> m_UniformBufferSettings;
 
     void updateShadowmapFramebuffer(Scene* scene);
 };

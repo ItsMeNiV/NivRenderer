@@ -52,6 +52,60 @@ Application::Application()
     std::vector<Scope<RenderPass>> postProcessingPasses;
 
 	m_Renderer->SetActivePipeline(new RenderPipeline(renderPasses, postProcessingPasses, scene->GetSceneSettings().renderResolution.x, scene->GetSceneSettings().renderResolution.y));
+    m_Renderer->GetActivePipeline()->CreateUniformBuffer("MatricesBlock",{
+    BufferElementType::FLOAT4X4, // mat4 model
+    BufferElementType::FLOAT4X4, // mat4 viewProjection
+    BufferElementType::FLOAT4X4}); // mat4 lightSpaceMatrix
+
+    m_Renderer->GetActivePipeline()->CreateUniformBuffer("LightBlock",{
+    BufferElementType::BOOL,
+    BufferElementType::INT,
+    BufferElementType::FLOAT3,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::STRUCT_END, // Struct DirectionalLight with Size-Padding to 2 Vec4
+    // Array of 32 Struct PointLight with Size-Padding to 2 Vec4
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+    BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END});
+
+    m_Renderer->GetActivePipeline()->CreateUniformBuffer("SettingsBlock",{
+    BufferElementType::BOOL,
+    BufferElementType::BOOL});
+
+    for (const auto& renderPass : m_Renderer->GetActivePipeline()->GetRenderPasses())
+    {
+        renderPass->AddUsedUniformBuffer("MatricesBlock", m_Renderer->GetActivePipeline()->GetUniformBuffer("MatricesBlock"));
+        renderPass->AddUsedUniformBuffer("LightBlock",m_Renderer->GetActivePipeline()->GetUniformBuffer("LightBlock"));
+        renderPass->AddUsedUniformBuffer("SettingsBlock",m_Renderer->GetActivePipeline()->GetUniformBuffer("SettingsBlock"));
+    }
 }
 
 void Application::Run()

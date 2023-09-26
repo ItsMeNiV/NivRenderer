@@ -3,6 +3,7 @@
 #include "OpenGLStarter.h"
 #include "Rendering/OpenGL/Framebuffer.h"
 #include "Application/Scene.h"
+#include "Rendering/OpenGL/Buffer.h"
 #include "Rendering/Proxy/ProxyManager.h"
 
 class RenderPass
@@ -32,10 +33,16 @@ public:
         m_OutputFramebuffer = CreateScope<Framebuffer>(m_RenderResolution.x, m_RenderResolution.y, FramebufferAttachmentType::DEPTH_STENCIL_COLOR, m_SampleCount);
     }
 
+    void AddUsedUniformBuffer(const std::string& name, Buffer* uniformBufferPtr)
+    {
+        m_UniformBuffers[name] = uniformBufferPtr;
+    }
+
 protected:
     Framebuffer* m_InputFramebuffer;
     Scope<Framebuffer> m_OutputFramebuffer;
     Shader* m_PassShader;
+    std::unordered_map<std::string, Buffer*> m_UniformBuffers;
     glm::ivec2 m_RenderResolution;
     uint32_t m_SampleCount;
 

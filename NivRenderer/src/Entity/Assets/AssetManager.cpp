@@ -20,7 +20,10 @@ MeshAsset* AssetManager::LoadMesh(const std::string& path)
     }
 
     const aiScene* scene = m_Importer->ReadFile(
-        path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+        path,
+        aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals |
+            aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
+            aiProcess_RemoveRedundantMaterials | aiProcess_FixInfacingNormals);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
@@ -109,9 +112,8 @@ Model* AssetManager::LoadModel(const std::string& path)
     const aiScene* scene = m_Importer->ReadFile(
         path,
         aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals |
-        aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
-        aiProcess_RemoveRedundantMaterials | aiProcess_FixInfacingNormals | aiProcess_ImproveCacheLocality | aiProcess_FindDegenerates |
-        aiProcess_FindInvalidData | aiProcess_FindInstances);
+            aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType |
+            aiProcess_RemoveRedundantMaterials | aiProcess_FixInfacingNormals);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         SPDLOG_DEBUG(std::string("ERROR::ASSIMP::") + m_Importer->GetErrorString());

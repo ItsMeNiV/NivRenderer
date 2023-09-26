@@ -35,6 +35,16 @@ public:
     std::vector<BufferElementType>::const_iterator begin() const { return m_Elements.begin(); }
     std::vector<BufferElementType>::const_iterator end() const { return m_Elements.end(); }
 
+    size_t GetLayoutSize() const
+    {
+        size_t size = 0;
+        for (auto& element : m_Elements)
+        {
+            size += getSizeOfElementType(element);
+        }
+        return size;
+    }
+
 private:
     std::vector<BufferElementType> m_Elements;
     std::vector<uint32_t> m_Offsets;

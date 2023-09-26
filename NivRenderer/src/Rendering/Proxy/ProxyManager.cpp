@@ -104,6 +104,7 @@ void ProxyManager::updateSceneObjectProxy(const uint32_t sceneObjectId, SceneObj
         }
         
         sceneObject->SetDirtyFlag(false);
+        sceneObjectProxy->GetDirtyFlag() = true;
     }
 
     for (const auto& childEntity : childEntities)
@@ -163,19 +164,20 @@ void ProxyManager::updateSkyboxProxy(const uint32_t skyboxId)
 {
     const auto skyboxObject = ECSRegistry::GetInstance().GetEntity<SkyboxObject>(skyboxId);
 
-    if (skyboxObject->GetDirtyFlag())
+    if (!skyboxObject->GetDirtyFlag())
+        return;
+
+    if (!m_Proxies.contains(skyboxId))
     {
-        if (!m_Proxies.contains(skyboxId))
-        {
-            m_Proxies[skyboxId] = CreateScope<SkyboxProxy>(skyboxId);
-        }
-        auto skyboxProxy = dynamic_cast<SkyboxProxy*>(m_Proxies[skyboxId].get());
-
-        if (skyboxObject->HasAllTexturesSet())
-            skyboxProxy->SetTextures(skyboxObject->GetTextureAssets());
-
-        skyboxObject->SetDirtyFlag(false);
+        m_Proxies[skyboxId] = CreateScope<SkyboxProxy>(skyboxId);
     }
+    const auto skyboxProxy = dynamic_cast<SkyboxProxy*>(m_Proxies[skyboxId].get());
+
+    if (skyboxObject->HasAllTexturesSet())
+        skyboxProxy->SetTextures(skyboxObject->GetTextureAssets());
+
+    skyboxObject->SetDirtyFlag(false);
+    skyboxProxy->GetDirtyFlag() = true;
 }
 
 void ProxyManager::updateSceneLightProxies(const uint32_t sceneLightId)
@@ -205,6 +207,7 @@ void ProxyManager::updateSceneLightProxies(const uint32_t sceneLightId)
             ->UpdateData(pointLight->GetLightColor(), pointLight->GetPosition(), pointLight->GetStrength());
     }
     lightObject->SetDirtyFlag(false);
+    m_Proxies[sceneLightId]->GetDirtyFlag() = true;
 }
 
 void ProxyManager::setupMaterialProxy(const std::string& assetPath, TextureProxy** const textureProxy,
