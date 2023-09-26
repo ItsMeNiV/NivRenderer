@@ -54,10 +54,9 @@ private:
         case BufferElementType::INT4:
         case BufferElementType::FLOAT3:
         case BufferElementType::FLOAT4:
-            return 16;
         case BufferElementType::FLOAT3X3:
         case BufferElementType::FLOAT4X4:
-            return 64;
+            return 16;
         default:
             return 0;
         }
