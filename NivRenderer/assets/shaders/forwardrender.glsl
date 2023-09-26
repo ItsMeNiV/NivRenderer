@@ -115,7 +115,7 @@ void main()
     }
     for(int i = 0; i < amountPointLights; i++)
         Lo += CalcPointLight(pointLights[i], N, V, v_FragPos, albedo, metallic, roughness, emissive, F0);
-    vec3 ambient = vec3(0.02) * albedo;
+    vec3 ambient = vec3(0.005) * albedo;
     
     vec3 color = (Lo + ambient) * pow(ao,2);
 

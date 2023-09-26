@@ -6,28 +6,28 @@ Buffer::Buffer(const BufferType bufferType) :
     glCreateBuffers(1, &m_Id);
 }
 
-Buffer::Buffer(const BufferType bufferType, const BufferLayout& bufferLayout)
-    : m_BufferType(bufferType), m_BufferLayout(bufferLayout)
-{
-    glCreateBuffers(1, &m_Id);
-}
-
 Buffer::~Buffer()
 {
     glDeleteBuffers(1, &m_Id);
 }
 
-void Buffer::BufferData(const void* data, BufferElementType dataType, uint32_t elementOffset) const
+void Buffer::SetBufferLayout(const std::initializer_list<BufferElementType> elements)
 {
-    size_t dataSize = GetUniformBufferElementSize(dataType);
+    m_BufferLayout = elements;
 }
 
-void Buffer::BufferData(const void* data, size_t dataSize, size_t bufferOffset) const
+void Buffer::BufferData(const void* data, size_t dataSize, uint32_t bufferElementOffset) const
 {
-    if (bufferOffset == -1)
+    if (bufferElementOffset == -1)
+    {
         glNamedBufferData(m_Id, dataSize, data, GL_DYNAMIC_DRAW);
+    }
     else
-        glNamedBufferSubData(m_Id, bufferOffset, dataSize, data);
+    {
+        if (bufferElementOffset <= m_BufferLayout.GetOffsets().size())
+            glNamedBufferSubData(m_Id, m_BufferLayout.GetOffsets()[bufferElementOffset], dataSize, data);
+
+    }
 }
 
 void Buffer::BindUniformBufferToBindingPoint(uint32_t bindingPoint, int32_t rangeFrom, int32_t rangeTo) const

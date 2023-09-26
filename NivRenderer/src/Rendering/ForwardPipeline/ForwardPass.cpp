@@ -10,18 +10,67 @@ ForwardPass::ForwardPass(Shader* passShader, uint32_t resolutionWidth, uint32_t 
     glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uniformBufferAlignSize);
     // Test
     m_UniformBufferMatrices = CreateScope<Buffer>(BufferType::UniformBuffer);
+    m_UniformBufferMatrices->SetBufferLayout({
+        BufferElementType::FLOAT4X4, // mat4 model
+        BufferElementType::FLOAT4X4, // mat4 viewProjection
+        BufferElementType::FLOAT4X4 // mat4 lightSpaceMatrix
+    });
     m_UniformBufferMatrices->BufferData(nullptr, 3 * sizeof(glm::mat4));
 
     m_UniformBufferLight = CreateScope<Buffer>(BufferType::UniformBuffer);
+    m_UniformBufferLight->SetBufferLayout(
+        {
+        BufferElementType::BOOL,
+        BufferElementType::INT,
+        BufferElementType::FLOAT3,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::STRUCT_END, // Struct DirectionalLight with Size-Padding to 2 Vec4
+        // Array of 32 Struct PointLight with Size-Padding to 2 Vec4
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END,
+        BufferElementType::STRUCT_START, BufferElementType::FLOAT3, BufferElementType::FLOAT3, BufferElementType::INT, BufferElementType::STRUCT_END
+    });
     m_UniformBufferLight->BufferData(nullptr, 67 * sizeof(glm::vec4) + 34 * sizeof(uint32_t));
 
     m_UniformBufferSettings = CreateScope<Buffer>(BufferType::UniformBuffer);
+    m_UniformBufferSettings->SetBufferLayout({
+        BufferElementType::BOOL,
+        BufferElementType::BOOL
+    });
     m_UniformBufferSettings->BufferData(nullptr, sizeof(glm::vec4));
 
     BufferLayout layout = {
         BufferElementType::FLOAT,
         BufferElementType::FLOAT3,
-        BufferElementType::FLOAT4, BufferElementType::FLOAT4, BufferElementType::FLOAT4, BufferElementType::FLOAT4, // mat4
+        BufferElementType::FLOAT4X4, // mat4
         BufferElementType::FLOAT4, BufferElementType::FLOAT4, BufferElementType::FLOAT4, // float array [3]
         BufferElementType::BOOL,
         BufferElementType::INT
@@ -92,12 +141,13 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
         const glm::vec3 viewPos = camera->GetPosition();
         //m_PassShader->SetVec3("viewPos", viewPos);
 
-        m_UniformBufferMatrices->BufferData(glm::value_ptr(viewProj), sizeof(glm::mat4), sizeof(glm::mat4));
+        m_UniformBufferMatrices->BufferData(glm::value_ptr(viewProj), sizeof(glm::mat4), 1);
 
         // Set Shadowmap uniforms
         const bool hasShadowMap = lightSpaceMatrix != glm::mat4(1.0f);
         //m_PassShader->SetBool("hasShadowMap", hasShadowMap);
-        m_PassShader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
+        //m_PassShader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
+        m_UniformBufferMatrices->BufferData(glm::value_ptr(lightSpaceMatrix), sizeof(glm::mat4), 2);
         if (hasShadowMap)
         {
             m_ShadowmapFramebuffer->GetTextureAttachment()->ActivateForSlot(10);
@@ -119,8 +169,8 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
                 //m_PassShader->SetVec3("directionalLight.direction",
                 //                                   directionalLightProxy->GetLightDirection());
 
-                m_UniformBufferLight->BufferData(glm::value_ptr(directionalLightProxy->GetLightDirection()), sizeof(glm::vec3), 2 * sizeof(glm::vec4));
-                m_UniformBufferLight->BufferData(glm::value_ptr(directionalLightProxy->GetLightColor()), sizeof(glm::vec3), 3 * sizeof(glm::vec4));
+                m_UniformBufferLight->BufferData(glm::value_ptr(directionalLightProxy->GetLightDirection()), sizeof(glm::vec3), 3);
+                m_UniformBufferLight->BufferData(glm::value_ptr(directionalLightProxy->GetLightColor()), sizeof(glm::vec3), 4);
             }
             else if (pointLightProxy)
             {
@@ -131,24 +181,23 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
   //              m_PassShader->SetInt("pointLights[" + std::to_string(pointLightIndex) + "].strength",
 //                                     pointLightProxy->GetLightStrength());
 
-                constexpr size_t pointLightBase = 4 * sizeof(glm::vec4);
-                constexpr size_t pointLightSize = 2 * sizeof(glm::vec4);
+                constexpr size_t pointLightBase = 5;
+                const size_t pointLightOffset = 3 * pointLightIndex;
                 m_UniformBufferLight->BufferData(glm::value_ptr(pointLightProxy->GetLightPosition()), sizeof(glm::vec3),
-                                                 pointLightBase + pointLightIndex * pointLightSize);
+                                                 pointLightBase + pointLightOffset);
                 m_UniformBufferLight->BufferData(glm::value_ptr(pointLightProxy->GetLightColor()), sizeof(glm::vec3),
-                                                 pointLightBase + pointLightIndex * pointLightSize + sizeof(glm::vec4));
+                                                 pointLightBase + pointLightOffset + 1);
                 uint32_t lightStrength = pointLightProxy->GetLightStrength();
                 m_UniformBufferLight->BufferData(&lightStrength, sizeof(uint32_t),
-                                                 pointLightBase + pointLightIndex * pointLightSize + sizeof(glm::vec4) +
-                                                     sizeof(glm::vec3));
+                                                 pointLightBase + pointLightOffset + 2);
 
                 pointLightIndex++;
             }
         }
         int setting = hasDirectionalLight;
         m_UniformBufferLight->BufferData(&setting, sizeof(uint32_t), 0);
-        m_UniformBufferLight->BufferData(&pointLightIndex, sizeof(uint32_t), sizeof(uint32_t));
-        m_UniformBufferLight->BufferData(glm::value_ptr(viewPos), sizeof(glm::vec3), sizeof(glm::vec4));
+        m_UniformBufferLight->BufferData(&pointLightIndex, sizeof(uint32_t), 1);
+        m_UniformBufferLight->BufferData(glm::value_ptr(viewPos), sizeof(glm::vec3), 2);
         //m_PassShader->SetBool("hasDirectionalLight", hasDirectionalLight);
         //m_PassShader->SetInt("amountPointLights", pointLightIndex);
 
@@ -168,10 +217,10 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
             {
                 //m_PassShader->SetBool("hasNormalTexture", false);
             }
-            setting = hasShadowMap;
-            m_UniformBufferSettings->BufferData(&setting, 4, 0);
             setting = materialProxy->HasNormalTexture();
-            m_UniformBufferSettings->BufferData(&setting, 4, 4);
+            m_UniformBufferSettings->BufferData(&setting, 4, 0);
+            setting = hasShadowMap;
+            m_UniformBufferSettings->BufferData(&setting, 4, 1);
 
             materialProxy->BindMetallicTexture(2);
             m_PassShader->SetTexture("metallicTexture", 2);
