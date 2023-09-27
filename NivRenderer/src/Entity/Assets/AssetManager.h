@@ -42,7 +42,7 @@ public:
 
     MeshAsset* LoadMesh(const std::string& path);
     MeshAsset* GetMesh(const uint32_t id);
-    TextureAsset* LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel = false, int channelIndex = 0);
+    TextureAsset* LoadTexture(const std::string& path, bool flipVertical, bool loadOnlyOneChannel = false, int channelIndex = 0);
     void ReloadTexture(TextureAsset* textureAsset);
     TextureAsset* GetTexture(const uint32_t id);
     Shader* LoadShader(const std::string& path, ShaderType shaderType);

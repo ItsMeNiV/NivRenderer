@@ -47,30 +47,30 @@ MeshAsset* AssetManager::GetMesh(const uint32_t id)
     return nullptr;
 }
 
-TextureAsset* AssetManager::LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel, int channelIndex)
+TextureAsset* AssetManager::LoadTexture(const std::string& path, bool flipVertical, bool loadOnlyOneChannel, int channelIndex)
 {
-    const bool textureExists = m_LoadedTextureAssets.contains(path);
-    if (textureExists && m_LoadedTextureAssets[path]->GetFlipVertical() == flipVertical)
-        return m_LoadedTextureAssets[path].get();
-
-    std::string pathToUse = textureExists ? m_LoadedTextureAssets[path]->GetPath() : path;
-
-    m_LoadedTextureAssets[path] = CreateScope<TextureAsset>(IdManager::GetInstance().CreateNewId(), pathToUse, flipVertical, loadOnlyOneChannel, channelIndex);
-    const auto textureAsset = m_LoadedTextureAssets[path].get();
-
-    stbi_set_flip_vertically_on_load(textureAsset->GetFlipVertical());
-
-    importTexture(textureAsset);
+    std::string keyPath = path;
     if (loadOnlyOneChannel)
     {
         std::string fileName = path.substr(0, path.find_last_of('.'));
         const std::string fileEnding = path.substr(path.find_last_of('.'), path.size());
         fileName += "_@" + std::to_string(channelIndex);
-        auto nodeHandleTexture = m_LoadedTextureAssets.extract(path);
-        path = fileName + fileEnding;
-        nodeHandleTexture.key() = path;
-        m_LoadedTextureAssets.insert(std::move(nodeHandleTexture));
+        keyPath = fileName + fileEnding;
     }
+
+    const bool textureExists = m_LoadedTextureAssets.contains(keyPath);
+    if (textureExists && m_LoadedTextureAssets[keyPath]->GetFlipVertical() == flipVertical)
+        return m_LoadedTextureAssets[keyPath].get();
+
+    std::string pathToUse = textureExists ? m_LoadedTextureAssets[keyPath]->GetPath() : path;
+
+    m_LoadedTextureAssets[keyPath] = CreateScope<TextureAsset>(IdManager::GetInstance().CreateNewId(), pathToUse,
+                                                               flipVertical, loadOnlyOneChannel, channelIndex);
+    const auto textureAsset = m_LoadedTextureAssets[keyPath].get();
+
+    stbi_set_flip_vertically_on_load(textureAsset->GetFlipVertical());
+
+    importTexture(textureAsset);
 
     return textureAsset;
 }

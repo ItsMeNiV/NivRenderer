@@ -140,8 +140,9 @@ void SceneObject::createChildSceneObjectFromSubModel(const SubModel& subModel, c
         materialComponent->SetMaterialAsset(subModel.material);
     }
     *subObject->GetEntityName() = subModel.name;
-    Math::DecomposeMatrix(subModel.modelMatrix, transform->GetScale(), transform->GetRotation(),
-                          transform->GetPosition());
+
+    Math::DecomposeMatrix(glm::value_ptr(subModel.modelMatrix), glm::value_ptr(transform->GetScale()),
+                          glm::value_ptr(transform->GetRotation()), glm::value_ptr(transform->GetPosition()));
 
     for (auto& nextSubModel : subModel.subModels)
         createChildSceneObjectFromSubModel(nextSubModel, subObject->GetId());

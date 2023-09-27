@@ -9,6 +9,10 @@ ForwardPass::ForwardPass(Shader* passShader, uint32_t resolutionWidth, uint32_t 
 
 void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
 {
+    m_UniformBuffers["MatricesBlock"]->BindUniformBufferToBindingPoint(0);
+    m_UniformBuffers["LightBlock"]->BindUniformBufferToBindingPoint(1);
+    m_UniformBuffers["SettingsBlock"]->BindUniformBufferToBindingPoint(2);
+
     glEnable(GL_DEPTH_TEST);
     glm::mat4 lightSpaceMatrix(1.0f);
     /*
@@ -150,9 +154,7 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
             {
                 m_UniformBuffers["MatricesBlock"]->BufferData(glm::value_ptr(sceneObjectProxy->GetModelMatrix()), sizeof(glm::mat4), 0);
                 sceneObjectProxy->Bind();
-                m_UniformBuffers["MatricesBlock"]->BindUniformBufferToBindingPoint(0);
-                m_UniformBuffers["LightBlock"]->BindUniformBufferToBindingPoint(1);
-                m_UniformBuffers["SettingsBlock"]->BindUniformBufferToBindingPoint(2);
+                
 
                 const auto meshProxy = sceneObjectProxy->GetMeshProxy();
                 if (meshProxy->GetIndexCount())
