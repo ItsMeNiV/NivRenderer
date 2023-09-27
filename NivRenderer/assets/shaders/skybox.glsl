@@ -6,13 +6,17 @@ layout (location = 0) in vec3 vertPosition;
 
 out vec3 v_TextureCoords;
 
-uniform mat4 projection;
-uniform mat4 view;
+layout (std140, binding = 0) uniform MatricesBlock
+{
+    uniform mat4 model;
+    uniform mat4 viewProjection;
+    uniform mat4 lightSpaceMatrix;
+};
 
 void main()
 {
     v_TextureCoords = vertPosition;
-    vec4 pos = projection * view * vec4(vertPosition, 1.0);
+    vec4 pos = viewProjection * vec4(vertPosition, 1.0);
     gl_Position = pos.xyww;
 }
 
@@ -25,7 +29,6 @@ void main()
 out vec4 FragColor;
 
 in vec3 v_TextureCoords;
-
 
 uniform samplerCube skybox;
 

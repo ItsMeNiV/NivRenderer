@@ -4,8 +4,12 @@
 
 layout (location = 0) in vec3 vertPosition;
 
-uniform mat4 lightSpaceMatrix;
-uniform mat4 model;
+layout (std140, binding = 0) uniform MatricesBlock
+{
+    mat4 model;
+    mat4 viewProjection;
+    mat4 lightSpaceMatrix;
+};
 
 void main()
 {

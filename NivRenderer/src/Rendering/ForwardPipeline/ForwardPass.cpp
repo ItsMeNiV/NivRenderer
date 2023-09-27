@@ -154,7 +154,6 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
             {
                 m_UniformBuffers["MatricesBlock"]->BufferData(glm::value_ptr(sceneObjectProxy->GetModelMatrix()), sizeof(glm::mat4), 0);
                 sceneObjectProxy->Bind();
-                
 
                 const auto meshProxy = sceneObjectProxy->GetMeshProxy();
                 if (meshProxy->GetIndexCount())
@@ -169,7 +168,6 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
             const auto lightVisualizeShader = AssetManager::GetInstance().LoadShader(
                 "assets/shaders/lightcube.glsl", ShaderType::VERTEX_AND_FRAGMENT);
             lightVisualizeShader->Bind();
-            lightVisualizeShader->SetMat4("viewProjection", viewProj);
 
             LightProxy::Bind();
             for (const uint32_t id : scene->GetSceneLightIds())
@@ -177,8 +175,9 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
                 const auto pointLightProxy = dynamic_cast<PointLightProxy*>(proxyManager.GetProxy(id));
                 if (pointLightProxy)
                 {
+                    m_UniformBuffers["MatricesBlock"]->BufferData(glm::value_ptr(pointLightProxy->GetModelMatrix()),
+                                                                  sizeof(glm::mat4), 0);
                     lightVisualizeShader->SetVec3("lightColor", pointLightProxy->GetLightColor());
-                    lightVisualizeShader->SetMat4("model", pointLightProxy->GetModelMatrix());
 
                     glDrawArrays(GL_TRIANGLES, 0, LightProxy::GetVerticesCount());
                 }
@@ -193,9 +192,7 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
             if (skyboxProxy->HasAllTexturesSet())
             {
                 skyboxShader->Bind();
-                skyboxShader->SetMat4("projection", projection);
                 view = glm::mat4(glm::mat3(camera->GetView()));
-                skyboxShader->SetMat4("view", view);
                 skyboxShader->SetTexture("skybox", 0);
                 skyboxProxy->BindTexture(0);
 

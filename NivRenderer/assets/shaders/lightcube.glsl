@@ -8,8 +8,11 @@ layout (location = 2) in vec2 vertTextureCoords;
 layout (location = 3) in vec3 vertTangent;
 layout (location = 4) in vec3 vertBitangent;
 
-uniform mat4 model;
-uniform mat4 viewProjection;
+layout (std140, binding = 0) uniform MatricesBlock
+{
+    mat4 model;
+    mat4 viewProjection;
+};
 
 void main()
 {
