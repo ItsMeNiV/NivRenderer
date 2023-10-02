@@ -149,7 +149,7 @@ set(SRC_FILES
  "src/Rendering/OpenGL/OpenGLRenderer3D.h" "src/Rendering/OpenGL/OpenGLRenderer3D.cpp"
  "src/Rendering/RenderPipeline.cpp" "src/Rendering/RenderPipeline.h"
  "src/Rendering/RenderPass.h"
- "src/Rendering/RenderQueue.h"
+ "src/Rendering/RenderCommand.h"
  "src/Rendering/Proxy/Proxy.h"
  "src/Rendering/Proxy/ProxyManager.cpp" "src/Rendering/Proxy/ProxyManager.h"
  "src/Rendering/Proxy/SceneObjectProxy.h" "src/Rendering/Proxy/SceneObjectProxy.cpp"

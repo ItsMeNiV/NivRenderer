@@ -1,7 +1,7 @@
 #pragma once
 #include "Base.h"
 #include "OpenGLStarter.h"
-#include "RenderQueue.h"
+#include "Rendering/RenderCommand.h"
 #include "Rendering/OpenGL/Framebuffer.h"
 #include "Application/Scene.h"
 #include "Rendering/OpenGL/Buffer.h"

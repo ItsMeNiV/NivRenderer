@@ -105,6 +105,7 @@ public:
     }
 
     uint32_t GetVertexArrayId() const { return m_VertexArray; }
+    uint32_t GetTextureId() const { return m_Texture; }
 
 private:
     // TODO: Abstract

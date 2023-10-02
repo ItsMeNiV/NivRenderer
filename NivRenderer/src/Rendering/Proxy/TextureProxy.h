@@ -12,6 +12,7 @@ public:
     void CreateTextureFromAsset(TextureAsset* const textureAsset) const;
 
     void BindToSlot(uint32_t slot) const;
+    uint32_t GetTextureId() const { return m_TextureId; }
 
 private:
     //TODO: Abstract

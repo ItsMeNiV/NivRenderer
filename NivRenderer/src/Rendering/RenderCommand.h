@@ -1,6 +1,5 @@
 #pragma once
 #include "Base.h"
-#include <queue>
 
 /*
     RenderCommand:
@@ -70,6 +69,12 @@ enum RendererStateFlag
     DEPTH_LEQUAL =      SHIFTBITL(4)
 };
 
+struct TextureUnit
+{
+    int32_t TextureId = -1;
+    int32_t UniformLocation = 0;
+};
+
 struct RendererState
 {
     uint32_t BoundVertexArray = 0;
@@ -79,7 +84,7 @@ struct RendererState
     int32_t ReadFramebufferHeight = 0;
     int32_t WriteFramebufferWidth = 0;
     int32_t WriteFramebufferHeight = 0;
-    uint32_t UsedMaterial = 0;
+    TextureUnit BoundTextures[32];
     uint32_t BoundUniformBuffers[5] = {0, 0, 0, 0, 0};
     uint32_t Flags = 0;
 };

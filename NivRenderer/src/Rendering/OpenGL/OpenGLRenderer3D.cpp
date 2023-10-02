@@ -76,8 +76,15 @@ void OpenGLRenderer3D::DrawFrame(const CommandBuffer& commandBuffer)
                     glDisable(GL_DEPTH_TEST);
                 }
 
-                // Set Material
-
+                // Set Textures
+                for (uint32_t textureSlot = 0; textureSlot < 32; textureSlot++)
+                {
+                    if (rendererState.BoundTextures[textureSlot].TextureId != -1)
+                    {
+                        glBindTextureUnit(textureSlot, rendererState.BoundTextures[textureSlot].TextureId);
+                        glProgramUniform1i(rendererState.BoundShader, rendererState.BoundTextures[textureSlot].UniformLocation, textureSlot);
+                    }
+                }
 
                 // 2. Execute draw
                 glBindVertexArray(rendererState.BoundVertexArray);

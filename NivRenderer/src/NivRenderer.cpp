@@ -11,8 +11,6 @@
 #include "imgui.h"
 #include "backends/imgui_impl_opengl3.h"
 
-#include "Rendering/RenderQueue.h"
-
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_ERROR
 
 int main()

@@ -14,12 +14,8 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
     rendererState.BoundUniformBuffers[0] = m_UniformBuffers["MatricesBlock"]->GetId();
     rendererState.BoundUniformBuffers[1] = m_UniformBuffers["LightBlock"]->GetId();
     rendererState.BoundUniformBuffers[2] = m_UniformBuffers["SettingsBlock"]->GetId();
-    //m_UniformBuffers["MatricesBlock"]->BindUniformBufferToBindingPoint(0);
-    //m_UniformBuffers["LightBlock"]->BindUniformBufferToBindingPoint(1);
-    //m_UniformBuffers["SettingsBlock"]->BindUniformBufferToBindingPoint(2);
 
     rendererState.Flags |= RendererStateFlag::DEPTH_TEST;
-    //glEnable(GL_DEPTH_TEST);
     rendererState.Flags |= RendererStateFlag::DEPTH_LESS;
     glm::mat4 lightSpaceMatrix(1.0f);
     /*
@@ -71,16 +67,10 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
         rendererState.BoundWriteFramebuffer = m_OutputFramebuffer->GetId();
         rendererState.WriteFramebufferWidth = m_OutputFramebuffer->GetWidth();
         rendererState.WriteFramebufferHeight = m_OutputFramebuffer->GetHeight();
-        //glCullFace(GL_BACK);
-        //m_OutputFramebuffer->Bind();
-        //glViewport(0, 0, m_OutputFramebuffer->GetWidth(), m_OutputFramebuffer->GetHeight());
         const auto camera = dynamic_cast<CameraProxy*>(proxyManager.GetProxy(scene->GetCameraId()));
 
         commandBuffer.Submit({CommandType::CLEAR_COLOR_DEPTH_BUFFER, rendererState, 0});
-        //glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         rendererState.BoundShader = m_PassShader->GetId();
-        //m_PassShader->Bind();
         glm::mat4 view = camera->GetView();
         const glm::mat4 projection = camera->GetProjection();
         const glm::mat4 viewProj = projection * view;
@@ -93,8 +83,9 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
         m_UniformBuffers["MatricesBlock"]->BufferData(glm::value_ptr(lightSpaceMatrix), sizeof(glm::mat4), 2);
         if (hasShadowMap)
         {
-            m_ShadowmapFramebuffer->GetTextureAttachment()->ActivateForSlot(10);
-            m_PassShader->SetTexture("shadowMap", 10);
+            rendererState.BoundTextures[10] = {
+                static_cast<int32_t>(m_ShadowmapFramebuffer->GetTextureAttachment()->GetTextureId()),
+                                              m_PassShader->GetUniformLocation("shadowMap")};
         }
         
         // Set Light uniforms
@@ -138,37 +129,40 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
         for (const auto& sceneObjectMaterialProxy : proxyManager.GetSceneObjectsToRenderByMaterial(scene))
         {
             const auto materialProxy = dynamic_cast<MaterialProxy*>(proxyManager.GetProxy(sceneObjectMaterialProxy.first));
-            rendererState.UsedMaterial = materialProxy->GetId(); 
-            //materialProxy->BindDiffuseTexture(0);
-            //m_PassShader->SetTexture("diffuseTexture", 0);
+
+            rendererState.BoundTextures[0] = {static_cast<int32_t>((*materialProxy->GetDiffuseTexturePtr())->GetTextureId()),
+                                              m_PassShader->GetUniformLocation("diffuseTexture")};
 
             if (materialProxy->HasNormalTexture())
             {
-                //materialProxy->BindNormalTexture(1);
-                //m_PassShader->SetTexture("normalTexture", 1);
+                rendererState.BoundTextures[1] = {
+                    static_cast<int32_t>((*materialProxy->GetNormalTexturePtr())->GetTextureId()),
+                                                  m_PassShader->GetUniformLocation("normalTexture")};
             }
             int setting = materialProxy->HasNormalTexture();
             m_UniformBuffers["SettingsBlock"]->BufferData(&setting, 4, 0);
             setting = hasShadowMap;
             m_UniformBuffers["SettingsBlock"]->BufferData(&setting, 4, 1);
 
-            //materialProxy->BindMetallicTexture(2);
-            //m_PassShader->SetTexture("metallicTexture", 2);
+            rendererState.BoundTextures[2] = {
+                static_cast<int32_t>((*materialProxy->GetMetallicTexturePtr())->GetTextureId()),
+                                              m_PassShader->GetUniformLocation("metallicTexture")};
 
-            //materialProxy->BindRoughnessTexture(3);
-            //m_PassShader->SetTexture("roughnessTexture", 3);
+            rendererState.BoundTextures[3] = {
+                static_cast<int32_t>((*materialProxy->GetRoughnessTexturePtr())->GetTextureId()),
+                                              m_PassShader->GetUniformLocation("roughnessTexture")};
 
-            //materialProxy->BindAOTexture(4);
-            //m_PassShader->SetTexture("aoTexture", 4);
+            rendererState.BoundTextures[4] = {static_cast<int32_t>((*materialProxy->GetAOTexturePtr())->GetTextureId()),
+                                              m_PassShader->GetUniformLocation("aoTexture")};
 
-            //materialProxy->BindEmissiveTexture(5);
-            //m_PassShader->SetTexture("emissiveTexture", 5);
+            rendererState.BoundTextures[5] = {
+                static_cast<int32_t>((*materialProxy->GetEmissiveTexturePtr())->GetTextureId()),
+                                              m_PassShader->GetUniformLocation("emissiveTexture")};
 
             for (const auto& sceneObjectProxy : sceneObjectMaterialProxy.second)
             {
                 rendererState.BoundVertexArray = sceneObjectProxy->GetMeshProxy()->GetVertexArrayId();
                 m_UniformBuffers["MatricesBlock"]->BufferData(glm::value_ptr(sceneObjectProxy->GetModelMatrix()), sizeof(glm::mat4), 0);
-                //sceneObjectProxy->Bind();
 
                 const auto meshProxy = sceneObjectProxy->GetMeshProxy();
 
@@ -176,11 +170,6 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
                     commandBuffer.Submit({CommandType::DRAW_INDEXED, rendererState, meshProxy->GetIndexCount()});
                 else
                     commandBuffer.Submit({CommandType::DRAW, rendererState, meshProxy->GetVerticesCount()});
-
-                //if (meshProxy->GetIndexCount())
-                //    glDrawElements(GL_TRIANGLES, meshProxy->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
-                //else
-                //    glDrawArrays(GL_TRIANGLES, 0, meshProxy->GetVerticesCount());
             }
         }
 
@@ -220,8 +209,8 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
             {
                 skyboxShader->Bind();
                 view = glm::mat4(glm::mat3(camera->GetView()));
-                skyboxShader->SetTexture("skybox", 0);
-                skyboxProxy->BindTexture(0);
+                rendererState.BoundTextures[0] = {static_cast<int32_t>(skyboxProxy->GetTextureId()),
+                    m_PassShader->GetUniformLocation("skybox")};
 
                 rendererState.Flags &= ~RendererStateFlag::DEPTH_LESS;
                 rendererState.Flags |= RendererStateFlag::DEPTH_LEQUAL;

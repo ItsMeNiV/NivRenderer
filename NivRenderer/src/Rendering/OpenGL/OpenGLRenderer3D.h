@@ -1,6 +1,6 @@
 #pragma once
 #include "Base.h"
-#include "Rendering/RenderQueue.h"
+#include "Rendering/RenderCommand.h"
 
 class OpenGLRenderer3D
 {
