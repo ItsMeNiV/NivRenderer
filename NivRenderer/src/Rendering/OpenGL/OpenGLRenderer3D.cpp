@@ -95,10 +95,10 @@ void OpenGLRenderer3D::DrawFrame(const CommandBuffer& commandBuffer)
             break;   
         }
         }
-
-        // Reset state
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
     }
+
+    // Reset state
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 }
