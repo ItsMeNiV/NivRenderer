@@ -46,6 +46,7 @@ public:
     {
         glBindVertexArray(m_VertexArray);
     }
+    static uint32_t GetVertexArrayId() { return m_VertexArray; }
 
     void SetLightColor(const glm::vec3& color) { m_LightColor = color; }
 

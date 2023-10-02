@@ -5,7 +5,7 @@ RenderPipeline::RenderPipeline(std::vector<Scope<RenderPass>>& renderPasses, std
 {
 }
 
-Framebuffer& RenderPipeline::Run(Scene* scene, ProxyManager& proxyManager)
+Framebuffer& RenderPipeline::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& commandBuffer)
 {
     if (!m_OutputFramebuffer)
     {
@@ -16,22 +16,38 @@ Framebuffer& RenderPipeline::Run(Scene* scene, ProxyManager& proxyManager)
     for (const auto& currentPass : m_RenderPasses)
     {
         //Map input
-        currentPass->Run(scene, proxyManager);
+        currentPass->Run(scene, proxyManager, commandBuffer);
         //Get output
 
         //If last pass:
-        currentPass->GetOutputFramebuffer()->get()->BlitFramebuffer(
-            m_OutputFramebuffer->GetId(), m_OutputFramebuffer->GetWidth(), m_OutputFramebuffer->GetHeight());
+        RendererState rendererState;
+        rendererState.BoundVertexArray = currentPass->GetOutputFramebuffer()->get()->GetId();
+        rendererState.ReadFramebufferWidth = currentPass->GetOutputFramebuffer()->get()->GetWidth();
+        rendererState.ReadFramebufferHeight = currentPass->GetOutputFramebuffer()->get()->GetHeight();
+        rendererState.BoundWriteFramebuffer = m_OutputFramebuffer->GetId();
+        rendererState.WriteFramebufferWidth = m_OutputFramebuffer->GetWidth();
+        rendererState.WriteFramebufferHeight = m_OutputFramebuffer->GetHeight();
+        commandBuffer.Submit({CommandType::BLIT_FRAMEBUFFER, rendererState, 0});
+        //currentPass->GetOutputFramebuffer()->get()->BlitFramebuffer(
+        //    m_OutputFramebuffer->GetId(), m_OutputFramebuffer->GetWidth(), m_OutputFramebuffer->GetHeight());
     }
 
     for (const auto& currentPass : m_PostProcessingPasses)
     {
         //Map input
-        currentPass->Run(scene, proxyManager);
+        currentPass->Run(scene, proxyManager, commandBuffer);
 
         //If last pass:
-        currentPass->GetOutputFramebuffer()->get()->BlitFramebuffer(
-            m_OutputFramebuffer->GetId(), m_OutputFramebuffer->GetWidth(), m_OutputFramebuffer->GetHeight());
+        RendererState rendererState;
+        rendererState.BoundVertexArray = currentPass->GetOutputFramebuffer()->get()->GetId();
+        rendererState.ReadFramebufferWidth = currentPass->GetOutputFramebuffer()->get()->GetWidth();
+        rendererState.ReadFramebufferHeight = currentPass->GetOutputFramebuffer()->get()->GetHeight();
+        rendererState.BoundWriteFramebuffer = m_OutputFramebuffer->GetId();
+        rendererState.WriteFramebufferWidth = m_OutputFramebuffer->GetWidth();
+        rendererState.WriteFramebufferHeight = m_OutputFramebuffer->GetHeight();
+        commandBuffer.Submit({CommandType::BLIT_FRAMEBUFFER, rendererState, 0});
+        //currentPass->GetOutputFramebuffer()->get()->BlitFramebuffer(
+        //    m_OutputFramebuffer->GetId(), m_OutputFramebuffer->GetWidth(), m_OutputFramebuffer->GetHeight());
     }
 
     return *m_OutputFramebuffer;

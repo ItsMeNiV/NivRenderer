@@ -8,6 +8,7 @@ public:
     virtual ~Proxy() {}
 
     bool& GetDirtyFlag() { return m_DirtyFlag; }
+    uint32_t GetId() const { return m_Id; }
 
 private:
     uint32_t m_Id;

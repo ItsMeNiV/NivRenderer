@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include "Entity/ECSRegistry.h"
 #include "Application/Util/Instrumentor.h"
+#include "Rendering/OpenGL/OpenGLRenderer3D.h"
 
 Renderer::Renderer(Window* window)
 	: m_ActiveWindow(window), m_Scene(CreateScope<Scene>()), m_ActiveRenderPipeline(nullptr), m_ProxyManager(CreateScope<ProxyManager>())
@@ -39,10 +40,20 @@ void Renderer::RenderScene() const
     PROFILE_FUNCTION()
     if (m_Scene)
     {
-        const auto& outputFramebuffer = m_ActiveRenderPipeline->Run(m_Scene.get(), *m_ProxyManager);
+        CommandBuffer commandBuffer;
+        const auto& outputFramebuffer = m_ActiveRenderPipeline->Run(m_Scene.get(), *m_ProxyManager, commandBuffer);
+        RendererState rendererState;
+        rendererState.BoundVertexArray = outputFramebuffer.GetId();
+        rendererState.ReadFramebufferWidth = outputFramebuffer.GetWidth();
+        rendererState.ReadFramebufferHeight = outputFramebuffer.GetHeight();
+        rendererState.BoundWriteFramebuffer = m_ActiveWindow->GetFramebuffer()->GetId();
+        rendererState.WriteFramebufferWidth = m_ActiveWindow->GetFramebuffer()->GetWidth();
+        rendererState.WriteFramebufferHeight = m_ActiveWindow->GetFramebuffer()->GetHeight();
+        commandBuffer.Submit({CommandType::BLIT_FRAMEBUFFER, rendererState, 0});
         outputFramebuffer.BlitFramebuffer(m_ActiveWindow->GetFramebuffer()->GetId(),
                                           m_ActiveWindow->GetFramebuffer()->GetWidth(),
                                           m_ActiveWindow->GetFramebuffer()->GetHeight());
+        OpenGLRenderer3D::DrawFrame(commandBuffer);
     }
 
 }

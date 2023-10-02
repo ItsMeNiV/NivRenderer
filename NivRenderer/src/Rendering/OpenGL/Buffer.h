@@ -143,6 +143,7 @@ public:
     void SetBufferLayout(const std::initializer_list<BufferElementType> elements);
     void BufferData(const void* data, size_t dataSize, uint32_t bufferElementOffset = -1) const;
     void BindUniformBufferToBindingPoint(uint32_t bindingPoint, int32_t rangeFrom = -1, int32_t rangeTo = -1) const;
+    uint32_t GetId() const { return m_Id; }
 
 private:
     uint32_t m_Id;

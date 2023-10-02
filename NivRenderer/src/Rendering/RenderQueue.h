@@ -10,6 +10,10 @@
     uint32_t    BoundVertexArray / In case of BlitFramebuffer BoundReadFramebuffer
     uint32_t    BoundShader
     uint32_t    BoundFramebuffer (0 means default Framebuffer for viewport we always use the Framebuffer's size) / In case of BlitFramebuffer BoundWriteFramebuffer
+    uint32_t    ReadFramebufferWidth
+    uint32_t    ReadFramebufferHeight
+    uint32_t    WriteFramebufferWidth
+    uint32_t    WriteFramebufferHeight
     uint32_t    UsedMaterial
     uint32_t[5] BoundUniformBuffers
 
@@ -18,8 +22,8 @@
     0 : DEPTH_TEST
     1 : CULL_FACE_FRONT (Cannot be on at the same time as 2)
     2 : CULL_FACE_BACK  (Cannot be on at the same time as 1)
-    3 :
-    4 : 
+    3 : DEPTH_LESS      (Cannot be on at the same time as 4)
+    4 : DEPTH_LEQUAL    (Cannot be on at the same time as 3)
     5 : 
     6 : 
     7 : 
@@ -61,14 +65,20 @@ enum RendererStateFlag
 {
     DEPTH_TEST =        SHIFTBITL(0),
     CULL_FACE_FRONT =   SHIFTBITL(1),
-    CULL_FACE_BACK =    SHIFTBITL(2)
+    CULL_FACE_BACK =    SHIFTBITL(2),
+    DEPTH_LESS =        SHIFTBITL(3),
+    DEPTH_LEQUAL =      SHIFTBITL(4)
 };
 
 struct RendererState
 {
     uint32_t BoundVertexArray = 0;
     uint32_t BoundShader = 0;
-    uint32_t BoundFramebuffer = 0;
+    uint32_t BoundWriteFramebuffer = 0;
+    int32_t ReadFramebufferWidth = 0;
+    int32_t ReadFramebufferHeight = 0;
+    int32_t WriteFramebufferWidth = 0;
+    int32_t WriteFramebufferHeight = 0;
     uint32_t UsedMaterial = 0;
     uint32_t BoundUniformBuffers[5] = {0, 0, 0, 0, 0};
     uint32_t Flags = 0;
@@ -78,6 +88,7 @@ struct RenderCommand
 {
     CommandType Type;
     RendererState State;
+    uint32_t VertexIndexCount;
 };
 
 constexpr size_t PRE_ALLOC_SIZE = 50;

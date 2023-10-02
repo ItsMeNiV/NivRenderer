@@ -104,6 +104,8 @@ public:
         return m_Texture != UINT32_MAX;
     }
 
+    uint32_t GetVertexArrayId() const { return m_VertexArray; }
+
 private:
     // TODO: Abstract
     uint32_t m_Texture;

@@ -1,6 +1,7 @@
 #pragma once
 #include "Base.h"
 #include "OpenGLStarter.h"
+#include "RenderQueue.h"
 #include "Rendering/OpenGL/Framebuffer.h"
 #include "Application/Scene.h"
 #include "Rendering/OpenGL/Buffer.h"
@@ -16,7 +17,7 @@ public:
         m_RenderResolution(resolutionWidth, resolutionHeight), m_SampleCount(sampleCount)
     {}
 
-    virtual void Run(Scene* scene, ProxyManager& proxyManager) = 0;
+    virtual void Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& commandBuffer) = 0;
 
     Scope<Framebuffer>* GetOutputFramebuffer() { return &m_OutputFramebuffer; }
     uint32_t GetSampleCount() const { return m_SampleCount; }

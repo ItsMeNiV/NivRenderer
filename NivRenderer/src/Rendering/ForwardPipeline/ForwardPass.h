@@ -14,7 +14,7 @@ class ForwardPass : public RenderPass
 public:
     ForwardPass(Shader* passShader, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount);
 
-    void Run(Scene* scene, ProxyManager& proxyManager) override;
+    void Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& commandBuffer) override;
 
 private:
     Scope<Framebuffer> m_ShadowmapFramebuffer;

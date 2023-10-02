@@ -7,13 +7,20 @@ ForwardPass::ForwardPass(Shader* passShader, uint32_t resolutionWidth, uint32_t 
     m_ShadowmapShader(AssetManager::GetInstance().LoadShader("assets/shaders/shadowmap.glsl", ShaderType::VERTEX_AND_FRAGMENT))
 {}
 
-void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
+void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& commandBuffer)
 {
-    m_UniformBuffers["MatricesBlock"]->BindUniformBufferToBindingPoint(0);
-    m_UniformBuffers["LightBlock"]->BindUniformBufferToBindingPoint(1);
-    m_UniformBuffers["SettingsBlock"]->BindUniformBufferToBindingPoint(2);
+    RendererState rendererState;
 
-    glEnable(GL_DEPTH_TEST);
+    rendererState.BoundUniformBuffers[0] = m_UniformBuffers["MatricesBlock"]->GetId();
+    rendererState.BoundUniformBuffers[1] = m_UniformBuffers["LightBlock"]->GetId();
+    rendererState.BoundUniformBuffers[2] = m_UniformBuffers["SettingsBlock"]->GetId();
+    //m_UniformBuffers["MatricesBlock"]->BindUniformBufferToBindingPoint(0);
+    //m_UniformBuffers["LightBlock"]->BindUniformBufferToBindingPoint(1);
+    //m_UniformBuffers["SettingsBlock"]->BindUniformBufferToBindingPoint(2);
+
+    rendererState.Flags |= RendererStateFlag::DEPTH_TEST;
+    //glEnable(GL_DEPTH_TEST);
+    rendererState.Flags |= RendererStateFlag::DEPTH_LESS;
     glm::mat4 lightSpaceMatrix(1.0f);
     /*
     {
@@ -60,17 +67,23 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
     {
         PROFILE_SCOPE("ForwardPass::RenderScene")
         // Render scene
-        glCullFace(GL_BACK);
-        m_OutputFramebuffer->Bind();
-        glViewport(0, 0, m_OutputFramebuffer->GetWidth(), m_OutputFramebuffer->GetHeight());
+        rendererState.Flags |= RendererStateFlag::CULL_FACE_BACK;
+        rendererState.BoundWriteFramebuffer = m_OutputFramebuffer->GetId();
+        rendererState.WriteFramebufferWidth = m_OutputFramebuffer->GetWidth();
+        rendererState.WriteFramebufferHeight = m_OutputFramebuffer->GetHeight();
+        //glCullFace(GL_BACK);
+        //m_OutputFramebuffer->Bind();
+        //glViewport(0, 0, m_OutputFramebuffer->GetWidth(), m_OutputFramebuffer->GetHeight());
         const auto camera = dynamic_cast<CameraProxy*>(proxyManager.GetProxy(scene->GetCameraId()));
 
-        glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        m_PassShader->Bind();
+        commandBuffer.Submit({CommandType::CLEAR_COLOR_DEPTH_BUFFER, rendererState, 0});
+        //glClearColor(0.1f, 0.3f, 0.3f, 1.0f);
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        rendererState.BoundShader = m_PassShader->GetId();
+        //m_PassShader->Bind();
         glm::mat4 view = camera->GetView();
-        glm::mat4 projection = camera->GetProjection();
-        glm::mat4 viewProj = projection * view;
+        const glm::mat4 projection = camera->GetProjection();
+        const glm::mat4 viewProj = projection * view;
         const glm::vec3 viewPos = camera->GetPosition();
 
         // Set Shadowmap uniforms
@@ -125,41 +138,49 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
         for (const auto& sceneObjectMaterialProxy : proxyManager.GetSceneObjectsToRenderByMaterial(scene))
         {
             const auto materialProxy = dynamic_cast<MaterialProxy*>(proxyManager.GetProxy(sceneObjectMaterialProxy.first));
-            materialProxy->BindDiffuseTexture(0);
-            m_PassShader->SetTexture("diffuseTexture", 0);
+            rendererState.UsedMaterial = materialProxy->GetId(); 
+            //materialProxy->BindDiffuseTexture(0);
+            //m_PassShader->SetTexture("diffuseTexture", 0);
 
             if (materialProxy->HasNormalTexture())
             {
-                materialProxy->BindNormalTexture(1);
-                m_PassShader->SetTexture("normalTexture", 1);
+                //materialProxy->BindNormalTexture(1);
+                //m_PassShader->SetTexture("normalTexture", 1);
             }
             int setting = materialProxy->HasNormalTexture();
             m_UniformBuffers["SettingsBlock"]->BufferData(&setting, 4, 0);
             setting = hasShadowMap;
             m_UniformBuffers["SettingsBlock"]->BufferData(&setting, 4, 1);
 
-            materialProxy->BindMetallicTexture(2);
-            m_PassShader->SetTexture("metallicTexture", 2);
+            //materialProxy->BindMetallicTexture(2);
+            //m_PassShader->SetTexture("metallicTexture", 2);
 
-            materialProxy->BindRoughnessTexture(3);
-            m_PassShader->SetTexture("roughnessTexture", 3);
+            //materialProxy->BindRoughnessTexture(3);
+            //m_PassShader->SetTexture("roughnessTexture", 3);
 
-            materialProxy->BindAOTexture(4);
-            m_PassShader->SetTexture("aoTexture", 4);
+            //materialProxy->BindAOTexture(4);
+            //m_PassShader->SetTexture("aoTexture", 4);
 
-            materialProxy->BindEmissiveTexture(5);
-            m_PassShader->SetTexture("emissiveTexture", 5);
+            //materialProxy->BindEmissiveTexture(5);
+            //m_PassShader->SetTexture("emissiveTexture", 5);
 
             for (const auto& sceneObjectProxy : sceneObjectMaterialProxy.second)
             {
+                rendererState.BoundVertexArray = sceneObjectProxy->GetMeshProxy()->GetVertexArrayId();
                 m_UniformBuffers["MatricesBlock"]->BufferData(glm::value_ptr(sceneObjectProxy->GetModelMatrix()), sizeof(glm::mat4), 0);
-                sceneObjectProxy->Bind();
+                //sceneObjectProxy->Bind();
 
                 const auto meshProxy = sceneObjectProxy->GetMeshProxy();
+
                 if (meshProxy->GetIndexCount())
-                    glDrawElements(GL_TRIANGLES, meshProxy->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
+                    commandBuffer.Submit({CommandType::DRAW_INDEXED, rendererState, meshProxy->GetIndexCount()});
                 else
-                    glDrawArrays(GL_TRIANGLES, 0, meshProxy->GetVerticesCount());
+                    commandBuffer.Submit({CommandType::DRAW, rendererState, meshProxy->GetVerticesCount()});
+
+                //if (meshProxy->GetIndexCount())
+                //    glDrawElements(GL_TRIANGLES, meshProxy->GetIndexCount(), GL_UNSIGNED_INT, nullptr);
+                //else
+                //    glDrawArrays(GL_TRIANGLES, 0, meshProxy->GetVerticesCount());
             }
         }
 
@@ -168,7 +189,9 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
             const auto lightVisualizeShader = AssetManager::GetInstance().LoadShader(
                 "assets/shaders/lightcube.glsl", ShaderType::VERTEX_AND_FRAGMENT);
             lightVisualizeShader->Bind();
+            rendererState.BoundShader = lightVisualizeShader->GetId();
 
+            rendererState.BoundVertexArray = LightProxy::GetVertexArrayId();
             LightProxy::Bind();
             for (const uint32_t id : scene->GetSceneLightIds())
             {
@@ -179,6 +202,7 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
                                                                   sizeof(glm::mat4), 0);
                     lightVisualizeShader->SetVec3("lightColor", pointLightProxy->GetLightColor());
 
+                    commandBuffer.Submit({CommandType::DRAW, rendererState, LightProxy::GetVerticesCount()});
                     glDrawArrays(GL_TRIANGLES, 0, LightProxy::GetVerticesCount());
                 }
             }
@@ -189,6 +213,9 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
             const auto skyboxShader =
                 AssetManager::GetInstance().LoadShader("assets/shaders/skybox.glsl", ShaderType::VERTEX_AND_FRAGMENT);
             const auto skyboxProxy = dynamic_cast<SkyboxProxy*>(proxyManager.GetProxy(scene->GetSkyboxObjectId()));
+
+            rendererState.BoundShader = skyboxShader->GetId();
+
             if (skyboxProxy->HasAllTexturesSet())
             {
                 skyboxShader->Bind();
@@ -196,6 +223,10 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager)
                 skyboxShader->SetTexture("skybox", 0);
                 skyboxProxy->BindTexture(0);
 
+                rendererState.Flags &= ~RendererStateFlag::DEPTH_LESS;
+                rendererState.Flags |= RendererStateFlag::DEPTH_LEQUAL;
+                rendererState.BoundVertexArray = skyboxProxy->GetVertexArrayId();
+                commandBuffer.Submit({CommandType::DRAW, rendererState, 36});
                 glDepthFunc(GL_LEQUAL);
                 skyboxProxy->Bind();
                 glDrawArrays(GL_TRIANGLES, 0, 36);

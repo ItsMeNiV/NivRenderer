@@ -145,6 +145,8 @@ set(SRC_FILES
  "src/Application/Scene.h" "src/Application/Scene.cpp"
  "src/Rendering/OpenGL/Framebuffer.h" "src/Rendering/OpenGL/Framebuffer.cpp"
  "src/Rendering/OpenGL/Texture.h" "src/Rendering/OpenGL/Texture.cpp"
+ "src/Rendering/OpenGL/Buffer.h" "src/Rendering/OpenGL/Buffer.cpp"
+ "src/Rendering/OpenGL/OpenGLRenderer3D.h" "src/Rendering/OpenGL/OpenGLRenderer3D.cpp"
  "src/Rendering/RenderPipeline.cpp" "src/Rendering/RenderPipeline.h"
  "src/Rendering/RenderPass.h"
  "src/Rendering/RenderQueue.h"
@@ -158,8 +160,7 @@ set(SRC_FILES
  "src/Rendering/Proxy/TextureProxy.h" "src/Rendering/Proxy/TextureProxy.cpp"
  "src/Rendering/Proxy/MaterialProxy.h" "src/Rendering/Proxy/MaterialProxy.cpp"
  "src/Rendering/ForwardPipeline/ForwardPass.h"
- 
- "src/Rendering/ForwardPipeline/ForwardPass.cpp"   "src/Rendering/OpenGL/Buffer.h" "src/Rendering/OpenGL/Buffer.cpp")
+ "src/Rendering/ForwardPipeline/ForwardPass.cpp")
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp
