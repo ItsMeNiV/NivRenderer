@@ -4,12 +4,7 @@
 
 layout (location = 0) in vec3 vertPosition;
 
-layout (std140, binding = 0) uniform MatricesBlock
-{
-    mat4 model;
-    mat4 viewProjection;
-    mat4 lightSpaceMatrix;
-};
+#include "shareduniforms.glsl"
 
 void main()
 {

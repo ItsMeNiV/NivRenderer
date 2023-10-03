@@ -1,20 +1,23 @@
 #pragma once
 #include "Base.h"
+#include "OpenGL/Buffer.h"
 
 /*
     RenderCommand:
     ClearColor, ClearColorAndDepth, Draw, DrawIndexed, BlitFramebuffer
 
-    RenderState (size: 320 bit <-> 40 byte):
-    uint32_t    BoundVertexArray / In case of BlitFramebuffer BoundReadFramebuffer
-    uint32_t    BoundShader
-    uint32_t    BoundFramebuffer (0 means default Framebuffer for viewport we always use the Framebuffer's size) / In case of BlitFramebuffer BoundWriteFramebuffer
-    uint32_t    ReadFramebufferWidth
-    uint32_t    ReadFramebufferHeight
-    uint32_t    WriteFramebufferWidth
-    uint32_t    WriteFramebufferHeight
-    uint32_t    UsedMaterial
-    uint32_t[5] BoundUniformBuffers
+    RenderState (size: 3136 bit <-> 392 byte):
+    uint32_t BoundVertexArray / In case of BlitFramebuffer BoundReadFramebuffer
+    uint32_t BoundShader
+    uint32_t BoundWriteFramebuffer (0 means default Framebuffer for viewport we always use the Framebuffer's size) / In case of BlitFramebuffer BoundWriteFramebuffer
+    int32_t ReadFramebufferWidth
+    int32_t ReadFramebufferHeight
+    int32_t WriteFramebufferWidth
+    int32_t WriteFramebufferHeight
+    TextureUnit BoundTextures[32]
+    uint32_t BoundUniformBuffers[5]
+    UniformUnit BoundUniforms[5]
+    uint32_t Flags
 
     uint32_t flags: 1 = on, 0 = off
     bit-index-definition
@@ -75,6 +78,18 @@ struct TextureUnit
     int32_t UniformLocation = 0;
 };
 
+enum class UniformType
+{
+    INT, FLOAT, FLOAT2, FLOAT3, FLOAT3X3, FLOAT4X4
+};
+
+struct UniformUnit
+{
+    int32_t Location = -1;
+    UniformType Type = UniformType::INT;
+    void const* ValuePtr = nullptr;
+};
+
 struct RendererState
 {
     uint32_t BoundVertexArray = 0;
@@ -86,7 +101,22 @@ struct RendererState
     int32_t WriteFramebufferHeight = 0;
     TextureUnit BoundTextures[32];
     uint32_t BoundUniformBuffers[5] = {0, 0, 0, 0, 0};
+    UniformUnit BoundUniforms[5];
     uint32_t Flags = 0;
+
+    void SetReadFramebuffer(uint32_t framebufferId, int32_t width, int32_t height)
+    {
+        BoundVertexArray = framebufferId;
+        ReadFramebufferWidth = width;
+        ReadFramebufferHeight = height;
+    }
+
+    void SetWriteFramebuffer(uint32_t framebufferId, int32_t width, int32_t height)
+    {
+        BoundWriteFramebuffer = framebufferId;
+        WriteFramebufferWidth = width;
+        WriteFramebufferHeight = height;
+    }
 };
 
 struct RenderCommand

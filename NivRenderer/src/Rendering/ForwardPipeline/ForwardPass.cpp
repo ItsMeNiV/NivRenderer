@@ -64,23 +64,22 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
         PROFILE_SCOPE("ForwardPass::RenderScene")
         // Render scene
         rendererState.Flags |= RendererStateFlag::CULL_FACE_BACK;
-        rendererState.BoundWriteFramebuffer = m_OutputFramebuffer->GetId();
-        rendererState.WriteFramebufferWidth = m_OutputFramebuffer->GetWidth();
-        rendererState.WriteFramebufferHeight = m_OutputFramebuffer->GetHeight();
+        rendererState.SetWriteFramebuffer(m_OutputFramebuffer->GetId(), m_OutputFramebuffer->GetWidth(),
+                                          m_OutputFramebuffer->GetHeight());
         const auto camera = dynamic_cast<CameraProxy*>(proxyManager.GetProxy(scene->GetCameraId()));
 
         commandBuffer.Submit({CommandType::CLEAR_COLOR_DEPTH_BUFFER, rendererState, 0});
         rendererState.BoundShader = m_PassShader->GetId();
         glm::mat4 view = camera->GetView();
-        const glm::mat4 projection = camera->GetProjection();
+        glm::mat4 projection = camera->GetProjection();
         const glm::mat4 viewProj = projection * view;
         const glm::vec3 viewPos = camera->GetPosition();
 
         // Set Shadowmap uniforms
         const bool hasShadowMap = lightSpaceMatrix != glm::mat4(1.0f);
 
-        m_UniformBuffers["MatricesBlock"]->BufferData(glm::value_ptr(viewProj), sizeof(glm::mat4), 1);
-        m_UniformBuffers["MatricesBlock"]->BufferData(glm::value_ptr(lightSpaceMatrix), sizeof(glm::mat4), 2);
+        m_UniformBuffers["MatricesBlock"]->BufferData(glm::value_ptr(viewProj), sizeof(glm::mat4), 0);
+        m_UniformBuffers["MatricesBlock"]->BufferData(glm::value_ptr(lightSpaceMatrix), sizeof(glm::mat4), 1);
         if (hasShadowMap)
         {
             rendererState.BoundTextures[10] = {
@@ -162,7 +161,8 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
             for (const auto& sceneObjectProxy : sceneObjectMaterialProxy.second)
             {
                 rendererState.BoundVertexArray = sceneObjectProxy->GetMeshProxy()->GetVertexArrayId();
-                m_UniformBuffers["MatricesBlock"]->BufferData(glm::value_ptr(sceneObjectProxy->GetModelMatrix()), sizeof(glm::mat4), 0);
+                rendererState.BoundUniforms[0] = {m_PassShader->GetUniformLocation("model"), UniformType::FLOAT4X4,
+                                                  glm::value_ptr(sceneObjectProxy->GetModelMatrix())};
 
                 const auto meshProxy = sceneObjectProxy->GetMeshProxy();
 
@@ -187,9 +187,12 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
                 const auto pointLightProxy = dynamic_cast<PointLightProxy*>(proxyManager.GetProxy(id));
                 if (pointLightProxy)
                 {
-                    m_UniformBuffers["MatricesBlock"]->BufferData(glm::value_ptr(pointLightProxy->GetModelMatrix()),
-                                                                  sizeof(glm::mat4), 0);
-                    lightVisualizeShader->SetVec3("lightColor", pointLightProxy->GetLightColor());
+                    rendererState.BoundUniforms[0] = {lightVisualizeShader->GetUniformLocation("model"),
+                                                      UniformType::FLOAT4X4,
+                                                      glm::value_ptr(pointLightProxy->GetModelMatrix())};
+                    rendererState.BoundUniforms[1] = {lightVisualizeShader->GetUniformLocation("lightColor"),
+                                                      UniformType::FLOAT3,
+                                                      glm::value_ptr(pointLightProxy->GetLightColor())};
 
                     commandBuffer.Submit({CommandType::DRAW, rendererState, LightProxy::GetVerticesCount()});
                     glDrawArrays(GL_TRIANGLES, 0, LightProxy::GetVerticesCount());
@@ -208,7 +211,10 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
             if (skyboxProxy->HasAllTexturesSet())
             {
                 skyboxShader->Bind();
-                view = glm::mat4(glm::mat3(camera->GetView()));
+                rendererState.BoundUniforms[0] = {skyboxShader->GetUniformLocation("view"), UniformType::FLOAT4X4,
+                                                  glm::value_ptr(camera->GetView())};
+                rendererState.BoundUniforms[1] = {skyboxShader->GetUniformLocation("projection"), UniformType::FLOAT4X4,
+                                                  glm::value_ptr(camera->GetProjection())};
                 rendererState.BoundTextures[0] = {static_cast<int32_t>(skyboxProxy->GetTextureId()),
                     m_PassShader->GetUniformLocation("skybox")};
 

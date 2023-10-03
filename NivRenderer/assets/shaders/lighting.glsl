@@ -95,3 +95,5 @@ vec3 CalcPointLight(PointLight light, vec3 N, vec3 V, vec3 fragPos, vec3 albedo,
 
     return emissive + ((diffuseBRDF + specularBRDF) * lightIntensity * NdotL);
 }
+
+#define LIGHTING_USED

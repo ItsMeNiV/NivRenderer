@@ -51,7 +51,6 @@ Application::Application()
 
 	m_Renderer->SetActivePipeline(new RenderPipeline(renderPasses, postProcessingPasses, scene->GetSceneSettings().renderResolution.x, scene->GetSceneSettings().renderResolution.y));
     m_Renderer->GetActivePipeline()->CreateUniformBuffer("MatricesBlock",{
-    BufferElementType::FLOAT4X4, // mat4 model
     BufferElementType::FLOAT4X4, // mat4 viewProjection
     BufferElementType::FLOAT4X4}); // mat4 lightSpaceMatrix
 

@@ -39,7 +39,7 @@ public:
         }
     }
 
-    const glm::vec3& GetLightColor() const { return m_LightColor; }
+    glm::vec3& GetLightColor() { return m_LightColor; }
     glm::mat4& GetModelMatrix() { return m_ModelMatrix; }
     static uint32_t GetVerticesCount() { return m_VerticesCount; }
     static void Bind()

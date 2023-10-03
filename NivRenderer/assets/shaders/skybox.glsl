@@ -6,17 +6,14 @@ layout (location = 0) in vec3 vertPosition;
 
 out vec3 v_TextureCoords;
 
-layout (std140, binding = 0) uniform MatricesBlock
-{
-    uniform mat4 model;
-    uniform mat4 viewProjection;
-    uniform mat4 lightSpaceMatrix;
-};
+uniform mat4 view;
+uniform mat4 projection;
 
 void main()
 {
     v_TextureCoords = vertPosition;
-    vec4 pos = viewProjection * vec4(vertPosition, 1.0);
+    mat4 myView = mat4(mat3(view));
+    vec4 pos = projection * myView * vec4(vertPosition, 1.0);
     gl_Position = pos.xyww;
 }
 

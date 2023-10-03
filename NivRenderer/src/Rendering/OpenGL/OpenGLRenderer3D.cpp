@@ -86,6 +86,36 @@ void OpenGLRenderer3D::DrawFrame(const CommandBuffer& commandBuffer)
                     }
                 }
 
+                // Set Uniforms
+                for (uint32_t index = 0; index < 5; index++)
+                {
+                    const auto uniform = rendererState.BoundUniforms[index];
+                    if (uniform.Location == -1)
+                        continue;
+
+                    switch (uniform.Type)
+                    {
+                    case UniformType::INT:
+                        glUniform1iv(uniform.Location, 1, static_cast<const GLint*>(uniform.ValuePtr));
+                        break;
+                    case UniformType::FLOAT:
+                        glUniform1fv(uniform.Location, 1, static_cast<const GLfloat*>(uniform.ValuePtr));
+                        break;
+                    case UniformType::FLOAT2:
+                        glUniform2fv(uniform.Location, 1, static_cast<const GLfloat*>(uniform.ValuePtr));
+                        break;
+                    case UniformType::FLOAT3:
+                        glUniform3fv(uniform.Location, 1, static_cast<const GLfloat*>(uniform.ValuePtr));
+                        break;
+                    case UniformType::FLOAT3X3:
+                        glUniformMatrix3fv(uniform.Location, 1, GL_FALSE, static_cast<const GLfloat*>(uniform.ValuePtr));
+                        break;
+                    case UniformType::FLOAT4X4:
+                        glUniformMatrix4fv(uniform.Location, 1, GL_FALSE, static_cast<const GLfloat*>(uniform.ValuePtr));
+                        break;
+                    }
+                }
+
                 // 2. Execute draw
                 glBindVertexArray(rendererState.BoundVertexArray);
                 if (renderCommand.Type == CommandType::DRAW)

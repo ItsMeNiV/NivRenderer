@@ -16,12 +16,7 @@ out vec3 v_FragPos;
 out vec4 v_FragPosLightSpace;
 out mat3 v_TBN;
 
-layout (std140, binding = 0) uniform MatricesBlock
-{
-    mat4 model;
-    mat4 viewProjection;
-    mat4 lightSpaceMatrix;
-};
+#include "shareduniforms.glsl"
 
 void main()
 {
@@ -67,20 +62,7 @@ uniform sampler2D emissiveTexture;//  |
 
 uniform sampler2D shadowMap;
 
-layout (std140, binding = 1) uniform LightBlock
-{
-    bool hasDirectionalLight;
-    int amountPointLights;
-    vec3 viewPos;
-    DirectionalLight directionalLight;
-    PointLight pointLights[MAX_POINT_LIGHTS];
-};
-
-layout (std140, binding = 2) uniform SettingsBlock
-{
-    bool hasNormalTexture;
-    bool hasShadowMap;
-};
+#include "shareduniforms.glsl"
 
 bool calculateShadow(vec4 fragPosLightSpace);
 

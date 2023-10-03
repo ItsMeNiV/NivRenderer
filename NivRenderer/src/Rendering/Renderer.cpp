@@ -43,12 +43,11 @@ void Renderer::RenderScene() const
         CommandBuffer commandBuffer;
         const auto& outputFramebuffer = m_ActiveRenderPipeline->Run(m_Scene.get(), *m_ProxyManager, commandBuffer);
         RendererState rendererState;
-        rendererState.BoundVertexArray = outputFramebuffer.GetId();
-        rendererState.ReadFramebufferWidth = outputFramebuffer.GetWidth();
-        rendererState.ReadFramebufferHeight = outputFramebuffer.GetHeight();
-        rendererState.BoundWriteFramebuffer = m_ActiveWindow->GetFramebuffer()->GetId();
-        rendererState.WriteFramebufferWidth = m_ActiveWindow->GetFramebuffer()->GetWidth();
-        rendererState.WriteFramebufferHeight = m_ActiveWindow->GetFramebuffer()->GetHeight();
+        rendererState.SetReadFramebuffer(outputFramebuffer.GetId(), outputFramebuffer.GetWidth(),
+                                         outputFramebuffer.GetHeight());
+        rendererState.SetWriteFramebuffer(m_ActiveWindow->GetFramebuffer()->GetId(),
+                                          m_ActiveWindow->GetFramebuffer()->GetWidth(),
+                                          m_ActiveWindow->GetFramebuffer()->GetHeight());
         commandBuffer.Submit({CommandType::BLIT_FRAMEBUFFER, rendererState, 0});
         outputFramebuffer.BlitFramebuffer(m_ActiveWindow->GetFramebuffer()->GetId(),
                                           m_ActiveWindow->GetFramebuffer()->GetWidth(),
