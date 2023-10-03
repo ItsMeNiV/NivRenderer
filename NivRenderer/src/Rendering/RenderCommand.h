@@ -117,6 +117,12 @@ struct RendererState
         WriteFramebufferWidth = width;
         WriteFramebufferHeight = height;
     }
+
+    size_t GetHash() const
+    {
+        return std::hash<uint32_t>{}(BoundShader) | std::hash<uint32_t>{}(BoundVertexArray) |
+            std::hash<uint32_t>{}(Flags);
+    }
 };
 
 struct RenderCommand
@@ -124,6 +130,7 @@ struct RenderCommand
     CommandType Type;
     RendererState State;
     uint32_t VertexIndexCount;
+    size_t StateHash = State.GetHash();
 };
 
 constexpr size_t PRE_ALLOC_SIZE = 50;

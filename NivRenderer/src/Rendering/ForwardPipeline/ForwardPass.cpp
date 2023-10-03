@@ -70,10 +70,10 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
 
         commandBuffer.Submit({CommandType::CLEAR_COLOR_DEPTH_BUFFER, rendererState, 0});
         rendererState.BoundShader = m_PassShader->GetId();
-        glm::mat4 view = camera->GetView();
-        glm::mat4 projection = camera->GetProjection();
-        const glm::mat4 viewProj = projection * view;
-        const glm::vec3 viewPos = camera->GetPosition();
+        const auto& view = camera->GetView();
+        const auto& projection = camera->GetProjection();
+        const auto viewProj = projection * view;
+        const auto& viewPos = camera->GetPosition();
 
         // Set Shadowmap uniforms
         const bool hasShadowMap = lightSpaceMatrix != glm::mat4(1.0f);
@@ -107,11 +107,12 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
             }
             else if (pointLightProxy)
             {
-                constexpr size_t pointLightBase = 5;
-                const size_t pointLightOffset = 3 * pointLightIndex;
-                uint32_t lightStrength = pointLightProxy->GetLightStrength();
                 if (pointLightProxy->GetDirtyFlag())
                 {
+                    constexpr size_t pointLightBase = 5;
+                    const size_t pointLightOffset = 3 * pointLightIndex;
+                    uint32_t lightStrength = pointLightProxy->GetLightStrength();
+
                     m_UniformBuffers["LightBlock"]->BufferData(glm::value_ptr(pointLightProxy->GetLightPosition()), sizeof(glm::vec3), pointLightBase + pointLightOffset);
                     m_UniformBuffers["LightBlock"]->BufferData(glm::value_ptr(pointLightProxy->GetLightColor()), sizeof(glm::vec3), pointLightBase + pointLightOffset + 1);
                     m_UniformBuffers["LightBlock"]->BufferData(&lightStrength, sizeof(uint32_t), pointLightBase + pointLightOffset + 2);
@@ -195,7 +196,6 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
                                                       glm::value_ptr(pointLightProxy->GetLightColor())};
 
                     commandBuffer.Submit({CommandType::DRAW, rendererState, LightProxy::GetVerticesCount()});
-                    glDrawArrays(GL_TRIANGLES, 0, LightProxy::GetVerticesCount());
                 }
             }
         }
@@ -222,10 +222,6 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
                 rendererState.Flags |= RendererStateFlag::DEPTH_LEQUAL;
                 rendererState.BoundVertexArray = skyboxProxy->GetVertexArrayId();
                 commandBuffer.Submit({CommandType::DRAW, rendererState, 36});
-                glDepthFunc(GL_LEQUAL);
-                skyboxProxy->Bind();
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-                glDepthFunc(GL_LESS);
             }
         }
     }
