@@ -67,7 +67,7 @@ TextureAsset* AssetManager::LoadTexture(std::string& path, bool flipVertical, bo
     {
         loadOnlyOneChannel = true;
         channelIndex = std::stoi(path.substr(path.find_last_of('@') + 1, path.size()));
-        pathToUse = path.substr(0, path.find_last_of('@') - 1);
+        pathToUse = path.substr(0, path.find_last_of('@') - 1) + path.substr(path.find_last_of('@') + 2, path.size());
     }
 
     m_LoadedTextureAssets[path] = CreateScope<TextureAsset>(IdManager::GetInstance().CreateNewId(), pathToUse,
@@ -464,8 +464,11 @@ void AssetManager::processNode(const aiNode* node, const aiScene* scene, std::ve
 
 MeshAsset* AssetManager::processMesh(aiMesh* mesh, const aiScene* scene, const std::string& path)
 {
-    std::vector<MeshVertex> vertices;
-    std::vector<uint32_t> indices;
+    std::string meshPath = path + '@' + mesh->mName.C_Str();
+    m_LoadedMeshAssets[meshPath] = CreateScope<MeshAsset>(IdManager::GetInstance().CreateNewId(), meshPath);
+
+    auto& vertices = m_LoadedMeshAssets[meshPath]->GetVertices();
+    auto& indices = m_LoadedMeshAssets[meshPath]->GetIndices();
 
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
@@ -515,8 +518,6 @@ MeshAsset* AssetManager::processMesh(aiMesh* mesh, const aiScene* scene, const s
     }
 
     // return a MeshAsset created from the extracted mesh data
-    std::string meshPath = path + '@' + mesh->mName.C_Str();
-    m_LoadedMeshAssets[meshPath] = CreateScope<MeshAsset>(IdManager::GetInstance().CreateNewId(), meshPath, vertices, indices);
     return m_LoadedMeshAssets[meshPath].get();
 }
 

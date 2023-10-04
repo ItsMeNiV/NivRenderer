@@ -10,12 +10,12 @@ const std::string& MeshAsset::GetPath()
     return m_Path;
 }
 
-const std::vector<MeshVertex>& MeshAsset::GetVertices() const
+std::vector<MeshVertex>& MeshAsset::GetVertices()
 {
     return m_Vertices;
 }
 
-const std::vector<uint32_t>& MeshAsset::GetIndices() const
+std::vector<uint32_t>& MeshAsset::GetIndices()
 {
     return m_Indices;
 }

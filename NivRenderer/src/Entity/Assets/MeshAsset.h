@@ -23,8 +23,8 @@ public:
 
     uint32_t GetId() const;
     const std::string& GetPath();
-    const std::vector<MeshVertex>& GetVertices() const;
-    const std::vector<uint32_t>& GetIndices() const;
+    std::vector<MeshVertex>& GetVertices();
+    std::vector<uint32_t>& GetIndices();
 
     std::vector<std::pair<std::string, Property>> GetAssetProperties()
     {
