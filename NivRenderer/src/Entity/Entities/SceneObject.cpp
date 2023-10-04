@@ -44,9 +44,9 @@ std::vector<std::pair<std::string, Property>> SceneObject::GetEntityProperties()
     return returnVector;
 }
 
-ordered_json SceneObject::SerializeObject()
+nlohmann::ordered_json SceneObject::SerializeObject()
 {
-    ordered_json object = {
+    nlohmann::ordered_json object = {
         {"Id", m_EntityId},
         {"Name", m_EntityName},
         {"ModelPath", m_ModelPath}
@@ -55,7 +55,7 @@ ordered_json SceneObject::SerializeObject()
     const auto components = ECSRegistry::GetInstance().GetAllComponents(m_EntityId);
     if(!components.empty())
     {
-        object["Components"] = json::array();
+        object["Components"] = nlohmann::json::array();
         uint32_t i = 0;
         for (const auto& component : components)
         {
@@ -67,7 +67,7 @@ ordered_json SceneObject::SerializeObject()
     const auto& childEntities = GetChildEntities();
     if (!childEntities.empty())
     {
-        object["ChildEntities"] = json::array();
+        object["ChildEntities"] = nlohmann::json::array();
         uint32_t i = 0;
         for (auto& child : GetChildEntities())
         {
@@ -79,14 +79,14 @@ ordered_json SceneObject::SerializeObject()
     return object;
 }
 
-void SceneObject::DeSerializeObject(json jsonObject)
+void SceneObject::DeSerializeObject(nlohmann::json jsonObject)
 {
     m_EntityName = jsonObject["Name"];
     m_ModelPath = jsonObject["ModelPath"];
 
     if (jsonObject.contains("Components"))
     {
-        for (json component : jsonObject["Components"])
+        for (nlohmann::json component : jsonObject["Components"])
         {
             IdManager::GetInstance().SetNextId(component["Id"]);
             if (component["Type"] == "TransformComponent")
@@ -109,12 +109,11 @@ void SceneObject::DeSerializeObject(json jsonObject)
 
     if (jsonObject.contains("ChildEntities"))
     {
-        for (json childEntity : jsonObject["ChildEntities"])
+        for (nlohmann::json childEntity : jsonObject["ChildEntities"])
         {
             IdManager::GetInstance().SetNextId(childEntity["Id"]);
             auto childObject = ECSRegistry::GetInstance().CreateEntity<SceneObject>(GetId());
             childObject->DeSerializeObject(childEntity);
-            AddChildEntity(childObject);
         }   
     }
 }

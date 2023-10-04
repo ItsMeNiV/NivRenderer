@@ -1,5 +1,6 @@
 #pragma once
 #include "Base.h"
+#include "json.hpp"
 #include "Entity/Entity.h"
 
 class LightObject : public Entity
@@ -11,6 +12,9 @@ public:
 
 	void SetLightColor(glm::vec3& color) { m_LightColor = color; }
 	glm::vec3& GetLightColor() { return m_LightColor; }
+
+    virtual nlohmann::ordered_json SerializeObject() = 0;
+    virtual void DeSerializeObject(nlohmann::json jsonObject) = 0;
 
 protected:
 	glm::vec3 m_LightColor;
@@ -37,9 +41,9 @@ public:
         return returnVector;
     }
 
-	ordered_json SerializeObject() override
+    nlohmann::ordered_json SerializeObject()
 	{
-        ordered_json object = {
+        nlohmann::ordered_json object = {
 			{"Id", m_EntityId},
             {"Name", m_EntityName},
 			{"Type", "DirectionalLight"},
@@ -50,7 +54,7 @@ public:
 	    return object;
 	}
 
-    void DeSerializeObject(json jsonObject) override
+    void DeSerializeObject(nlohmann::json jsonObject)
 	{
         m_EntityName = jsonObject["Name"];
         m_LightColor = {jsonObject["LightColor"]["r"], jsonObject["LightColor"]["g"], jsonObject["LightColor"]["b"]};
@@ -84,9 +88,9 @@ public:
         return returnVector;
     }
 
-	ordered_json SerializeObject() override
+    nlohmann::ordered_json SerializeObject()
     {
-        ordered_json object = {
+        nlohmann::ordered_json object = {
             {"Id", m_EntityId},
             {"Name", m_EntityName},
             {"Type", "PointLight"},
@@ -98,7 +102,7 @@ public:
         return object;
     }
 
-    void DeSerializeObject(json jsonObject) override
+    void DeSerializeObject(nlohmann::json jsonObject)
     {
 	    m_EntityName = jsonObject["Name"];
         m_LightColor = {jsonObject["LightColor"]["r"], jsonObject["LightColor"]["g"], jsonObject["LightColor"]["b"]};

@@ -1,7 +1,7 @@
 #pragma once
 #include "Base.h"
-#include "Entity/Asset.h"
 #include "Entity/PropertyType.h"
+#include "json.hpp"
 
 struct MeshVertex
 {
@@ -12,30 +12,31 @@ struct MeshVertex
     glm::vec3 Bitangent;
 };
 
-class MeshAsset : public Asset
+class MeshAsset
 {
 public:
     MeshAsset(const uint32_t id, const std::string& path, const std::vector<MeshVertex>& vertices, const std::vector<uint32_t>& indices) :
-        Asset(id), m_Path(path), m_Vertices(vertices), m_Indices(indices)
+        m_Id(id), m_Path(path), m_Vertices(vertices), m_Indices(indices)
     {}
-    MeshAsset(const uint32_t id, const std::string& path) :
-        Asset(id), m_Path(path)
+    MeshAsset(const uint32_t id, const std::string& path) : m_Id(id), m_Path(path)
     {}
 
+    uint32_t GetId() const;
     const std::string& GetPath();
     const std::vector<MeshVertex>& GetVertices() const;
     const std::vector<uint32_t>& GetIndices() const;
 
-    std::vector<std::pair<std::string, Property>> GetAssetProperties() override
+    std::vector<std::pair<std::string, Property>> GetAssetProperties()
     {
         std::vector<std::pair<std::string, Property>> returnVector;
         return returnVector;
     }
 
-    ordered_json SerializeObject() override;
-    void DeSerializeObject(json jsonObject) override;
+    nlohmann::ordered_json SerializeObject();
+    void DeSerializeObject(nlohmann::json jsonObject);
 
 private:
+    uint32_t m_Id;
     std::string m_Path;
     std::vector<MeshVertex> m_Vertices;
     std::vector<uint32_t> m_Indices;

@@ -6,6 +6,7 @@
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
+#include "json.hpp"
 
 struct SubModel
 {
@@ -22,10 +23,10 @@ struct Model
     std::string name;
     std::vector<SubModel> subModels;
 
-    ordered_json SerializeObject();
-    void DeserializeObject(json jsonObject);
-    static ordered_json addSubModelJson(std::vector<SubModel>& subModels);
-    static std::vector<SubModel>&& deserializeSubModels(json subModelsJsonArr);
+    nlohmann::ordered_json SerializeObject();
+    void DeserializeObject(nlohmann::json jsonObject);
+    static nlohmann::ordered_json addSubModelJson(std::vector<SubModel>& subModels);
+    static std::vector<SubModel>&& deserializeSubModels(nlohmann::json subModelsJsonArr);
 };
 
 class AssetManager
@@ -42,7 +43,7 @@ public:
 
     MeshAsset* LoadMesh(const std::string& path);
     MeshAsset* GetMesh(const uint32_t id);
-    TextureAsset* LoadTexture(const std::string& path, bool flipVertical, bool loadOnlyOneChannel = false, int channelIndex = 0);
+    TextureAsset* LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel = false, int channelIndex = 0);
     void ReloadTexture(TextureAsset* textureAsset);
     TextureAsset* GetTexture(const uint32_t id);
     Shader* LoadShader(const std::string& path, ShaderType shaderType);

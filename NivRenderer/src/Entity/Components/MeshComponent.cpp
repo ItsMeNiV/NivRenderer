@@ -30,9 +30,9 @@ std::vector<std::pair<std::string, Property>> MeshComponent::GetComponentPropert
     return returnVector;
 }
 
-ordered_json MeshComponent::SerializeObject()
+nlohmann::ordered_json MeshComponent::SerializeObject()
 {
-    ordered_json component = {
+    nlohmann::ordered_json component = {
         {"Id", GetId()},
         {"Type", "MeshComponent"},
         {"Name", GetName()},
@@ -43,7 +43,7 @@ ordered_json MeshComponent::SerializeObject()
     return component;
 }
 
-void MeshComponent::DeSerializeObject(json jsonObject)
+void MeshComponent::DeSerializeObject(nlohmann::json jsonObject)
 {
     m_Path = jsonObject["Path"];
     m_MeshAsset = AssetManager::GetInstance().GetMesh(jsonObject["MeshAssetId"]);

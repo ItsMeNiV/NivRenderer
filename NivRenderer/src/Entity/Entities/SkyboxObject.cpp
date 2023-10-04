@@ -87,9 +87,9 @@ std::vector<std::pair<std::string, Property>> SkyboxObject::GetEntityProperties(
     return returnVector;
 }
 
-ordered_json SkyboxObject::SerializeObject()
+nlohmann::ordered_json SkyboxObject::SerializeObject()
 {
-    ordered_json object = {
+    nlohmann::ordered_json object = {
         {"Id", m_EntityId},
         {"Name", m_EntityName},
         {"TextureFolder", m_TextureFolder},
@@ -98,7 +98,7 @@ ordered_json SkyboxObject::SerializeObject()
 
     if (!m_TextureAssets.empty())
     {
-        object["TextureAssets"] = json::array();
+        object["TextureAssets"] = nlohmann::json::array();
         uint32_t i = 0;
         for (const auto& asset : m_TextureAssets)
         {
@@ -109,7 +109,7 @@ ordered_json SkyboxObject::SerializeObject()
 
     if (!m_TexturePaths.empty())
     {
-        object["TexturePaths"] = json::array();
+        object["TexturePaths"] = nlohmann::json::array();
         uint32_t i = 0;
         for (const auto& path : m_TexturePaths)
         {
@@ -121,7 +121,7 @@ ordered_json SkyboxObject::SerializeObject()
     return object;
 }
 
-void SkyboxObject::DeSerializeObject(json jsonObject)
+void SkyboxObject::DeSerializeObject(nlohmann::json jsonObject)
 {
     m_EntityName = jsonObject["Name"];
     m_TextureFolder = jsonObject["TextureFolder"];

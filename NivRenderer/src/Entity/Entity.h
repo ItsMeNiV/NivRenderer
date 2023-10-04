@@ -2,9 +2,8 @@
 #include "Base.h"
 #include "Component.h"
 #include "PropertyType.h"
-#include "Application/Serialization/Serializable.h"
 
-class Entity : public Serializable
+class Entity
 {
 public:
     virtual ~Entity() = default;
@@ -25,6 +24,7 @@ public:
 	}
 
 	virtual std::vector<std::pair<std::string, Property>> GetEntityProperties() = 0;
+    virtual nlohmann::ordered_json SerializeObject() = 0;
 
     uint32_t GetId() const { return m_EntityId; }
 	std::string* GetEntityName() { return &m_EntityName; }

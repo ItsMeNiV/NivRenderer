@@ -1,5 +1,10 @@
 #include "Entity/Assets/MeshAsset.h"
 
+uint32_t MeshAsset::GetId() const
+{
+    return m_Id;
+}
+
 const std::string& MeshAsset::GetPath()
 {
     return m_Path;
@@ -15,14 +20,14 @@ const std::vector<uint32_t>& MeshAsset::GetIndices() const
     return m_Indices;
 }
 
-ordered_json MeshAsset::SerializeObject()
+nlohmann::ordered_json MeshAsset::SerializeObject()
 {
-    ordered_json mesh = {
+    nlohmann::ordered_json mesh = {
         {"Id", GetId()},
         {"InternalPath", m_Path},
     };
 
-    mesh["Vertices"] = json::array();
+    mesh["Vertices"] = nlohmann::json::array();
     uint32_t i = 0;
     for (auto& v : m_Vertices)
     {
@@ -41,13 +46,13 @@ ordered_json MeshAsset::SerializeObject()
     return mesh;
 }
 
-void MeshAsset::DeSerializeObject(json jsonObject)
+void MeshAsset::DeSerializeObject(nlohmann::json jsonObject)
 {
     {
         const std::vector<uint32_t> indices = jsonObject["Indices"];
         m_Indices = indices;
     }
-    for (json vertex : jsonObject["Vertices"])
+    for (nlohmann::json vertex : jsonObject["Vertices"])
     {
         MeshVertex vert;
         vert.Position = {vertex["Position"]["x"], vertex["Position"]["y"], vertex["Position"]["z"]};

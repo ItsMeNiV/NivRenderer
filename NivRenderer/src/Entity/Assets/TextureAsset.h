@@ -1,15 +1,16 @@
 #pragma once
 #include "Base.h"
-#include "Entity/Asset.h"
 #include "Entity/PropertyType.h"
+#include "json.hpp"
 
-class TextureAsset : public Asset
+class TextureAsset
 {
 public:
     TextureAsset(const uint32_t id, const std::string& path, bool flipVertical, bool loadOnlyOneChannel, int channelIndex);
 
     ~TextureAsset();
 
+    uint32_t GetId() const;
     unsigned char* GetTextureData() const;
     void SetTextureData(const unsigned char* const textureData);
     const bool& GetFlipVertical() const;
@@ -24,12 +25,13 @@ public:
     void UnloadData();
     void ReloadData();
 
-    std::vector<std::pair<std::string, Property>> GetAssetProperties() override;
+    std::vector<std::pair<std::string, Property>> GetAssetProperties();
 
-    ordered_json SerializeObject() override;
-    void DeSerializeObject(json jsonObject) override;
+    nlohmann::ordered_json SerializeObject();
+    void DeSerializeObject(nlohmann::json jsonObject);
 
 private:
+    uint32_t m_Id;
     unsigned char* m_TextureData;
     bool m_FlipVertical, m_LoadOnlyOneChannel;
     int m_Width, m_Height, m_NrComponents, m_ChannelIndex;

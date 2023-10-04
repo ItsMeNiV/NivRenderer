@@ -3,6 +3,7 @@
 #include <ranges>
 
 #include "IdManager.h"
+#include "json.hpp"
 #include "stb_image.h"
 #include "stb_image_resize.h"
 
@@ -47,26 +48,31 @@ MeshAsset* AssetManager::GetMesh(const uint32_t id)
     return nullptr;
 }
 
-TextureAsset* AssetManager::LoadTexture(const std::string& path, bool flipVertical, bool loadOnlyOneChannel, int channelIndex)
+TextureAsset* AssetManager::LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel, int channelIndex)
 {
-    std::string keyPath = path;
     if (loadOnlyOneChannel)
     {
         std::string fileName = path.substr(0, path.find_last_of('.'));
         const std::string fileEnding = path.substr(path.find_last_of('.'), path.size());
         fileName += "_@" + std::to_string(channelIndex);
-        keyPath = fileName + fileEnding;
+        path = fileName + fileEnding;
     }
 
-    const bool textureExists = m_LoadedTextureAssets.contains(keyPath);
-    if (textureExists && m_LoadedTextureAssets[keyPath]->GetFlipVertical() == flipVertical)
-        return m_LoadedTextureAssets[keyPath].get();
+    const bool textureExists = m_LoadedTextureAssets.contains(path);
+    if (textureExists && m_LoadedTextureAssets[path]->GetFlipVertical() == flipVertical)
+        return m_LoadedTextureAssets[path].get();
 
-    std::string pathToUse = textureExists ? m_LoadedTextureAssets[keyPath]->GetPath() : path;
+    std::string pathToUse = path;
+    if (path.find_last_of('@') != std::string::npos)
+    {
+        loadOnlyOneChannel = true;
+        channelIndex = std::stoi(path.substr(path.find_last_of('@') + 1, path.size()));
+        pathToUse = path.substr(0, path.find_last_of('@') - 1);
+    }
 
-    m_LoadedTextureAssets[keyPath] = CreateScope<TextureAsset>(IdManager::GetInstance().CreateNewId(), pathToUse,
+    m_LoadedTextureAssets[path] = CreateScope<TextureAsset>(IdManager::GetInstance().CreateNewId(), pathToUse,
                                                                flipVertical, loadOnlyOneChannel, channelIndex);
-    const auto textureAsset = m_LoadedTextureAssets[keyPath].get();
+    const auto textureAsset = m_LoadedTextureAssets[path].get();
 
     stbi_set_flip_vertically_on_load(textureAsset->GetFlipVertical());
 
@@ -604,9 +610,9 @@ void AssetManager::processMaterials(const aiScene* scene, SubModel& subModel, co
     subModel.material = materialAsset;
 }
 
-ordered_json Model::SerializeObject()
+nlohmann::ordered_json Model::SerializeObject()
 {
-    ordered_json model = {
+    nlohmann::ordered_json model = {
         {"Name", name},
         {"SubModels", addSubModelJson(subModels)}
     };
@@ -614,16 +620,16 @@ ordered_json Model::SerializeObject()
     return model;
 }
 
-void Model::DeserializeObject(json jsonObject)
+void Model::DeserializeObject(nlohmann::json jsonObject)
 {
     name = jsonObject["Name"];
     subModels = deserializeSubModels(jsonObject["SubModels"]);
 }
 
-std::vector<SubModel>&& Model::deserializeSubModels(json subModelsJsonArr)
+std::vector<SubModel>&& Model::deserializeSubModels(nlohmann::json subModelsJsonArr)
 {
     std::vector<SubModel> returnVector;
-    for (json subModelJson : subModelsJsonArr)
+    for (nlohmann::json subModelJson : subModelsJsonArr)
     {
         SubModel subModel;
         subModel.name = subModelJson["Name"];
@@ -663,9 +669,9 @@ std::vector<SubModel>&& Model::deserializeSubModels(json subModelsJsonArr)
     return std::move(returnVector);
 }
 
-ordered_json Model::addSubModelJson(std::vector<SubModel>& subModels)
+nlohmann::ordered_json Model::addSubModelJson(std::vector<SubModel>& subModels)
 {
-    ordered_json subModelsArray = json::array();
+    nlohmann::ordered_json subModelsArray = nlohmann::json::array();
 
     uint32_t i = 0;
     for (auto& subModel : subModels)
@@ -692,10 +698,10 @@ ordered_json Model::addSubModelJson(std::vector<SubModel>& subModels)
             subModelsArray[i]["MeshAssetId"] = subModel.mesh->GetId();
         if (subModel.material)
             subModelsArray[i]["MaterialAssetId"] = subModel.material->GetId();
-        ordered_json nextSubModels = addSubModelJson(subModel.subModels);
+        nlohmann::ordered_json nextSubModels = addSubModelJson(subModel.subModels);
         if (!nextSubModels.empty())
         {
-            subModelsArray[i]["SubModels"] = json::array();
+            subModelsArray[i]["SubModels"] = nlohmann::json::array();
             subModelsArray[i]["SubModels"] = nextSubModels;
         }
 

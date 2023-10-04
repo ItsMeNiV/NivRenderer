@@ -14,8 +14,8 @@ public:
     MaterialAsset* GetMaterialAsset() const { return m_MaterialAsset; }
     void SetMaterialAsset(MaterialAsset* asset) { m_MaterialAsset = asset; }
 
-    ordered_json SerializeObject() override;
-    void DeSerializeObject(json jsonObject) override;
+    nlohmann::ordered_json SerializeObject() override;
+    void DeSerializeObject(nlohmann::json jsonObject);
 
 private:
     MaterialAsset* m_MaterialAsset;

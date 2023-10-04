@@ -21,8 +21,8 @@ public:
 	void SetCameraPtr(Camera* cameraPtr) { m_CameraPtr = cameraPtr; }
     Camera* GetCameraPtr() const { return m_CameraPtr; }
 
-    ordered_json SerializeObject() override { return {}; }
-    void DeSerializeObject(json jsonObject) override {}
+    nlohmann::ordered_json SerializeObject() { return {}; }
+    void DeSerializeObject(nlohmann::json jsonObject) {}
 
 private:
 	Camera* m_CameraPtr;

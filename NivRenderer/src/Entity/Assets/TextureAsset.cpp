@@ -3,7 +3,7 @@
 #include "AssetManager.h"
 
 TextureAsset::TextureAsset(const uint32_t id, const std::string& path, bool flipVertical, bool loadOnlyOneChannel, int channelIndex) :
-    Asset(id), m_TextureData(nullptr), m_FlipVertical(flipVertical), m_LoadOnlyOneChannel(loadOnlyOneChannel), m_Width(0),
+    m_Id(id), m_TextureData(nullptr), m_FlipVertical(flipVertical), m_LoadOnlyOneChannel(loadOnlyOneChannel), m_Width(0),
     m_Height(0), m_NrComponents(0), m_ChannelIndex(channelIndex), m_Path(path), m_IsUnloaded(true)
 {
 }
@@ -14,6 +14,11 @@ TextureAsset::~TextureAsset()
         delete[] m_TextureData;
 }
 
+uint32_t TextureAsset::GetId() const
+{
+    return m_Id;
+}
+
 unsigned char* TextureAsset::GetTextureData() const
 {
     return m_TextureData;
@@ -21,7 +26,8 @@ unsigned char* TextureAsset::GetTextureData() const
 
 void TextureAsset::SetTextureData(const unsigned char* const textureData)
 {
-    delete[] m_TextureData;
+    if (!m_IsUnloaded)
+        delete[] m_TextureData;
     const size_t dataSize = sizeof(unsigned char) * m_Width * m_Height * m_NrComponents;
     m_TextureData = new unsigned char[dataSize];
     memcpy(m_TextureData, textureData, dataSize);
@@ -87,10 +93,10 @@ std::vector<std::pair<std::string, Property>> TextureAsset::GetAssetProperties()
     return returnVector;
 }
 
-ordered_json TextureAsset::SerializeObject()
+nlohmann::ordered_json TextureAsset::SerializeObject()
 {
-    ordered_json texture = {
-        {"Id", GetId()},
+    nlohmann::ordered_json texture = {
+        {"Id", m_Id},
         {"InternalPath", m_Path},
         {"FlipVertical", m_FlipVertical},
         {"Width", m_Width},
@@ -100,31 +106,15 @@ ordered_json TextureAsset::SerializeObject()
         {"ChannelIndex", m_ChannelIndex}
     };
 
-    if (m_IsUnloaded)
-        ReloadData();
-
-    texture["TextureData"] = json::array_t();
-    auto textureData = texture["TextureData"];
-    const uint32_t dataSize = m_Width * m_Height * m_NrComponents;
-    std::vector<unsigned char> data(dataSize);
-    memcpy(data.data(), m_TextureData, dataSize);
-    texture["TextureData"] = data;
-
-    UnloadData();
-
     return texture;
 }
 
-void TextureAsset::DeSerializeObject(json jsonObject)
+void TextureAsset::DeSerializeObject(nlohmann::json jsonObject)
 {
     m_Width = jsonObject["Width"];
     m_Height = jsonObject["Height"];
     m_NrComponents = jsonObject["NrComponents"];
     m_LoadOnlyOneChannel = jsonObject["LoadOnlyOneChannel"];
     m_ChannelIndex = jsonObject["ChannelIndex"];
-    const std::vector<unsigned char> data = jsonObject["TextureData"];
-    delete[] m_TextureData;
-    const size_t dataSize = sizeof(unsigned char) * m_Width * m_Height * m_NrComponents;
-    m_TextureData = new unsigned char[dataSize];
-    memcpy(m_TextureData, data.data(), dataSize);
+    ReloadData();
 }

@@ -1,15 +1,16 @@
 #pragma once
 #include "Base.h"
 #include "Entity/PropertyType.h"
-#include "Entity/Asset.h"
 #include "Entity/Assets/TextureAsset.h"
+#include "json.hpp"
 
-class MaterialAsset : public Asset
+class MaterialAsset
 {
 public:
     MaterialAsset(uint32_t id, const std::string& name);
-    ~MaterialAsset() override = default;
+    ~MaterialAsset() = default;
 
+    uint32_t GetId() const { return m_Id; }
     std::string& GetName() { return m_Name; }
     bool GetDirtyFlag() const { return m_DirtyFlag; }
     void SetDirtyFlag(bool dirtyFlag) { m_DirtyFlag = dirtyFlag; }
@@ -33,12 +34,13 @@ public:
     bool& GetFlipAOTexture() { return m_FlipAOTexture; }
     bool& GetFlipEmissiveTexture() { return m_FlipEmissiveTexture; }
 
-    std::vector<std::pair<std::string, Property>> GetAssetProperties() override;
+    std::vector<std::pair<std::string, Property>> GetAssetProperties();
 
-    ordered_json SerializeObject() override;
-    void DeSerializeObject(json jsonObject) override;
+    nlohmann::ordered_json SerializeObject();
+    void DeSerializeObject(nlohmann::json jsonObject);
 
 private:
+    uint32_t m_Id;
     std::string m_Name;
     bool m_DirtyFlag;
 

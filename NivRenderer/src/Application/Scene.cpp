@@ -151,8 +151,9 @@ std::vector<std::pair<std::string, Property>> Scene::GetEntityProperties()
     return returnVector;
 }
 
-ordered_json Scene::SerializeObject()
+nlohmann::ordered_json Scene::SerializeObject()
 {
+    using namespace nlohmann;
     ordered_json scene;
     scene["SceneSettings"] = {
         {"VisualizeLights", m_SceneSettings.visualizeLights},
@@ -224,8 +225,9 @@ ordered_json Scene::SerializeObject()
     return scene;
 }
 
-void Scene::DeSerializeObject(json jsonObject)
+void Scene::DeSerializeObject(nlohmann::json jsonObject)
 {
+    using namespace nlohmann;
     json sceneSettings = jsonObject["SceneSettings"];
     m_SceneSettings.visualizeLights = sceneSettings["VisualizeLights"];
     m_SceneSettings.animateDirectionalLight = sceneSettings["AnimateDirectionalLight"];

@@ -129,12 +129,14 @@ void Application::handleWindowCommand(WindowCommandEvent command)
 	if (command.GetCommand() == WindowCommand::RecompileShaders)
 		m_Renderer->GetActivePipeline()->RecompileShaders();
     if (command.GetCommand() == WindowCommand::SaveScene)
-        SerializationManager::SaveSceneToFile("default.json", m_Renderer->GetScene());
+        SerializationManager::SaveSceneToFile(m_Renderer->GetScene());
     if (command.GetCommand() == WindowCommand::LoadScene)
     {
-        Scene* newScene = SerializationManager::LoadSceneFromFile("default.json");
-        newScene->AddCamera(m_Window->GetCamera());
-        m_Renderer->SetScene(newScene);
+        if (Scene* newScene = SerializationManager::LoadSceneFromFile())
+        {
+            newScene->AddCamera(m_Window->GetCamera());
+            m_Renderer->SetScene(newScene);   
+        }
     }
 }
 

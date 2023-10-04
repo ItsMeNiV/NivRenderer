@@ -17,9 +17,9 @@ std::vector<std::pair<std::string, Property>> MaterialComponent::GetComponentPro
     return returnVector;
 }
 
-ordered_json MaterialComponent::SerializeObject()
+nlohmann::ordered_json MaterialComponent::SerializeObject()
 {
-    ordered_json component = {
+    nlohmann::ordered_json component = {
         {"Id", GetId()},
         {"Type", "MaterialComponent"},
         {"Name", GetName()},
@@ -29,7 +29,7 @@ ordered_json MaterialComponent::SerializeObject()
     return component;
 }
 
-void MaterialComponent::DeSerializeObject(json jsonObject)
+void MaterialComponent::DeSerializeObject(nlohmann::json jsonObject)
 {
     m_MaterialAsset = AssetManager::GetInstance().GetMaterial(static_cast<uint32_t>(jsonObject["MaterialAssetId"]));
 }

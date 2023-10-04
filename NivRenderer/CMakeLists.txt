@@ -106,6 +106,7 @@ set(INCLUDE_DIRS
 "vendor/ImGuizmo"
 "vendor/assimp/include"
 "vendor/json/include/nlohmann"
+"vendor/portable-file-dialogs"
 )
 
 set(SRC_FILES
@@ -114,7 +115,6 @@ set(SRC_FILES
  "src/NivRenderer.cpp" "src/NivRenderer.h"
  "src/Application/Event.h"
  "src/Application/Input.h"
- "src/Application/Serialization/Serializable.h"
  "src/Application/Serialization/SerializationManager.h" "src/Application/Serialization/SerializationManager.cpp"
  "src/Application/Util/Instrumentor.h"
  "src/Application/Util/Math.h"
@@ -129,7 +129,7 @@ set(SRC_FILES
  "src/Entity/Entity.h"
  "src/Entity/Component.h"
  "src/Entity/PropertyType.h"
- "src/Entity/Asset.h"
+ 
  "src/Entity/Assets/AssetManager.h" "src/Entity/Assets/AssetManager.cpp"
  "src/Entity/Assets/MeshAsset.h" "src/Entity/Assets/MeshAsset.cpp"
  "src/Entity/Assets/TextureAsset.h" "src/Entity/Assets/TextureAsset.cpp"

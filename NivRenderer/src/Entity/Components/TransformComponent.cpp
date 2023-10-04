@@ -28,9 +28,9 @@ glm::vec3& TransformComponent::GetScale() { return m_Scale; }
 
 glm::vec3& TransformComponent::GetRotation() { return m_Rotation; }
 
-ordered_json TransformComponent::SerializeObject()
+nlohmann::ordered_json TransformComponent::SerializeObject()
 {
-    ordered_json component = {
+    nlohmann::ordered_json component = {
         {"Id", GetId()},
         {"Type", "TransformComponent"},
         {"Name", GetName()},
@@ -43,7 +43,7 @@ ordered_json TransformComponent::SerializeObject()
     return component;
 }
 
-void TransformComponent::DeSerializeObject(json jsonObject)
+void TransformComponent::DeSerializeObject(nlohmann::json jsonObject)
 {
     m_Position = {jsonObject["Position"]["x"], jsonObject["Position"]["y"], jsonObject["Position"]["z"]};
     m_Scale = {jsonObject["Scale"]["x"], jsonObject["Scale"]["y"], jsonObject["Scale"]["z"]};

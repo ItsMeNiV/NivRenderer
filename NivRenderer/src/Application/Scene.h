@@ -4,7 +4,7 @@
 #include "Entity/Entities/LightObject.h"
 #include "Entity/Entities/CameraObject.h"
 #include "Entity/Entities/SkyboxObject.h"
-#include "Application/Serialization/Serializable.h"
+#include "nlohmann/json.hpp"
 
 struct SceneSettings
 {
@@ -17,7 +17,7 @@ struct SceneSettings
     uint32_t sampleCount;
 };
 
-class Scene : public Serializable
+class Scene
 {
 public:
     Scene();
@@ -47,8 +47,8 @@ public:
 
     std::vector<std::pair<std::string, Property>> GetEntityProperties();
 
-    ordered_json SerializeObject() override;
-    void DeSerializeObject(json jsonObject) override;
+    nlohmann::ordered_json SerializeObject();
+    void DeSerializeObject(nlohmann::json jsonObject);
 
 private:
     uint32_t m_Id;
