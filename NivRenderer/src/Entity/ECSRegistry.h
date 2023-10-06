@@ -18,7 +18,7 @@ public:
 	}
 
 	void RemoveEntity(const uint32_t entityId);
-    void ClearRegistry();
+    void Reset();
     void RemoveComponent(const uint32_t entityId, const uint32_t componentId);
     std::vector<Component*> GetAllComponents(const uint32_t entityId);
 

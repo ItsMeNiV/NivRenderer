@@ -4,7 +4,7 @@
 #include "Rendering/OpenGL/OpenGLRenderer3D.h"
 
 Renderer::Renderer(Window* window)
-	: m_ActiveWindow(window), m_Scene(CreateScope<Scene>()), m_ActiveRenderPipeline(nullptr), m_ProxyManager(CreateScope<ProxyManager>())
+	: m_ActiveWindow(window), m_Scene(nullptr), m_ActiveRenderPipeline(nullptr), m_ProxyManager(CreateScope<ProxyManager>())
 {
 	window->CreateRenderContext();
 }
@@ -32,7 +32,7 @@ void Renderer::PrepareFrame() const
     if (m_Scene->GetSceneSettings().animateDirectionalLight)
         AnimateDirectionalLight();
 
-    m_ProxyManager->UpdateProxies(m_Scene.get());
+    m_ProxyManager->UpdateProxies(m_Scene);
 }
 
 void Renderer::RenderScene() const
@@ -41,7 +41,7 @@ void Renderer::RenderScene() const
     if (m_Scene)
     {
         CommandBuffer commandBuffer;
-        const auto& outputFramebuffer = m_ActiveRenderPipeline->Run(m_Scene.get(), *m_ProxyManager, commandBuffer);
+        const auto& outputFramebuffer = m_ActiveRenderPipeline->Run(m_Scene, *m_ProxyManager, commandBuffer);
         RendererState rendererState;
         rendererState.SetReadFramebuffer(outputFramebuffer.GetId(), outputFramebuffer.GetWidth(),
                                          outputFramebuffer.GetHeight());
@@ -49,9 +49,6 @@ void Renderer::RenderScene() const
                                           m_ActiveWindow->GetFramebuffer()->GetWidth(),
                                           m_ActiveWindow->GetFramebuffer()->GetHeight());
         commandBuffer.Submit({CommandType::BLIT_FRAMEBUFFER, rendererState, 0});
-        outputFramebuffer.BlitFramebuffer(m_ActiveWindow->GetFramebuffer()->GetId(),
-                                          m_ActiveWindow->GetFramebuffer()->GetWidth(),
-                                          m_ActiveWindow->GetFramebuffer()->GetHeight());
         OpenGLRenderer3D::DrawFrame(commandBuffer);
     }
 

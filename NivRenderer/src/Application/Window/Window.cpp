@@ -188,10 +188,12 @@ void Window::RenderImGui(Scene* scene)
 		{
             if (ImGui::MenuItem("Recompile Shaders", nullptr) && m_CommandHandlerCallback)
                 m_WindowCommandStack.push(WindowCommand::RecompileShaders);
-            if (ImGui::MenuItem("Save Scene", nullptr) && m_CommandHandlerCallback)
-                m_WindowCommandStack.push(WindowCommand::SaveScene);
-            if (ImGui::MenuItem("Load Scene", nullptr) && m_CommandHandlerCallback)
-                m_WindowCommandStack.push(WindowCommand::LoadScene);
+            if (ImGui::MenuItem("Save Project", nullptr) && m_CommandHandlerCallback)
+                m_WindowCommandStack.push(WindowCommand::SaveProject);
+            if (ImGui::MenuItem("Save Project As...", nullptr) && m_CommandHandlerCallback)
+                m_WindowCommandStack.push(WindowCommand::SaveProjectAs);
+            if (ImGui::MenuItem("Load Project", nullptr) && m_CommandHandlerCallback)
+                m_WindowCommandStack.push(WindowCommand::LoadProject);
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();

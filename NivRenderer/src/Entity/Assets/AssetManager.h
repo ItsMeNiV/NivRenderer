@@ -41,9 +41,11 @@ public:
         return instance;
     }
 
+    void Reset();
+
     MeshAsset* LoadMesh(const std::string& path);
     MeshAsset* GetMesh(const uint32_t id);
-    TextureAsset* LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel = false, int channelIndex = 0);
+    TextureAsset* LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel = false, uint32_t channelIndex = 0);
     void ReloadTexture(TextureAsset* textureAsset);
     TextureAsset* GetTexture(const uint32_t id);
     Shader* LoadShader(const std::string& path, ShaderType shaderType);
@@ -76,6 +78,7 @@ private:
     std::unordered_map<std::string, Scope<Model>> m_LoadedModels;
     std::unordered_map<uint32_t, Scope<MaterialAsset>> m_LoadedMaterialAssets;
 
+    TextureAsset* LoadTextureInternal(std::string& path, bool flipVertical, uint32_t assignedId, bool loadOnlyOneChannel = false, uint32_t channelIndex = 0);
     void importTexture(TextureAsset* textureAsset);
     void loadDefaultMeshAndTextures();
     void processNode(const aiNode* node, const aiScene* scene, std::vector<SubModel>& subModels, const std::string& path);

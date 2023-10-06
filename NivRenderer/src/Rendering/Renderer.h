@@ -13,8 +13,8 @@ public:
 	void PrepareFrame() const;
 	void RenderScene() const;
 
-	Scene* GetScene() const { return m_Scene.get(); }
-	void SetScene(Scene* scene) { m_Scene.reset(scene); }
+	Scene* GetScene() const { return m_Scene; }
+	void SetScene(Scene* scene) { m_Scene = scene; }
 	void SetActivePipeline(RenderPipeline* renderPipeline) { m_ActiveRenderPipeline.reset(renderPipeline); }
 
 	RenderPipeline* GetActivePipeline() const { return m_ActiveRenderPipeline.get(); }
@@ -23,7 +23,7 @@ public:
 
 private:
 	Window* m_ActiveWindow;
-	Scope<Scene> m_Scene;
+	Scene* m_Scene;
 	Scope<RenderPipeline> m_ActiveRenderPipeline;
 	Scope<ProxyManager> m_ProxyManager;
 };

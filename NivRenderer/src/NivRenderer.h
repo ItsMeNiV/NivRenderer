@@ -2,7 +2,7 @@
 #include "Base.h"
 #include "Application/Window/Window.h"
 #include "Rendering/Renderer.h"
-#include "Application/Scene.h"
+#include "Application/Project.h"
 
 class Application
 {
@@ -14,6 +14,7 @@ public:
 private:
 	Scope<Window> m_Window;
 	Scope<Renderer> m_Renderer;
+    Scope<Project> m_Project;
 
 	void handleWindowCommand(WindowCommandEvent command);
 	void setupDefaultScene() const;

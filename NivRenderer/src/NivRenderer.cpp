@@ -1,11 +1,10 @@
 ﻿#include "NivRenderer.h"
 
 #include "Entity/ECSRegistry.h"
-#include "Entity/Entities/SceneObject.h"
-#include "Entity/Components/TransformComponent.h"
 #include "Rendering/ForwardPipeline/ForwardPass.h"
 #include "Application/Util/Instrumentor.h"
 #include "Application/Serialization/SerializationManager.h"
+#include "Application/Scene.h"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
@@ -31,13 +30,14 @@ int main()
 	delete app;
 }
 
-Application::Application()
-	: m_Window(CreateScope<Window>(1600, 900, "NivRenderer"))
+Application::Application() :
+    m_Window(CreateScope<Window>(1600, 900, "NivRenderer")), m_Project(CreateScope<Project>(""))
 {
 	m_Window->SetCommandHandler([&](WindowCommandEvent command) { handleWindowCommand(command); });
 
 	m_Renderer = CreateScope<Renderer>(m_Window.get());
-    Scene* scene = m_Renderer->GetScene();
+    Scene* scene = m_Project->GetActiveScene();
+    m_Renderer->SetScene(scene);
 
 	setupDefaultScene();
 
@@ -128,14 +128,18 @@ void Application::handleWindowCommand(WindowCommandEvent command)
 {
 	if (command.GetCommand() == WindowCommand::RecompileShaders)
 		m_Renderer->GetActivePipeline()->RecompileShaders();
-    if (command.GetCommand() == WindowCommand::SaveScene)
-        SerializationManager::SaveSceneToFile(m_Renderer->GetScene());
-    if (command.GetCommand() == WindowCommand::LoadScene)
+    if (command.GetCommand() == WindowCommand::SaveProject)
+        SerializationManager::SaveProject(m_Project.get(), true);
+    if (command.GetCommand() == WindowCommand::SaveProjectAs)
+        SerializationManager::SaveProject(m_Project.get(), false);
+    if (command.GetCommand() == WindowCommand::LoadProject)
     {
-        if (Scene* newScene = SerializationManager::LoadSceneFromFile())
+        if(Project* project = SerializationManager::LoadProject())
         {
-            newScene->AddCamera(m_Window->GetCamera());
-            m_Renderer->SetScene(newScene);   
+            m_Project.reset(project);
+            m_Window->CreateCameraAndController(m_Project->GetActiveScene()->GetSceneSettings().renderResolution);
+            m_Project->GetActiveScene()->AddCamera(m_Window->GetCamera());
+            m_Renderer->SetScene(m_Project->GetActiveScene());
         }
     }
 }

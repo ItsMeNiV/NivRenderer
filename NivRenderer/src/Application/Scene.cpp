@@ -1,5 +1,6 @@
 #include "Scene.h"
 
+#include "IdManager.h"
 #include "Entity/ECSRegistry.h"
 #include "Entity/Components/TransformComponent.h"
 #include "Entity/Components/MeshComponent.h"

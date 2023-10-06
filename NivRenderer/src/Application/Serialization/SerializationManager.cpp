@@ -2,25 +2,29 @@
 #include "Entity/ECSRegistry.h"
 #include "portable-file-dialogs.h"
 
-void SerializationManager::SaveSceneToFile(Scene* const scene)
+void SerializationManager::SaveProject(Project* const project, bool saveOnSetPath)
 {
-    auto destination = pfd::save_file("Save Scene", ".", {"NivRenderer Project", "*.nivproj"}).result();
-    if (!destination.empty())
+    std::string savePath = project->GetPath();
+    if (savePath.empty() || !saveOnSetPath)
     {
-        const std::string fileEnding =
-            destination.find_last_of('.') == std::string::npos ? "" : destination.substr(destination.find_last_of('.'), destination.size());
-        if (fileEnding != ".nivproj")
-            destination += ".nivproj";
-        std::ofstream oStream(destination);
-        const nlohmann::ordered_json sceneJson = scene->SerializeObject();
-        oStream << sceneJson;
-        oStream.close();   
+        savePath = pfd::save_file("Save Scene", ".", {"NivRenderer Project", "*.nivproj"}).result();
+        project->SetPath(savePath);
     }
+
+    const std::string fileEnding = savePath.find_last_of('.') == std::string::npos
+        ? ""
+        : savePath.substr(savePath.find_last_of('.'), savePath.size());
+    if (fileEnding != ".nivproj")
+        savePath += ".nivproj";
+    std::ofstream oStream(savePath);
+    const nlohmann::ordered_json projectJson = project->SerializeObject();
+    oStream << projectJson;
+    oStream.close();
 }
 
-Scene* SerializationManager::LoadSceneFromFile()
+Project* SerializationManager::LoadProject()
 {
-    const auto paths = pfd::open_file("Load Scene", ".", {"NivRenderer Project", "*.nivproj"}).result();
+    const auto paths = pfd::open_file("Load Project", ".", {"NivRenderer Project", "*.nivproj"}).result();
     if (!paths.empty())
     {
         std::ifstream iStream(paths[0]);
@@ -28,10 +32,9 @@ Scene* SerializationManager::LoadSceneFromFile()
 
         iStream >> fileJson;
 
-        ECSRegistry::GetInstance().ClearRegistry();
-        Scene* scene = new Scene();
-        scene->DeSerializeObject(fileJson);
-        return scene;
+        const auto project = new Project(paths[0]);
+        project->DeSerializeObject(fileJson);
+        return project;
     }
 
     return nullptr;

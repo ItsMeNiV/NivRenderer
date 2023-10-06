@@ -4,8 +4,9 @@
 enum WindowCommand
 {
     RecompileShaders,
-    SaveScene,
-    LoadScene
+    SaveProject,
+    SaveProjectAs,
+    LoadProject
 };
 
 class WindowCommandEvent : public Event

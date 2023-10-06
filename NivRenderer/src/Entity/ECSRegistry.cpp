@@ -5,7 +5,7 @@ void ECSRegistry::RemoveEntity(const uint32_t entityId)
     doRemoveEntity(entityId, true);
 }
 
-void ECSRegistry::ClearRegistry()
+void ECSRegistry::Reset()
 {
     m_Entities.clear();
     m_Components.clear();

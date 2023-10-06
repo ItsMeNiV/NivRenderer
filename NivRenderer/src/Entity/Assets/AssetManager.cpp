@@ -13,6 +13,16 @@ AssetManager::AssetManager()
     loadDefaultMeshAndTextures();
 }
 
+void AssetManager::Reset()
+{
+    m_LoadedMeshAssets.clear();
+    m_LoadedTextureAssets.clear();
+    m_LoadedModels.clear();
+    m_LoadedMaterialAssets.clear();
+    m_Importer = CreateScope<Assimp::Importer>();
+    loadDefaultMeshAndTextures();
+}
+
 MeshAsset* AssetManager::LoadMesh(const std::string& path)
 {
     if (m_LoadedMeshAssets.contains(path))
@@ -48,7 +58,7 @@ MeshAsset* AssetManager::GetMesh(const uint32_t id)
     return nullptr;
 }
 
-TextureAsset* AssetManager::LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel, int channelIndex)
+TextureAsset* AssetManager::LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel, uint32_t channelIndex)
 {
     if (loadOnlyOneChannel)
     {
@@ -70,7 +80,8 @@ TextureAsset* AssetManager::LoadTexture(std::string& path, bool flipVertical, bo
         pathToUse = path.substr(0, path.find_last_of('@') - 1) + path.substr(path.find_last_of('@') + 2, path.size());
     }
 
-    m_LoadedTextureAssets[path] = CreateScope<TextureAsset>(IdManager::GetInstance().CreateNewId(), pathToUse,
+    m_LoadedTextureAssets[path] = CreateScope<TextureAsset>(IdManager::GetInstance().CreateNewId(),
+                                                            pathToUse,
                                                                flipVertical, loadOnlyOneChannel, channelIndex);
     const auto textureAsset = m_LoadedTextureAssets[path].get();
 
@@ -269,6 +280,40 @@ void AssetManager::AddModel(const std::string& path, Scope<Model>&& model)
     m_LoadedModels[path] = std::move(model);
 }
 
+TextureAsset* AssetManager::LoadTextureInternal(std::string& path, bool flipVertical, uint32_t assignedId,
+    bool loadOnlyOneChannel, uint32_t channelIndex)
+{
+    if (loadOnlyOneChannel)
+    {
+        std::string fileName = path.substr(0, path.find_last_of('.'));
+        const std::string fileEnding = path.substr(path.find_last_of('.'), path.size());
+        fileName += "_@" + std::to_string(channelIndex);
+        path = fileName + fileEnding;
+    }
+
+    const bool textureExists = m_LoadedTextureAssets.contains(path);
+    if (textureExists && m_LoadedTextureAssets[path]->GetFlipVertical() == flipVertical)
+        return m_LoadedTextureAssets[path].get();
+
+    std::string pathToUse = path;
+    if (path.find_last_of('@') != std::string::npos)
+    {
+        loadOnlyOneChannel = true;
+        channelIndex = std::stoi(path.substr(path.find_last_of('@') + 1, path.size()));
+        pathToUse = path.substr(0, path.find_last_of('@') - 1) + path.substr(path.find_last_of('@') + 2, path.size());
+    }
+
+    m_LoadedTextureAssets[path] = CreateScope<TextureAsset>(assignedId, pathToUse,
+                                                            flipVertical, loadOnlyOneChannel, channelIndex);
+    const auto textureAsset = m_LoadedTextureAssets[path].get();
+
+    stbi_set_flip_vertically_on_load(textureAsset->GetFlipVertical());
+
+    importTexture(textureAsset);
+
+    return textureAsset;
+}
+
 void AssetManager::importTexture(TextureAsset* textureAsset)
 {
     const std::string pathToUse = textureAsset->GetPath();
@@ -405,31 +450,29 @@ void AssetManager::loadDefaultMeshAndTextures()
     std::vector<uint32_t> defaultIndices;
 
     const std::string defaultMeshPath = std::string("default");
-    m_LoadedMeshAssets[defaultMeshPath] =
-        CreateScope<MeshAsset>(IdManager::GetInstance().CreateNewId(), defaultMeshPath, defaultVertices, defaultIndices);
+    m_LoadedMeshAssets[defaultMeshPath] = CreateScope<MeshAsset>(0, defaultMeshPath, defaultVertices, defaultIndices);
 
     //Default "Prototype" Texture
     std::string defaultTexturePath("assets/textures/default.png");
-    const auto defaultTextureAsset = LoadTexture(defaultTexturePath, false);
+    const auto defaultTextureAsset = LoadTextureInternal(defaultTexturePath, false, 1);
     auto nodeHandle = m_LoadedTextureAssets.extract("assets/textures/default.png");
     nodeHandle.key() = "default";
     m_LoadedTextureAssets.insert(std::move(nodeHandle));
-    const uint32_t defaultMaterialId = IdManager::GetInstance().CreateNewId();
-    m_LoadedMaterialAssets[defaultMaterialId] = CreateScope<MaterialAsset>(defaultMaterialId, "Default");
-    const auto defaultMaterial = m_LoadedMaterialAssets[defaultMaterialId].get();
+    m_LoadedMaterialAssets[2] = CreateScope<MaterialAsset>(2, "Default");
+    const auto defaultMaterial = m_LoadedMaterialAssets[2].get();
     defaultMaterial->GetDiffusePath() = "default";
     *defaultMaterial->GetDiffuseTextureAsset() = defaultTextureAsset;
  
     //White 1x1 Texture
     std::string whiteTexturePath("assets/textures/default_white.png");
-    const auto whiteTextureAsset = LoadTexture(whiteTexturePath, false);
+    const auto whiteTextureAsset = LoadTextureInternal(whiteTexturePath, false, 3);
     auto nodeHandleWhite = m_LoadedTextureAssets.extract("assets/textures/default_white.png");
     nodeHandleWhite.key() = "white";
     m_LoadedTextureAssets.insert(std::move(nodeHandleWhite));
 
     //Black 1x1 Texture
     std::string blackTexturePath("assets/textures/default_black.png");
-    const auto blackTextureAsset = LoadTexture(blackTexturePath, false);
+    const auto blackTextureAsset = LoadTextureInternal(blackTexturePath, false, 4);
     auto nodeHandleBlack = m_LoadedTextureAssets.extract("assets/textures/default_black.png");
     nodeHandleBlack.key() = "black";
     m_LoadedTextureAssets.insert(std::move(nodeHandleBlack));
