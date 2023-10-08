@@ -6,6 +6,7 @@
 
 #include "imgui.h"
 #include "misc/cpp/imgui_stdlib.h"
+#include "portable-file-dialogs.h"
 
 struct InputTextCallback_UserData
 {
@@ -84,6 +85,18 @@ bool displayProperty(std::pair<std::string, Property>& property, std::string& na
                 *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
                 property.second.callback();
                 wasEdited = true;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Open File"))
+            {
+                const auto paths = pfd::open_file("Open File", ".").result();
+                if (!paths.empty())
+                {
+                    *inputString = paths[0];
+                    *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                    property.second.callback();
+                    wasEdited = true;
+                }
             }
             ImGui::PopID();
             ImGui::Spacing();
