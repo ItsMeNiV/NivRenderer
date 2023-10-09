@@ -22,3 +22,6 @@
 [submodule "NivRenderer/vendor/json"]
 	path = NivRenderer/vendor/json
 	url = https://github.com/nlohmann/json.git
+[submodule "NivRenderer/vendor/entt"]
+	path = NivRenderer/vendor/entt
+	url = https://github.com/skypjack/entt.git
