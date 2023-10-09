@@ -107,6 +107,7 @@ set(INCLUDE_DIRS
 "vendor/assimp/include"
 "vendor/json/include/nlohmann"
 "vendor/portable-file-dialogs"
+"vendor/entt/single_include"
 )
 
 set(SRC_FILES
@@ -160,7 +161,7 @@ set(SRC_FILES
  "src/Rendering/Proxy/TextureProxy.h" "src/Rendering/Proxy/TextureProxy.cpp"
  "src/Rendering/Proxy/MaterialProxy.h" "src/Rendering/Proxy/MaterialProxy.cpp"
  "src/Rendering/ForwardPipeline/ForwardPass.h"
- "src/Rendering/ForwardPipeline/ForwardPass.cpp" "src/Application/Project.h" "src/Entity/NewECSRegistry.h" "src/Application/Project.cpp" "src/Entity/NewEcsRegistry.cpp")
+ "src/Rendering/ForwardPipeline/ForwardPass.cpp" "src/Application/Project.h" "src/Entity/NewECSRegistry.h" "src/Application/Project.cpp" "src/Entity/NewEcsRegistry.cpp" "src/Entity/NewEntity.h" "src/Entity/Components.h" "src/Application/NewScene.h" "src/Application/NewScene.cpp")
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp
