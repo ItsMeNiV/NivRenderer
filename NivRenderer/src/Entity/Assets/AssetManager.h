@@ -5,7 +5,6 @@
 #include "Entity/Assets/TextureAsset.h"
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
-#include "assimp/postprocess.h"
 #include "json.hpp"
 
 struct SubModel

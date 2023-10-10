@@ -12,7 +12,7 @@ MaterialAsset::MaterialAsset(uint32_t id, const std::string& name) :
 {
 }
 
-void MaterialAsset::reloadDiffuseTexture()
+void MaterialAsset::ReloadDiffuseTexture()
 {
     if (m_DiffusePath.empty())
         return;
@@ -21,7 +21,7 @@ void MaterialAsset::reloadDiffuseTexture()
     m_DirtyFlag = true;
 }
 
-void MaterialAsset::reloadNormalTexture()
+void MaterialAsset::ReloadNormalTexture()
 {
     if (m_NormalPath.empty())
         return;
@@ -30,7 +30,7 @@ void MaterialAsset::reloadNormalTexture()
     m_DirtyFlag = true;
 }
 
-void MaterialAsset::reloadMetallicTexture()
+void MaterialAsset::ReloadMetallicTexture()
 {
     if (m_MetallicPath.empty())
         return;
@@ -39,7 +39,7 @@ void MaterialAsset::reloadMetallicTexture()
     m_DirtyFlag = true;
 }
 
-void MaterialAsset::reloadRoughnessTexture()
+void MaterialAsset::ReloadRoughnessTexture()
 {
     if (m_RoughnessPath.empty())
         return;
@@ -48,7 +48,7 @@ void MaterialAsset::reloadRoughnessTexture()
     m_DirtyFlag = true;
 }
 
-void MaterialAsset::reloadAOTexture()
+void MaterialAsset::ReloadAOTexture()
 {
     if (m_AOPath.empty())
         return;
@@ -57,46 +57,13 @@ void MaterialAsset::reloadAOTexture()
     m_DirtyFlag = true;
 }
 
-void MaterialAsset::reloadEmissiveTexture()
+void MaterialAsset::ReloadEmissiveTexture()
 {
     if (m_EmissivePath.empty())
         return;
 
     m_EmissiveTextureAsset = AssetManager::GetInstance().LoadTexture(m_EmissivePath, m_FlipEmissiveTexture);
     m_DirtyFlag = true;
-}
-
-std::vector<std::pair<std::string, Property>> MaterialAsset::GetAssetProperties()
-{
-    std::vector<std::pair<std::string, Property>> returnVector;
-
-    returnVector.push_back({"Name", {PropertyType::STRING, &m_Name, [](){}}});
-
-    returnVector.push_back({"Diffuse", {PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
-    returnVector.push_back({"Diffuse Path", {PropertyType::PATH, &m_DiffusePath, [this]() { reloadDiffuseTexture(); }}});
-    returnVector.push_back({"Flip Diffuse Texture", {PropertyType::BOOL, &m_FlipDiffuseTexture, []() {}}});
-
-    returnVector.push_back({"Normal", {PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
-    returnVector.push_back({"Normal Path", {PropertyType::PATH, &m_NormalPath, [this]() { reloadNormalTexture(); }}});
-    returnVector.push_back({"Flip Normal Texture", {PropertyType::BOOL, &m_FlipNormalTexture, []() {}}});
-
-    returnVector.push_back({"Metallic", {PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
-    returnVector.push_back({"Metallic Path", {PropertyType::PATH, &m_MetallicPath, [this]() { reloadMetallicTexture(); }}});
-    returnVector.push_back({"Flip Metallic Texture", {PropertyType::BOOL, &m_FlipMetallicTexture, []() {}}});
-
-    returnVector.push_back({"Roughness", {PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
-    returnVector.push_back({"Roughness Path", {PropertyType::PATH, &m_RoughnessPath, [this]() { reloadRoughnessTexture(); }}});
-    returnVector.push_back({"Flip Roughness Texture", {PropertyType::BOOL, &m_FlipRoughnessTexture, []() {}}});
-
-    returnVector.push_back({"AO", {PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
-    returnVector.push_back({"AO Path", {PropertyType::PATH, &m_AOPath, [this]() { reloadAOTexture(); }}});
-    returnVector.push_back({"Flip AO Texture", {PropertyType::BOOL, &m_FlipAOTexture, []() {}}});
-
-    returnVector.push_back({"Emissive", {PropertyType::SEPARATORTEXT, nullptr, [this]() {}}});
-    returnVector.push_back({"Emissive Path", {PropertyType::PATH, &m_EmissivePath, [this]() { reloadEmissiveTexture(); }}});
-    returnVector.push_back({"Flip Emissive Texture", {PropertyType::BOOL, &m_FlipEmissiveTexture, []() {}}});
-
-    return returnVector;
 }
 
 nlohmann::ordered_json MaterialAsset::SerializeObject()

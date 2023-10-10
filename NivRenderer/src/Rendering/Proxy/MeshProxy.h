@@ -1,7 +1,7 @@
 #pragma once
 #include "Base.h"
 #include "Rendering/Proxy/Proxy.h"
-#include "Entity/Components/MeshComponent.h"
+#include "Entity/Components.h"
 
 class MeshProxy : public Proxy
 {
@@ -9,7 +9,7 @@ public:
     MeshProxy(uint32_t id);
     ~MeshProxy() override;
 
-    void CreateBuffers(const MeshComponent* const mesh);
+    void CreateBuffers(const NewComponents::MeshComponent* const mesh);
 
     void Bind() const;
     static void Unbind();

@@ -1,6 +1,5 @@
 #pragma once
 #include "Base.h"
-#include "Entity/PropertyType.h"
 #include "json.hpp"
 
 struct MeshVertex
@@ -25,12 +24,6 @@ public:
     const std::string& GetPath();
     std::vector<MeshVertex>& GetVertices();
     std::vector<uint32_t>& GetIndices();
-
-    std::vector<std::pair<std::string, Property>> GetAssetProperties()
-    {
-        std::vector<std::pair<std::string, Property>> returnVector;
-        return returnVector;
-    }
 
     nlohmann::ordered_json SerializeObject();
     void DeSerializeObject(nlohmann::json jsonObject);

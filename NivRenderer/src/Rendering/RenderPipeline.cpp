@@ -5,7 +5,7 @@ RenderPipeline::RenderPipeline(std::vector<Scope<RenderPass>>& renderPasses, std
 {
 }
 
-Framebuffer& RenderPipeline::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& commandBuffer)
+Framebuffer& RenderPipeline::Run(NewScene* scene, ProxyManager& proxyManager, CommandBuffer& commandBuffer)
 {
     if (!m_OutputFramebuffer)
     {

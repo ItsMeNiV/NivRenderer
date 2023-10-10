@@ -2,6 +2,8 @@
 #include "OpenGLStarter.h"
 #include "nlohmann/json.hpp"
 
+struct SubModel;
+
 struct NewSceneSettings
 {
     bool visualizeLights;
@@ -37,19 +39,26 @@ public:
     uint32_t AddPointLight();
     uint32_t AddSkybox();
     static uint32_t AddMaterialAsset();
-
     uint32_t AddCamera(Camera* cameraPtr);
+
+    void LoadModel(uint32_t sceneObjectId);
+    void SetSkyboxTexturePathsFromFolder();
+    void LoadSkyboxTextures() const;
 
     const uint32_t GetId() const { return m_Id; }
     const std::vector<uint32_t>& GetSceneObjectIds() const { return m_SceneObjectIds; }
+    const std::vector<SceneHierarchyElement>& GetSceneHierarchy() const { return m_SceneHierarchy; }
     const uint32_t GetDirectionalLightId() const { return m_DirectionalLightId; }
     const std::vector<uint32_t>& GetPointLightIds() const { return m_PointLightIds; }
     const uint32_t GetSkyboxObjectId() const { return m_SkyboxId; }
     const std::vector<uint32_t>& GetCameraIds() const { return m_CameraIds; }
     const uint32_t GetActiveCameraId() const { return m_ActiveCameraId; }
+    void SetActiveCamera(uint32_t cameraId) { m_ActiveCameraId = cameraId; }
     NewSceneSettings& GetSceneSettings() { return m_SceneSettings; }
     const bool HasDirectionalLight() const { return m_HasDirectionalLight; }
     const bool HasSkybox() const { return m_HasSkybox; }
+
+    SceneHierarchyElement* GetSceneHierarchyElementById(uint32_t id);
 
     nlohmann::ordered_json SerializeObject();
     void DeSerializeObject(nlohmann::json jsonObject);
@@ -66,4 +75,6 @@ private:
     NewSceneSettings m_SceneSettings;
     bool m_HasDirectionalLight;
     bool m_HasSkybox;
+
+    void createChildSceneObjectFromSubModel(const SubModel& subModel, const uint32_t parentId);
 };

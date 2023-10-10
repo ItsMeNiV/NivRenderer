@@ -1,28 +1,33 @@
 #include "Project.h"
 
-#include "Entity/ECSRegistry.h"
+#include "IdManager.h"
+#include "Entity/NewECSRegistry.h"
+#include "Entity/Assets/AssetManager.h"
 
 Project::Project(const std::string& projectPath) : m_Path(projectPath)
 {
     IdManager::GetInstance().Reset();
-    ECSRegistry::GetInstance().Reset();
+    NewECSRegistry::GetInstance().Reset();
     AssetManager::GetInstance().Reset();
 
     if (projectPath.empty())
         m_ActiveScene = CreateScene();
 }
 
-Scene* Project::CreateScene()
+NewScene* Project::CreateScene()
 {
-    Scope<Scene> newScene = CreateScope<Scene>();
-    Scene* scenePtr = newScene.get();
+    Scope<NewScene> newScene = CreateScope<NewScene>();
+    NewScene* scenePtr = newScene.get();
     m_Scenes.push_back(std::move(newScene));
     return scenePtr;
 }
 
 void Project::RemoveScene(uint32_t sceneId)
 {
-    m_Scenes.erase(std::ranges::remove_if(m_Scenes, [sceneId](const Scope<Scene>& scene) { return scene->GetId() == sceneId; }).begin(), m_Scenes.end());
+    m_Scenes.erase(
+        std::ranges::remove_if(m_Scenes, [sceneId](const Scope<NewScene>& scene) { return scene->GetId() == sceneId; })
+            .begin(),
+        m_Scenes.end());
 }
 
 nlohmann::ordered_json Project::SerializeObject()
@@ -46,9 +51,9 @@ void Project::DeSerializeObject(nlohmann::json jsonObject)
     m_Path = jsonObject["Path"];
     json scenes = jsonObject["Scenes"];
     uint32_t i = 0;
-    for (const json sceneJson : scenes)
+    for (const json& sceneJson : scenes)
     {
-        Scene* scene = CreateScene();
+        NewScene* scene = CreateScene();
         scene->DeSerializeObject(sceneJson);
 
         if (jsonObject["ActiveScene"] == i)

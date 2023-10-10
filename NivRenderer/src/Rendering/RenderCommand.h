@@ -1,6 +1,5 @@
 #pragma once
 #include "Base.h"
-#include "OpenGL/Buffer.h"
 
 /*
     RenderCommand:

@@ -10,7 +10,7 @@ class RenderPipeline
 public:
     RenderPipeline(std::vector<Scope<RenderPass>>& renderPasses, std::vector<Scope<RenderPass>>& postProcessingPasses, uint32_t resolutionWidth, uint32_t resolutionHeight);
 
-    Framebuffer& Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& commandBuffer);
+    Framebuffer& Run(NewScene* scene, ProxyManager& proxyManager, CommandBuffer& commandBuffer);
 
     void RecompileShaders();
     void UpdateResolution(uint32_t width, uint32_t height);

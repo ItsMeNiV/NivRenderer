@@ -1,17 +1,16 @@
 #include "Window.h"
 
-#include "Entity/ECSRegistry.h"
+#include "Entity/NewECSRegistry.h"
 #include "Application/Window/SceneHierarchy.h"
 #include "Application/Window/Properties.h"
 #include "Application/Window/RenderWindow.h"
+#include "Application/Util/Math.h"
 
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_glfw.h"
 #include "ImGuizmo.h"
-#include "Application/Util/Math.h"
-#include "Entity/Components/TransformComponent.h"
 
 Window::Window(uint32_t width, uint32_t height, const char* title)
 	: m_Width(width), m_Height(height), m_Title(title), m_Window(nullptr), m_SelectedObject(-1),
@@ -176,7 +175,7 @@ void Window::PrepareFrame()
     ImGuizmo::BeginFrame();
 }
 
-void Window::RenderImGui(Scene* scene)
+void Window::RenderImGui(NewScene* scene)
 {
 	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -229,7 +228,7 @@ void Window::RenderImGui(Scene* scene)
     if (m_SelectedObject != -1)
     {
         // Entity Transform
-        auto transformComponent = ECSRegistry::GetInstance().GetComponent<TransformComponent>(m_SelectedObject);
+        const auto transformComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::TransformComponent>(m_SelectedObject);
         if (transformComponent && !m_IsFocused)
         {
             ImGuizmo::SetOrthographic(false);
@@ -237,15 +236,16 @@ void Window::RenderImGui(Scene* scene)
             ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
 
             // Camera
-            const auto cameraObject = ECSRegistry::GetInstance().GetEntity<CameraObject>(scene->GetCameraId());
-            auto& cameraProjection = cameraObject->GetCameraPtr()->GetProjection();
-            auto& cameraView = cameraObject->GetCameraPtr()->GetView();
+            const auto cameraComponent =
+                NewECSRegistry::GetInstance().GetComponent<NewComponents::CameraComponent>(scene->GetActiveCameraId());
+            auto& cameraProjection = cameraComponent->cameraPtr->GetProjection();
+            auto& cameraView = cameraComponent->cameraPtr->GetView();
 
 			// ModelMatrix
 			glm::mat4 modelMatrix(1.0f);
-            auto& position = transformComponent->GetPosition();
-            const auto rotation = glm::degrees(transformComponent->GetRotation());
-            auto& scale = transformComponent->GetScale();
+            auto& position = transformComponent->position;
+            const auto rotation = glm::degrees(transformComponent->rotation);
+            auto& scale = transformComponent->scale;
 
 			ImGuizmo::RecomposeMatrixFromComponents(glm::value_ptr(position), glm::value_ptr(rotation),
                                                     glm::value_ptr(scale), glm::value_ptr(modelMatrix));
@@ -258,11 +258,11 @@ void Window::RenderImGui(Scene* scene)
 			if (ImGuizmo::IsUsing())
 			{
                 m_ArcballMove = false;
-                ECSRegistry::GetInstance().GetEntity<Entity>(m_SelectedObject)->SetDirtyFlag(true);
+                NewECSRegistry::GetInstance().GetComponent<NewComponents::SceneObjectComponent>(m_SelectedObject)->dirtyFlag = true;
                 glm::vec3 deltaRotation;
                 ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(modelMatrix), glm::value_ptr(position), glm::value_ptr(deltaRotation), glm::value_ptr(scale));
                 deltaRotation -= rotation;
-                transformComponent->GetRotation() += glm::radians(deltaRotation);
+                transformComponent->rotation += glm::radians(deltaRotation);
 			}
         }
     }

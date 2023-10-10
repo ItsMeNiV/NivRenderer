@@ -6,6 +6,7 @@
 #include "json.hpp"
 #include "stb_image.h"
 #include "stb_image_resize.h"
+#include "assimp/postprocess.h"
 
 AssetManager::AssetManager()
 {

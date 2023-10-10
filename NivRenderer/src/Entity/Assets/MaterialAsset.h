@@ -1,6 +1,5 @@
 #pragma once
 #include "Base.h"
-#include "Entity/PropertyType.h"
 #include "Entity/Assets/TextureAsset.h"
 #include "json.hpp"
 
@@ -34,7 +33,12 @@ public:
     bool& GetFlipAOTexture() { return m_FlipAOTexture; }
     bool& GetFlipEmissiveTexture() { return m_FlipEmissiveTexture; }
 
-    std::vector<std::pair<std::string, Property>> GetAssetProperties();
+    void ReloadDiffuseTexture();
+    void ReloadNormalTexture();
+    void ReloadMetallicTexture();
+    void ReloadRoughnessTexture();
+    void ReloadAOTexture();
+    void ReloadEmissiveTexture();
 
     nlohmann::ordered_json SerializeObject();
     void DeSerializeObject(nlohmann::json jsonObject);
@@ -68,12 +72,5 @@ private:
     std::string m_EmissivePath;
     TextureAsset* m_EmissiveTextureAsset;
     bool m_FlipEmissiveTexture;
-
-    void reloadDiffuseTexture();
-    void reloadNormalTexture();
-    void reloadMetallicTexture();
-    void reloadRoughnessTexture();
-    void reloadAOTexture();
-    void reloadEmissiveTexture();
 
 };

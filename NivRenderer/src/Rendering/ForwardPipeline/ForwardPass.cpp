@@ -1,5 +1,9 @@
 #include "ForwardPass.h"
-
+#include "Rendering/Proxy/SceneObjectProxy.h"
+#include "Rendering/Proxy/CameraProxy.h"
+#include "Rendering/Proxy/LightProxy.h"
+#include "Rendering/Proxy/SkyboxProxy.h"
+#include "Rendering/OpenGL/Buffer.h"
 #include "Application/Util/Instrumentor.h"
 
 ForwardPass::ForwardPass(Shader* passShader, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount) :
@@ -7,7 +11,7 @@ ForwardPass::ForwardPass(Shader* passShader, uint32_t resolutionWidth, uint32_t 
     m_ShadowmapShader(AssetManager::GetInstance().LoadShader("assets/shaders/shadowmap.glsl", ShaderType::VERTEX_AND_FRAGMENT))
 {}
 
-void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& commandBuffer)
+void ForwardPass::Run(NewScene* scene, ProxyManager& proxyManager, CommandBuffer& commandBuffer)
 {
     RendererState rendererState;
 
@@ -66,7 +70,7 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
         rendererState.Flags |= RendererStateFlag::CULL_FACE_BACK;
         rendererState.SetWriteFramebuffer(m_OutputFramebuffer->GetId(), m_OutputFramebuffer->GetWidth(),
                                           m_OutputFramebuffer->GetHeight());
-        const auto camera = dynamic_cast<CameraProxy*>(proxyManager.GetProxy(scene->GetCameraId()));
+        const auto camera = dynamic_cast<CameraProxy*>(proxyManager.GetProxy(scene->GetActiveCameraId()));
 
         commandBuffer.Submit({CommandType::CLEAR_COLOR_DEPTH_BUFFER, rendererState, 0});
         rendererState.BoundShader = m_PassShader->GetId();
@@ -89,38 +93,34 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
         
         // Set Light uniforms
         uint32_t pointLightIndex = 0;
-        bool hasDirectionalLight = false;
-        for (const uint32_t id : scene->GetSceneLightIds())
+        const bool hasDirectionalLight = scene->HasDirectionalLight();
+        if (hasDirectionalLight)
+        {
+            const auto directionalLightProxy = dynamic_cast<DirectionalLightProxy*>(proxyManager.GetProxy(scene->GetDirectionalLightId()));
+            if (directionalLightProxy->GetDirtyFlag())
+            {
+                m_UniformBuffers["LightBlock"]->BufferData(glm::value_ptr(directionalLightProxy->GetLightDirection()), sizeof(glm::vec3), 3);
+                m_UniformBuffers["LightBlock"]->BufferData(glm::value_ptr(directionalLightProxy->GetLightColor()), sizeof(glm::vec3), 4);
+                directionalLightProxy->GetDirtyFlag() = false;
+            }
+        }
+        for (const uint32_t id : scene->GetPointLightIds())
         {
             const auto proxy = proxyManager.GetProxy(id);
-            const auto directionalLightProxy = dynamic_cast<DirectionalLightProxy*>(proxy);
             const auto pointLightProxy = dynamic_cast<PointLightProxy*>(proxy);
-            if (directionalLightProxy)
+            if (pointLightProxy->GetDirtyFlag())
             {
-                hasDirectionalLight = true;
-                if (directionalLightProxy->GetDirtyFlag())
-                {
-                    m_UniformBuffers["LightBlock"]->BufferData(glm::value_ptr(directionalLightProxy->GetLightDirection()), sizeof(glm::vec3), 3);
-                    m_UniformBuffers["LightBlock"]->BufferData(glm::value_ptr(directionalLightProxy->GetLightColor()), sizeof(glm::vec3), 4);
-                    directionalLightProxy->GetDirtyFlag() = false;
-                }
-            }
-            else if (pointLightProxy)
-            {
-                if (pointLightProxy->GetDirtyFlag())
-                {
-                    constexpr size_t pointLightBase = 5;
-                    const size_t pointLightOffset = 3 * pointLightIndex;
-                    uint32_t lightStrength = pointLightProxy->GetLightStrength();
+                constexpr size_t pointLightBase = 5;
+                const size_t pointLightOffset = 3 * pointLightIndex;
+                uint32_t lightStrength = pointLightProxy->GetLightStrength();
 
-                    m_UniformBuffers["LightBlock"]->BufferData(glm::value_ptr(pointLightProxy->GetLightPosition()), sizeof(glm::vec3), pointLightBase + pointLightOffset);
-                    m_UniformBuffers["LightBlock"]->BufferData(glm::value_ptr(pointLightProxy->GetLightColor()), sizeof(glm::vec3), pointLightBase + pointLightOffset + 1);
-                    m_UniformBuffers["LightBlock"]->BufferData(&lightStrength, sizeof(uint32_t), pointLightBase + pointLightOffset + 2);
-                    pointLightProxy->GetDirtyFlag() = false;
-                }
-
-                pointLightIndex++;
+                m_UniformBuffers["LightBlock"]->BufferData(glm::value_ptr(pointLightProxy->GetLightPosition()), sizeof(glm::vec3), pointLightBase + pointLightOffset);
+                m_UniformBuffers["LightBlock"]->BufferData(glm::value_ptr(pointLightProxy->GetLightColor()), sizeof(glm::vec3), pointLightBase + pointLightOffset + 1);
+                m_UniformBuffers["LightBlock"]->BufferData(&lightStrength, sizeof(uint32_t), pointLightBase + pointLightOffset + 2);
+                pointLightProxy->GetDirtyFlag() = false;
             }
+
+            pointLightIndex++;
         }
         m_UniformBuffers["LightBlock"]->BufferData(&hasDirectionalLight, sizeof(uint32_t), 0);
         m_UniformBuffers["LightBlock"]->BufferData(&pointLightIndex, sizeof(uint32_t), 1);
@@ -183,10 +183,9 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
 
             rendererState.BoundVertexArray = LightProxy::GetVertexArrayId();
             LightProxy::Bind();
-            for (const uint32_t id : scene->GetSceneLightIds())
+            for (const uint32_t id : scene->GetPointLightIds())
             {
-                const auto pointLightProxy = dynamic_cast<PointLightProxy*>(proxyManager.GetProxy(id));
-                if (pointLightProxy)
+                if (const auto pointLightProxy = dynamic_cast<PointLightProxy*>(proxyManager.GetProxy(id)))
                 {
                     rendererState.BoundUniforms[0] = {lightVisualizeShader->GetUniformLocation("model"),
                                                       UniformType::FLOAT4X4,
@@ -228,7 +227,7 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
     m_OutputFramebuffer->Unbind();
 }
 
-void ForwardPass::updateShadowmapFramebuffer(Scene* scene)
+void ForwardPass::updateShadowmapFramebuffer(NewScene* scene)
 {
     if (!m_ShadowmapFramebuffer ||
         scene->GetSceneSettings().shadowmapResolution.x != m_ShadowmapFramebuffer->GetWidth() ||

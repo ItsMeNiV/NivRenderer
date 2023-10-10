@@ -1,6 +1,6 @@
 #pragma once
 #include "Base.h"
-#include "Application/Scene.h"
+#include "Application/NewScene.h"
 #include "Rendering/Proxy/Proxy.h"
 #include "Rendering/Proxy/SceneObjectProxy.h"
 #include "Rendering/Proxy/LightProxy.h"
@@ -14,25 +14,24 @@ class ProxyManager
 public:
     ProxyManager();
 
-    void UpdateProxies(const Scene* const scene);
+    void UpdateProxies(NewScene* const scene);
     Proxy* GetProxy(const uint32_t id);
 
-    std::vector<SceneObjectProxy*> GetSceneObjectsToRender(const Scene* const scene);
-    std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>> GetSceneObjectsToRenderByMaterial(const Scene* const scene);
+    std::vector<SceneObjectProxy*> GetSceneObjectsToRender(NewScene* const scene);
+    std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>>
+    GetSceneObjectsToRenderByMaterial(const NewScene* const scene);
 
 private:
     std::unordered_map<uint32_t, Scope<Proxy>> m_Proxies;
     std::vector<SceneObjectProxy*> m_SceneObjectsToRender;
     std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>> m_SceneObjectsToRenderByMaterial;
 
-    void updateSceneObjectProxy(const uint32_t sceneObjectId, SceneObjectProxy* const parentProxy);
+    void updateSceneObjectProxy(NewScene* const scene, const uint32_t sceneObjectId,
+                                SceneObjectProxy* const parentProxy);
     void updateMaterialProxy(const uint32_t materialId);
     void updateCameraProxy(const uint32_t cameraId);
     void updateSkyboxProxy(const uint32_t skyboxId);
-    void updateSceneLightProxies(const uint32_t sceneLightId);
+    void updateSceneLightProxy(const uint32_t sceneLightId, const bool isDirectionalLight);
     void setupMaterialProxy(const std::string& assetPath, TextureProxy** const textureProxy,
                             TextureAsset* const textureAsset, TextureAsset* const alternativeTextureAsset);
-
-    void addSceneObjectProxyAndChildrenToList(std::vector<SceneObjectProxy*>& list,
-                                              const SceneObject* const sceneObject);
 };

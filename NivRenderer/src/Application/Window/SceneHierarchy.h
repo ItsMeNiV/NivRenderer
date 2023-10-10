@@ -1,9 +1,10 @@
 #pragma once
 #include "imgui.h"
 #include "Application/Util/Instrumentor.h"
+#include "Application/NewScene.h"
 #include "Entity/Assets/AssetManager.h"
 
-inline void displaySceneObjectContextMenu(Scene* scene, const uint32_t sceneObjectId, int32_t& selectedObjectId, const bool allowDelete)
+inline void displaySceneObjectContextMenu(NewScene* scene, const uint32_t sceneObjectId, int32_t& selectedObjectId, const bool allowDelete)
 {
 	if (ImGui::BeginPopupContextItem("Context Menu"))
 	{
@@ -34,7 +35,8 @@ inline void displaySceneObjectContextMenu(Scene* scene, const uint32_t sceneObje
 	}
 }
 
-inline void displaySceneLightContextMenu(Scene* scene, const uint32_t& sceneObjectId, int32_t& selectedObjectId, const bool allowDelete)
+inline void displaySceneLightContextMenu(NewScene* scene, const uint32_t& lightId, int32_t& selectedObjectId,
+                                         const bool allowDelete, const bool isDirectionalLight)
 {
 	if (ImGui::BeginPopupContextItem("Context Menu"))
 	{
@@ -52,8 +54,11 @@ inline void displaySceneLightContextMenu(Scene* scene, const uint32_t& sceneObje
 
 		if (allowDelete && ImGui::MenuItem("Delete"))
 		{
-			scene->RemoveSceneLight(sceneObjectId);
-			if (sceneObjectId == selectedObjectId)
+            if (isDirectionalLight)
+                scene->RemoveDirectionalLight();
+            else
+                scene->RemovePointLight(lightId);
+			if (lightId == selectedObjectId)
 				selectedObjectId = -1;
 		}
 
@@ -61,7 +66,7 @@ inline void displaySceneLightContextMenu(Scene* scene, const uint32_t& sceneObje
 	}
 }
 
-inline void displayMaterialAssetContextMenu(Scene* scene, const uint32_t sceneObjectId,
+inline void displayMaterialAssetContextMenu(NewScene* scene, const uint32_t sceneObjectId,
                                           int32_t& selectedObjectId, const bool allowDelete)
 {
     if (ImGui::BeginPopupContextItem("Context Menu"))
@@ -82,27 +87,28 @@ inline void displayMaterialAssetContextMenu(Scene* scene, const uint32_t sceneOb
     }
 }
 
-inline void displaySceneObject(Scene* scene, const uint32_t& sceneObjectId, int32_t& selectedObjectId)
+inline void displaySceneObject(NewScene* scene, const SceneHierarchyElement& sceneHierarchyElement, int32_t& selectedObjectId)
 {
 	ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow;
-    const auto sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId);
+    const auto sceneObjectComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::SceneObjectComponent>(sceneHierarchyElement.entityId);
+    const auto sceneObjectTagComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::TagComponent>(sceneHierarchyElement.entityId);
 
-	if (selectedObjectId == sceneObjectId)
+	if (selectedObjectId == sceneHierarchyElement.entityId)
 		nodeFlags |= ImGuiTreeNodeFlags_Selected;
 
-	if (!sceneObject->GetChildEntities().empty())
+	if (!sceneHierarchyElement.childIds.empty())
 	{
-        const bool nodeOpen = ImGui::TreeNodeEx(sceneObject->GetEntityName()->c_str(), nodeFlags);
+        const bool nodeOpen = ImGui::TreeNodeEx(sceneObjectTagComponent->name.c_str(), nodeFlags);
 		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-			selectedObjectId = sceneObject->GetId();
-		ImGui::PushID(sceneObjectId);
-		displaySceneObjectContextMenu(scene, sceneObjectId, selectedObjectId, true);
+            selectedObjectId = sceneHierarchyElement.entityId;
+        ImGui::PushID(sceneHierarchyElement.entityId);
+        displaySceneObjectContextMenu(scene, sceneHierarchyElement.entityId, selectedObjectId, true);
 		ImGui::PopID();
 		if (nodeOpen)
 		{
-            for (const auto entity : sceneObject->GetChildEntities())
+            for (const auto childId : sceneHierarchyElement.childIds)
 			{
-				displaySceneObject(scene, entity->GetId(), selectedObjectId);
+                displaySceneObject(scene, *scene->GetSceneHierarchyElementById(childId), selectedObjectId);
 			}
 			ImGui::TreePop();
 		}
@@ -110,32 +116,32 @@ inline void displaySceneObject(Scene* scene, const uint32_t& sceneObjectId, int3
 	else
 	{
 		nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-		ImGui::TreeNodeEx(sceneObject->GetEntityName()->c_str(), nodeFlags);
+        ImGui::TreeNodeEx(sceneObjectTagComponent->name.c_str(), nodeFlags);
 		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-			selectedObjectId = sceneObject->GetId();
-		ImGui::PushID(sceneObjectId);
-		displaySceneObjectContextMenu(scene, sceneObjectId, selectedObjectId, true);
+            selectedObjectId = sceneHierarchyElement.entityId;
+        ImGui::PushID(sceneHierarchyElement.entityId);
+        displaySceneObjectContextMenu(scene, sceneHierarchyElement.entityId, selectedObjectId, true);
 		ImGui::PopID();
 	}
 }
 
-inline void displaySceneLight(Scene* scene, const uint32_t& sceneLightId, int32_t& selectedObjectId)
+inline void displaySceneLight(NewScene* scene, const uint32_t& sceneLightId, int32_t& selectedObjectId, const bool isDirectionalLight)
 {
 	ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-    const auto lightObject = ECSRegistry::GetInstance().GetEntity<LightObject>(sceneLightId);
+    const auto tagComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::TagComponent>(sceneLightId);
 
 	if (selectedObjectId == sceneLightId)
 		nodeFlags |= ImGuiTreeNodeFlags_Selected;
 
-	ImGui::TreeNodeEx(lightObject->GetEntityName()->c_str(), nodeFlags);
+	ImGui::TreeNodeEx(tagComponent->name.c_str(), nodeFlags);
 	if (ImGui::IsItemClicked())
-		selectedObjectId = lightObject->GetId();
+        selectedObjectId = sceneLightId;
 	ImGui::PushID(sceneLightId);
-	displaySceneLightContextMenu(scene, sceneLightId, selectedObjectId, true);
+    displaySceneLightContextMenu(scene, sceneLightId, selectedObjectId, true, isDirectionalLight);
 	ImGui::PopID();
 }
 
-inline void displayMaterialAsset(Scene* scene, const uint32_t& sceneAssetId, int32_t& selectedObjectId)
+inline void displayMaterialAsset(NewScene* scene, const uint32_t& sceneAssetId, int32_t& selectedObjectId)
 {
     ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
     const auto materialAsset = AssetManager::GetInstance().GetMaterial(sceneAssetId);
@@ -151,7 +157,7 @@ inline void displayMaterialAsset(Scene* scene, const uint32_t& sceneAssetId, int
     ImGui::PopID();
 }
 
-inline void BuildSceneHierarchy(Scene* scene, int32_t& selectedSceneObjectId)
+inline void BuildSceneHierarchy(NewScene* scene, int32_t& selectedSceneObjectId)
 {
     ImGuiTreeNodeFlags sceneNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow;
     if (selectedSceneObjectId == scene->GetId())
@@ -165,17 +171,20 @@ inline void BuildSceneHierarchy(Scene* scene, int32_t& selectedSceneObjectId)
             const bool sceneOpen = ImGui::TreeNodeEx("Scene", sceneNodeFlags);
             if (ImGui::IsItemClicked())
                 selectedSceneObjectId = scene->GetId();
+
 	        displaySceneObjectContextMenu(scene, -1, selectedSceneObjectId, false);
 	        if(sceneOpen)
 	        {
 		        //Lights
                 const bool lightOpen = ImGui::TreeNodeEx("Lights", ImGuiTreeNodeFlags_DefaultOpen);
-		        displaySceneLightContextMenu(scene, -1, selectedSceneObjectId, false);
+		        displaySceneLightContextMenu(scene, -1, selectedSceneObjectId, false, false);
 		        if (lightOpen)
 		        {
 			        int32_t selectedObject = selectedSceneObjectId;
-			        for (uint32_t sceneLightId : scene->GetSceneLightIds())
-				        displaySceneLight(scene, sceneLightId, selectedObject);
+                    if (scene->HasDirectionalLight())
+                        displaySceneLight(scene, scene->GetDirectionalLightId(), selectedObject, true);
+			        for (uint32_t sceneLightId : scene->GetPointLightIds())
+				        displaySceneLight(scene, sceneLightId, selectedObject, false);
 			        selectedSceneObjectId = selectedObject;
 			        ImGui::TreePop();
 		        }
@@ -185,12 +194,13 @@ inline void BuildSceneHierarchy(Scene* scene, int32_t& selectedSceneObjectId)
                 {
                     const uint32_t skyboxId = scene->GetSkyboxObjectId();
                     ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-                    const auto skyboxObject = ECSRegistry::GetInstance().GetEntity<SkyboxObject>(skyboxId);
+                    const auto skyboxComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::SkyboxComponent>(skyboxId);
+                    const auto skyboxTagComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::TagComponent>(skyboxId);
 
                     if (selectedSceneObjectId == skyboxId)
                         nodeFlags |= ImGuiTreeNodeFlags_Selected;
 
-                    ImGui::TreeNodeEx(skyboxObject->GetEntityName()->c_str(), nodeFlags);
+                    ImGui::TreeNodeEx(skyboxTagComponent->name.c_str(), nodeFlags);
                     if (ImGui::IsItemClicked())
                         selectedSceneObjectId = skyboxId;
                     ImGui::PushID(skyboxId);
@@ -210,8 +220,11 @@ inline void BuildSceneHierarchy(Scene* scene, int32_t& selectedSceneObjectId)
 
 		        //SceneObjects
 		        int32_t selectedObject = selectedSceneObjectId;
-		        for (uint32_t sceneObjectId : scene->GetSceneObjectIds())
-			        displaySceneObject(scene, sceneObjectId, selectedObject);
+		        for (auto& sceneHierarchyElem : scene->GetSceneHierarchy())
+		        {
+                    if (sceneHierarchyElem.parentId == UINT32_MAX)
+                        displaySceneObject(scene, sceneHierarchyElem, selectedObject);
+		        }
 		        selectedSceneObjectId = selectedObject;
 		        ImGui::TreePop();
 	        }

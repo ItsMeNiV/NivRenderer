@@ -4,7 +4,7 @@
 #include "Base.h"
 
 #include "Application/Window/CameraControllerArcball.h"
-#include "Application/Scene.h"
+#include "Application/NewScene.h"
 #include "Rendering/OpenGL/Framebuffer.h"
 #include "Application/Window/WindowEvents.h"
 
@@ -19,7 +19,7 @@ public:
 	void CreateRenderContext();
 	bool ShouldClose();
 	void PrepareFrame();
-	void RenderImGui(Scene* scene);
+	void RenderImGui(NewScene* scene);
 	void PollEvents();
 	void SwapBuffers();
 	void UpdateFramebuffer(uint32_t width, uint32_t height);

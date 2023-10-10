@@ -1,10 +1,8 @@
 ﻿#include "NivRenderer.h"
 
-#include "Entity/ECSRegistry.h"
 #include "Rendering/ForwardPipeline/ForwardPass.h"
 #include "Application/Util/Instrumentor.h"
 #include "Application/Serialization/SerializationManager.h"
-#include "Application/Scene.h"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
@@ -15,13 +13,6 @@
 int main()
 {
     spdlog::set_level(spdlog::level::err);
-
-    const auto buffer = new CommandBuffer();
-
-    for (int i = 0; i <= 300; i++)
-    {
-        buffer->Submit({CommandType::DRAW, {}});
-    }
 
     auto* app = new Application();
 
@@ -36,7 +27,7 @@ Application::Application() :
 	m_Window->SetCommandHandler([&](WindowCommandEvent command) { handleWindowCommand(command); });
 
 	m_Renderer = CreateScope<Renderer>(m_Window.get());
-    Scene* scene = m_Project->GetActiveScene();
+    NewScene* scene = m_Project->GetActiveScene();
     m_Renderer->SetScene(scene);
 
 	setupDefaultScene();
@@ -146,7 +137,7 @@ void Application::handleWindowCommand(WindowCommandEvent command)
 
 void Application::setupDefaultScene() const
 {
-    Scene* scene = m_Renderer->GetScene();
+    NewScene* scene = m_Renderer->GetScene();
     scene->AddSceneObject();
     scene->AddDirectionalLight();
     m_Window->CreateCameraAndController(scene->GetSceneSettings().renderResolution);

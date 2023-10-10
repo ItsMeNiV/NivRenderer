@@ -114,6 +114,7 @@ set(SRC_FILES
  "src/Base.h"
  "src/IdManager.h"
  "src/NivRenderer.cpp" "src/NivRenderer.h"
+
  "src/Application/Event.h"
  "src/Application/Input.h"
  "src/Application/Serialization/SerializationManager.h" "src/Application/Serialization/SerializationManager.cpp"
@@ -125,25 +126,18 @@ set(SRC_FILES
  "src/Application/Window/RenderWindow.h"
  "src/Application/Window/CameraControllerArcball.h" "src/Application/Window/CameraControllerArcball.cpp"
  "src/Application/Window/WindowEvents.h"
- "src/Rendering/Renderer.cpp" "src/Rendering/Renderer.h"
- "src/Entity/ECSRegistry.cpp" "src/Entity/ECSRegistry.h"
- "src/Entity/Entity.h"
- "src/Entity/Component.h"
- "src/Entity/PropertyType.h"
- 
+ "src/Application/NewScene.h" "src/Application/NewScene.cpp"
+ "src/Application/Project.h" "src/Application/Project.cpp"
+
+ "src/Entity/NewECSRegistry.h" "src/Entity/NewEcsRegistry.cpp"
+ "src/Entity/NewEntity.h"
+ "src/Entity/Components.h"
  "src/Entity/Assets/AssetManager.h" "src/Entity/Assets/AssetManager.cpp"
  "src/Entity/Assets/MeshAsset.h" "src/Entity/Assets/MeshAsset.cpp"
  "src/Entity/Assets/TextureAsset.h" "src/Entity/Assets/TextureAsset.cpp"
  "src/Entity/Assets/MaterialAsset.h" "src/Entity/Assets/MaterialAsset.cpp"
  
- "src/Entity/Components/TransformComponent.h" "src/Entity/Components/TransformComponent.cpp"
- "src/Entity/Components/MeshComponent.h" "src/Entity/Components/MeshComponent.cpp"
- "src/Entity/Components/MaterialComponent.h" "src/Entity/Components/MaterialComponent.cpp"
- "src/Entity/Entities/SceneObject.h" "src/Entity/Entities/SceneObject.cpp"
- "src/Entity/Entities/CameraObject.h"
- "src/Entity/Entities/LightObject.h"
- "src/Entity/Entities/SkyboxObject.h" "src/Entity/Entities/SkyboxObject.cpp"
- "src/Application/Scene.h" "src/Application/Scene.cpp"
+ "src/Rendering/Renderer.cpp" "src/Rendering/Renderer.h"
  "src/Rendering/OpenGL/Framebuffer.h" "src/Rendering/OpenGL/Framebuffer.cpp"
  "src/Rendering/OpenGL/Texture.h" "src/Rendering/OpenGL/Texture.cpp"
  "src/Rendering/OpenGL/Buffer.h" "src/Rendering/OpenGL/Buffer.cpp"
@@ -160,8 +154,8 @@ set(SRC_FILES
  "src/Rendering/Proxy/MeshProxy.h" "src/Rendering/Proxy/MeshProxy.cpp"
  "src/Rendering/Proxy/TextureProxy.h" "src/Rendering/Proxy/TextureProxy.cpp"
  "src/Rendering/Proxy/MaterialProxy.h" "src/Rendering/Proxy/MaterialProxy.cpp"
- "src/Rendering/ForwardPipeline/ForwardPass.h"
- "src/Rendering/ForwardPipeline/ForwardPass.cpp" "src/Application/Project.h" "src/Entity/NewECSRegistry.h" "src/Application/Project.cpp" "src/Entity/NewEcsRegistry.cpp" "src/Entity/NewEntity.h" "src/Entity/Components.h" "src/Application/NewScene.h" "src/Application/NewScene.cpp")
+ "src/Rendering/ForwardPipeline/ForwardPass.h" "src/Rendering/ForwardPipeline/ForwardPass.cpp"
+)
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp

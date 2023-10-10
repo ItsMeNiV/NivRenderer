@@ -1,5 +1,6 @@
 #pragma once
 #include "Base.h"
+#include "Entity/Assets/AssetManager.h"
 #include "Rendering/Proxy/Proxy.h"
 
 class LightProxy : public Proxy

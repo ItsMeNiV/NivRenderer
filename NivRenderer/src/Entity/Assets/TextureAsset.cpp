@@ -1,5 +1,4 @@
 #include "Entity/Assets/TextureAsset.h"
-
 #include "AssetManager.h"
 
 TextureAsset::TextureAsset(const uint32_t id, const std::string& path, bool flipVertical, bool loadOnlyOneChannel, int channelIndex) :
@@ -85,12 +84,6 @@ void TextureAsset::ReloadData()
 {
     AssetManager::GetInstance().ReloadTexture(this);
     m_IsUnloaded = false;
-}
-
-std::vector<std::pair<std::string, Property>> TextureAsset::GetAssetProperties()
-{
-    std::vector<std::pair<std::string, Property>> returnVector;
-    return returnVector;
 }
 
 nlohmann::ordered_json TextureAsset::SerializeObject()

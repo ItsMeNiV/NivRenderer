@@ -1,6 +1,5 @@
 #pragma once
 #include "Base.h"
-#include "Entity/PropertyType.h"
 #include "json.hpp"
 
 class TextureAsset
@@ -24,8 +23,6 @@ public:
     bool isUnloaded() const;
     void UnloadData();
     void ReloadData();
-
-    std::vector<std::pair<std::string, Property>> GetAssetProperties();
 
     nlohmann::ordered_json SerializeObject();
     void DeSerializeObject(nlohmann::json jsonObject);

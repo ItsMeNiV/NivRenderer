@@ -2,7 +2,6 @@
 #include "Base.h"
 #include "Rendering/Proxy/Proxy.h"
 #include "TextureProxy.h"
-#include "Entity/Components/MaterialComponent.h"
 
 class MaterialProxy : public Proxy
 {

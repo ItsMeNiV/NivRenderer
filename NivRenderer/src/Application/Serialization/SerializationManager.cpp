@@ -1,5 +1,4 @@
 #include "SerializationManager.h"
-#include "Entity/ECSRegistry.h"
 #include "portable-file-dialogs.h"
 
 void SerializationManager::SaveProject(Project* const project, bool saveOnSetPath)

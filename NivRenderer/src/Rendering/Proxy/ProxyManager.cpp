@@ -1,25 +1,30 @@
 #include "ProxyManager.h"
 
-#include "Entity/ECSRegistry.h"
-#include "Entity/Components/MeshComponent.h"
-#include "Entity/Components/TransformComponent.h"
+#include "Entity/NewECSRegistry.h"
+#include "Entity/Components.h"
+#include "Entity/Assets/AssetManager.h"
 
 ProxyManager::ProxyManager() = default;
 
-void ProxyManager::UpdateProxies(const Scene* const scene)
+void ProxyManager::UpdateProxies(NewScene* const scene)
 {
-    updateCameraProxy(scene->GetCameraId());
+    updateCameraProxy(scene->GetActiveCameraId());
 
     if (scene->HasSkybox())
         updateSkyboxProxy(scene->GetSkyboxObjectId());
 
-    for (const uint32_t sceneLightId : scene->GetSceneLightIds())
-        updateSceneLightProxies(sceneLightId);
+    if (scene->HasDirectionalLight())
+        updateSceneLightProxy(scene->GetDirectionalLightId(), true);
+    for (const uint32_t sceneLightId : scene->GetPointLightIds())
+        updateSceneLightProxy(sceneLightId, false);
 
     m_SceneObjectsToRender.clear();
     m_SceneObjectsToRenderByMaterial.clear();
     for (const uint32_t sceneObjectId : scene->GetSceneObjectIds())
-        updateSceneObjectProxy(sceneObjectId, nullptr);
+    {
+        if (scene->GetSceneHierarchyElementById(sceneObjectId)->parentId == UINT32_MAX)
+            updateSceneObjectProxy(scene, sceneObjectId, nullptr);
+    }
 }
 
 Proxy* ProxyManager::GetProxy(const uint32_t id)
@@ -30,28 +35,29 @@ Proxy* ProxyManager::GetProxy(const uint32_t id)
     return nullptr;
 }
 
-std::vector<SceneObjectProxy*> ProxyManager::GetSceneObjectsToRender(const Scene* const scene)
+std::vector<SceneObjectProxy*> ProxyManager::GetSceneObjectsToRender(NewScene* const scene)
 {
     return m_SceneObjectsToRender;
 }
 
-std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>> ProxyManager::GetSceneObjectsToRenderByMaterial(const Scene* const scene)
+std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>> ProxyManager::GetSceneObjectsToRenderByMaterial(const NewScene* const scene)
 {
     return m_SceneObjectsToRenderByMaterial;
 }
 
-void ProxyManager::updateSceneObjectProxy(const uint32_t sceneObjectId, SceneObjectProxy* const parentProxy)
+void ProxyManager::updateSceneObjectProxy(NewScene* const scene, const uint32_t sceneObjectId,
+                                          SceneObjectProxy* const parentProxy)
 {
-    const auto sceneObject = ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId);
-    const auto meshComponent = ECSRegistry::GetInstance().GetComponent<MeshComponent>(sceneObjectId);
-    const auto transformComponent = ECSRegistry::GetInstance().GetComponent<TransformComponent>(sceneObjectId);
-    const auto materialComponent = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(sceneObjectId);
+    const auto sceneObjectComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::SceneObjectComponent>(sceneObjectId);
+    const auto meshComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::MeshComponent>(sceneObjectId);
+    const auto transformComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::TransformComponent>(sceneObjectId);
+    const auto materialComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::MaterialComponent>(sceneObjectId);
 
-    const auto& childEntities = sceneObject->GetChildEntities();
-    if (sceneObject->GetDirtyFlag()) // Do we have to update the Proxy?
+    const auto& childIds = scene->GetSceneHierarchyElementById(sceneObjectId)->childIds;
+    if (sceneObjectComponent->dirtyFlag) // Do we have to update the Proxy?
     {
-        for (const auto& childEntity : childEntities)
-            childEntity->SetDirtyFlag(true);
+        for (const auto& childId : childIds)
+            NewECSRegistry::GetInstance().GetComponent<NewComponents::SceneObjectComponent>(sceneObjectId)->dirtyFlag = true;
 
         if (!m_Proxies.contains(sceneObjectId))
         {
@@ -63,7 +69,7 @@ void ProxyManager::updateSceneObjectProxy(const uint32_t sceneObjectId, SceneObj
         {
 
             MeshProxy* meshProxy;
-            auto meshId = meshComponent->GetMeshAsset()->GetId();
+            auto meshId = meshComponent->meshAsset->GetId();
             if (!m_Proxies.contains(meshId))
             {
                 m_Proxies[meshId] = CreateScope<MeshProxy>(meshId);
@@ -84,7 +90,7 @@ void ProxyManager::updateSceneObjectProxy(const uint32_t sceneObjectId, SceneObj
 
         if (materialComponent)
         {
-            const uint32_t materialId = materialComponent->GetMaterialAsset()->GetId();
+            const uint32_t materialId = materialComponent->materialAsset->GetId();
             updateMaterialProxy(materialId);
             sceneObjectProxy->SetMaterial(dynamic_cast<MaterialProxy*>(m_Proxies[materialId].get()));
         }
@@ -95,7 +101,7 @@ void ProxyManager::updateSceneObjectProxy(const uint32_t sceneObjectId, SceneObj
 
         if (transformComponent)
         {
-            sceneObjectProxy->SetTransform(transformComponent->GetPosition(), transformComponent->GetScale(), transformComponent->GetRotation());
+            sceneObjectProxy->SetTransform(transformComponent->position, transformComponent->scale, transformComponent->rotation);
             if (parentProxy)
             {
                 auto& modelMatrix = sceneObjectProxy->GetModelMatrix();
@@ -103,17 +109,17 @@ void ProxyManager::updateSceneObjectProxy(const uint32_t sceneObjectId, SceneObj
             }
         }
         
-        sceneObject->SetDirtyFlag(false);
+        sceneObjectComponent->dirtyFlag = false;
         sceneObjectProxy->GetDirtyFlag() = true;
     }
 
-    for (const auto& childEntity : childEntities)
-        updateSceneObjectProxy(childEntity->GetId(), dynamic_cast<SceneObjectProxy*>(m_Proxies[sceneObjectId].get()));
+    for (const auto& childId : childIds)
+        updateSceneObjectProxy(scene, childId, dynamic_cast<SceneObjectProxy*>(m_Proxies[sceneObjectId].get()));
 
     if (meshComponent)
     {
         m_SceneObjectsToRender.push_back(dynamic_cast<SceneObjectProxy*>(m_Proxies[sceneObjectId].get()));
-        m_SceneObjectsToRenderByMaterial[materialComponent->GetMaterialAsset()->GetId()].push_back(dynamic_cast<SceneObjectProxy*>(m_Proxies[sceneObjectId].get()));
+        m_SceneObjectsToRenderByMaterial[materialComponent->materialAsset->GetId()].push_back(dynamic_cast<SceneObjectProxy*>(m_Proxies[sceneObjectId].get()));
     }
 }
 
@@ -157,14 +163,14 @@ void ProxyManager::updateCameraProxy(const uint32_t cameraId)
         m_Proxies[cameraId] = CreateScope<CameraProxy>(cameraId);
     }
     CameraProxy* cameraProxy = dynamic_cast<CameraProxy*>(m_Proxies[cameraId].get());
-    cameraProxy->UpdateData(ECSRegistry::GetInstance().GetEntity<CameraObject>(cameraId)->GetCameraPtr());
+    cameraProxy->UpdateData(NewECSRegistry::GetInstance().GetComponent<NewComponents::CameraComponent>(cameraId)->cameraPtr);
 }
 
 void ProxyManager::updateSkyboxProxy(const uint32_t skyboxId)
 {
-    const auto skyboxObject = ECSRegistry::GetInstance().GetEntity<SkyboxObject>(skyboxId);
+    const auto skyboxComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::SkyboxComponent>(skyboxId);
 
-    if (!skyboxObject->GetDirtyFlag())
+    if (!skyboxComponent->dirtyFlag)
         return;
 
     if (!m_Proxies.contains(skyboxId))
@@ -173,41 +179,57 @@ void ProxyManager::updateSkyboxProxy(const uint32_t skyboxId)
     }
     const auto skyboxProxy = dynamic_cast<SkyboxProxy*>(m_Proxies[skyboxId].get());
 
-    if (skyboxObject->HasAllTexturesSet())
-        skyboxProxy->SetTextures(skyboxObject->GetTextureAssets());
+    bool hasAllTexturesSet = true;
+    for (const auto path : skyboxComponent->texturePaths)
+    {
+        if (path.empty())
+        {
+            hasAllTexturesSet = false;
+            break;
+        }
+    }
+    if (hasAllTexturesSet)
+        skyboxProxy->SetTextures(skyboxComponent->textureAssets);
 
-    skyboxObject->SetDirtyFlag(false);
+    skyboxComponent->dirtyFlag = false;
     skyboxProxy->GetDirtyFlag() = true;
 }
 
-void ProxyManager::updateSceneLightProxies(const uint32_t sceneLightId)
+void ProxyManager::updateSceneLightProxy(const uint32_t sceneLightId, const bool isDirectionalLight)
 {
-    const auto lightObject = ECSRegistry::GetInstance().GetEntity<LightObject>(sceneLightId);
-    if (!lightObject->GetDirtyFlag())
-        return;
-
-    const auto directionalLight = dynamic_cast<DirectionalLightObject*>(lightObject);
-    const auto pointLight = dynamic_cast<PointLightObject*>(lightObject);
-
-    if (!m_Proxies.contains(sceneLightId))
+    if (isDirectionalLight)
     {
-        if (directionalLight)
+        const auto directionalLightComponent =
+            NewECSRegistry::GetInstance().GetComponent<NewComponents::DirectionalLightComponent>(sceneLightId);
+        if (!directionalLightComponent->dirtyFlag)
+            return;
+
+        if (!m_Proxies.contains(sceneLightId))
             m_Proxies[sceneLightId] = CreateScope<DirectionalLightProxy>(sceneLightId);
-        else if (pointLight)
-            m_Proxies[sceneLightId] = CreateScope<PointLightProxy>(sceneLightId);
-    }
-    if (directionalLight)
-    {
+
         dynamic_cast<DirectionalLightProxy*>(m_Proxies[sceneLightId].get())
-            ->UpdateData(directionalLight->GetLightColor(), directionalLight->GetDirection());
+            ->UpdateData(directionalLightComponent->lightColor, directionalLightComponent->direction);
+
+        directionalLightComponent->dirtyFlag = false;
+        m_Proxies[sceneLightId]->GetDirtyFlag() = true;
     }
-    else if (pointLight)
+    else
     {
+        const auto pointLightComponent =
+            NewECSRegistry::GetInstance().GetComponent<NewComponents::PointLightComponent>(sceneLightId);
+        if (!pointLightComponent->dirtyFlag)
+            return;
+
+        if (!m_Proxies.contains(sceneLightId))
+            m_Proxies[sceneLightId] = CreateScope<PointLightProxy>(sceneLightId);
+
         dynamic_cast<PointLightProxy*>(m_Proxies[sceneLightId].get())
-            ->UpdateData(pointLight->GetLightColor(), pointLight->GetPosition(), pointLight->GetStrength());
+            ->UpdateData(pointLightComponent->lightColor, pointLightComponent->position,
+                         pointLightComponent->strength);
+
+        pointLightComponent->dirtyFlag = false;
+        m_Proxies[sceneLightId]->GetDirtyFlag() = true;
     }
-    lightObject->SetDirtyFlag(false);
-    m_Proxies[sceneLightId]->GetDirtyFlag() = true;
 }
 
 void ProxyManager::setupMaterialProxy(const std::string& assetPath, TextureProxy** const textureProxy,
@@ -230,15 +252,4 @@ void ProxyManager::setupMaterialProxy(const std::string& assetPath, TextureProxy
             *textureProxy = dynamic_cast<TextureProxy*>(m_Proxies[assetId].get());
         }
     }
-}
-
-void ProxyManager::addSceneObjectProxyAndChildrenToList(std::vector<SceneObjectProxy*>& list,
-    const SceneObject* const sceneObject)
-{
-    const auto proxy = static_cast<SceneObjectProxy*>(m_Proxies[sceneObject->GetId()].get());
-    if (proxy && proxy->GetMeshProxy())
-        list.push_back(proxy);
-
-    for (const auto childObject : sceneObject->GetChildEntities())
-        addSceneObjectProxyAndChildrenToList(list, static_cast<SceneObject*>(childObject));
 }
