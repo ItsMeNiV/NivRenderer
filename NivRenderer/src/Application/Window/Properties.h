@@ -120,7 +120,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
             ImGui::Spacing();
             if (ImGui::InputFloat3("Position", glm::value_ptr(pointLightComponent->position)))
                 pointLightComponent->dirtyFlag = true;
-            if (ImGui::InputInt("Strength", &pointLightComponent->strength))
+            if (ImGui::SliderInt("Strength", &pointLightComponent->strength, 1, 100))
                 pointLightComponent->dirtyFlag = true;
             ImGui::Spacing();
         }
