@@ -1,6 +1,6 @@
 #include "Window.h"
 
-#include "Entity/NewECSRegistry.h"
+#include "Entity/ECSRegistry.h"
 #include "Application/Window/SceneHierarchy.h"
 #include "Application/Window/Properties.h"
 #include "Application/Window/RenderWindow.h"
@@ -175,7 +175,7 @@ void Window::PrepareFrame()
     ImGuizmo::BeginFrame();
 }
 
-void Window::RenderImGui(NewScene* scene)
+void Window::RenderImGui(Scene* scene)
 {
 	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -228,7 +228,7 @@ void Window::RenderImGui(NewScene* scene)
     if (m_SelectedObject != -1)
     {
         // Entity Transform
-        const auto transformComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::TransformComponent>(m_SelectedObject);
+        const auto transformComponent = ECSRegistry::GetInstance().GetComponent<TransformComponent>(m_SelectedObject);
         if (transformComponent && !m_IsFocused)
         {
             ImGuizmo::SetOrthographic(false);
@@ -237,7 +237,7 @@ void Window::RenderImGui(NewScene* scene)
 
             // Camera
             const auto cameraComponent =
-                NewECSRegistry::GetInstance().GetComponent<NewComponents::CameraComponent>(scene->GetActiveCameraId());
+                ECSRegistry::GetInstance().GetComponent<CameraComponent>(scene->GetActiveCameraId());
             auto& cameraProjection = cameraComponent->cameraPtr->GetProjection();
             auto& cameraView = cameraComponent->cameraPtr->GetView();
 
@@ -258,7 +258,7 @@ void Window::RenderImGui(NewScene* scene)
 			if (ImGuizmo::IsUsing())
 			{
                 m_ArcballMove = false;
-                NewECSRegistry::GetInstance().GetComponent<NewComponents::SceneObjectComponent>(m_SelectedObject)->dirtyFlag = true;
+                ECSRegistry::GetInstance().GetComponent<SceneObjectComponent>(m_SelectedObject)->dirtyFlag = true;
                 glm::vec3 deltaRotation;
                 ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(modelMatrix), glm::value_ptr(position), glm::value_ptr(deltaRotation), glm::value_ptr(scale));
                 deltaRotation -= rotation;
@@ -300,7 +300,7 @@ void Window::UpdateFramebuffer(uint32_t width, uint32_t height)
 
 void Window::CreateCameraAndController(glm::ivec2& renderResolution)
 {
-    m_Camera = CreateScope<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), renderResolution.x, renderResolution.y);
+    m_Camera = CreateScope<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), static_cast<float>(renderResolution.x), static_cast<float>(renderResolution.y));
     m_CameraControllerFirstPerson = CreateScope<CameraControllerFirstPerson>(m_Camera.get(), 3.0f, 0.1f);
     m_CameraControllerArcball = CreateScope<CameraControllerArcball>(m_Camera.get(), 5.0f, 0.3f);
 }

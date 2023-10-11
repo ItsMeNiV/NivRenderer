@@ -1,6 +1,6 @@
 #include "Renderer.h"
 #include "Application/Util/Instrumentor.h"
-#include "Entity/NewECSRegistry.h"
+#include "Entity/ECSRegistry.h"
 #include "Rendering/OpenGL/OpenGLRenderer3D.h"
 
 Renderer::Renderer(Window* window)
@@ -16,7 +16,7 @@ Renderer::~Renderer()
 void Renderer::PrepareFrame() const
 {
     PROFILE_FUNCTION()
-    const auto cam = NewECSRegistry::GetInstance().GetComponent<NewComponents::CameraComponent>(m_Scene->GetActiveCameraId())->cameraPtr;
+    const auto cam = ECSRegistry::GetInstance().GetComponent<CameraComponent>(m_Scene->GetActiveCameraId())->cameraPtr;
     if(m_Scene->GetSceneSettings().renderResolution.x != cam->GetCameraWidth() ||
         m_Scene->GetSceneSettings().renderResolution.y != cam->GetCameraHeight())
     {
@@ -56,9 +56,9 @@ void Renderer::RenderScene() const
 
 void Renderer::AnimateDirectionalLight() const
 {
-    if (const auto directionalLightObject = NewECSRegistry::GetInstance().GetEntity(m_Scene->GetDirectionalLightId()))
+    if (const auto directionalLightObject = ECSRegistry::GetInstance().GetEntity(m_Scene->GetDirectionalLightId()))
     {
-        const auto dLightComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::DirectionalLightComponent>(m_Scene->GetDirectionalLightId());
+        const auto dLightComponent = ECSRegistry::GetInstance().GetComponent<DirectionalLightComponent>(m_Scene->GetDirectionalLightId());
         const double time = m_ActiveWindow->GetWindowRuntime();
         dLightComponent->direction = glm::normalize(glm::vec3(-(1 + sin(time) * 3), -3, -(1 + cos(time) * 3)));
         dLightComponent->dirtyFlag = true;

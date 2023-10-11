@@ -4,7 +4,7 @@
 
 struct SubModel;
 
-struct NewSceneSettings
+struct SceneSettings
 {
     bool visualizeLights;
     bool animateDirectionalLight;
@@ -20,13 +20,15 @@ struct SceneHierarchyElement
     uint32_t parentId = UINT32_MAX;
     uint32_t entityId = UINT32_MAX;
     std::vector<uint32_t> childIds;
+
+    bool operator==(const SceneHierarchyElement& other) const { return other.entityId == entityId; }
 };
 
-class NewScene
+class Scene
 {
 public:
-    NewScene();
-    ~NewScene();
+    Scene();
+    ~Scene();
 
     uint32_t AddSceneObject(uint32_t parentObjectId = UINT32_MAX);
     uint32_t AddEmptySceneObject(uint32_t parentObjectId = UINT32_MAX);
@@ -42,7 +44,8 @@ public:
     uint32_t AddCamera(Camera* cameraPtr);
 
     void LoadModel(uint32_t sceneObjectId);
-    void SetSkyboxTexturePathsFromFolder();
+    void LoadMesh(uint32_t sceneObjectId);
+    void SetSkyboxTexturePathsFromFolder() const;
     void LoadSkyboxTextures() const;
 
     const uint32_t GetId() const { return m_Id; }
@@ -54,7 +57,7 @@ public:
     const std::vector<uint32_t>& GetCameraIds() const { return m_CameraIds; }
     const uint32_t GetActiveCameraId() const { return m_ActiveCameraId; }
     void SetActiveCamera(uint32_t cameraId) { m_ActiveCameraId = cameraId; }
-    NewSceneSettings& GetSceneSettings() { return m_SceneSettings; }
+    SceneSettings& GetSceneSettings() { return m_SceneSettings; }
     const bool HasDirectionalLight() const { return m_HasDirectionalLight; }
     const bool HasSkybox() const { return m_HasSkybox; }
 
@@ -72,7 +75,7 @@ private:
     std::vector<uint32_t> m_CameraIds;
     uint32_t m_ActiveCameraId;
     uint32_t m_SkyboxId;
-    NewSceneSettings m_SceneSettings;
+    SceneSettings m_SceneSettings;
     bool m_HasDirectionalLight;
     bool m_HasSkybox;
 

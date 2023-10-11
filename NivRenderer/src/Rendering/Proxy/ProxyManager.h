@@ -1,6 +1,6 @@
 #pragma once
 #include "Base.h"
-#include "Application/NewScene.h"
+#include "..\..\Application\Scene.h"
 #include "Rendering/Proxy/Proxy.h"
 #include "Rendering/Proxy/SceneObjectProxy.h"
 #include "Rendering/Proxy/LightProxy.h"
@@ -14,19 +14,19 @@ class ProxyManager
 public:
     ProxyManager();
 
-    void UpdateProxies(NewScene* const scene);
+    void UpdateProxies(Scene* const scene);
     Proxy* GetProxy(const uint32_t id);
 
-    std::vector<SceneObjectProxy*> GetSceneObjectsToRender(NewScene* const scene);
+    std::vector<SceneObjectProxy*> GetSceneObjectsToRender(Scene* const scene);
     std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>>
-    GetSceneObjectsToRenderByMaterial(const NewScene* const scene);
+    GetSceneObjectsToRenderByMaterial(const Scene* const scene);
 
 private:
     std::unordered_map<uint32_t, Scope<Proxy>> m_Proxies;
     std::vector<SceneObjectProxy*> m_SceneObjectsToRender;
     std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>> m_SceneObjectsToRenderByMaterial;
 
-    void updateSceneObjectProxy(NewScene* const scene, const uint32_t sceneObjectId,
+    void updateSceneObjectProxy(Scene* const scene, const uint32_t sceneObjectId,
                                 SceneObjectProxy* const parentProxy);
     void updateMaterialProxy(const uint32_t materialId);
     void updateCameraProxy(const uint32_t cameraId);

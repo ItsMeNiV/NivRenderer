@@ -1,11 +1,11 @@
-#include "NewScene.h"
+#include "Scene.h"
 
 #include "IdManager.h"
-#include "Entity/NewECSRegistry.h"
+#include "Entity/ECSRegistry.h"
 #include "Entity/Assets/AssetManager.h"
 #include "Util/Math.h"
 
-NewScene::NewScene() :
+Scene::Scene() :
     m_Id(IdManager::GetInstance().CreateNewId()), m_DirectionalLightId(UINT32_MAX), m_ActiveCameraId(UINT32_MAX), m_SkyboxId(UINT32_MAX)
 {
     m_SceneSettings.visualizeLights = false;
@@ -19,56 +19,60 @@ NewScene::NewScene() :
     m_HasSkybox = false;
 }
 
-NewScene::~NewScene() = default;
+Scene::~Scene() = default;
 
-uint32_t NewScene::AddSceneObject(uint32_t parentObjectId)
+uint32_t Scene::AddSceneObject(uint32_t parentObjectId)
 {
     AssetManager& am = AssetManager::GetInstance(); // Create Instance first so the default stuff is loaded on Startup
-    const auto& entity = NewECSRegistry::GetInstance().CreateEntity(this);
-    NewComponents::SceneObjectComponent component;
-    NewECSRegistry::GetInstance().AddComponent<NewComponents::SceneObjectComponent>(entity.id, component);
-    NewComponents::TagComponent tagComponent = {std::string("SceneObject (") + std::to_string(entity.id) + std::string(")")};
-    NewECSRegistry::GetInstance().AddComponent<NewComponents::TagComponent>(entity.id, tagComponent);
+    const auto& entity = ECSRegistry::GetInstance().CreateEntity(this);
+    SceneObjectComponent component;
+    ECSRegistry::GetInstance().AddComponent<SceneObjectComponent>(entity.id, component);
+    TagComponent tagComponent = {std::string("SceneObject (") + std::to_string(entity.id) + std::string(")")};
+    ECSRegistry::GetInstance().AddComponent<TagComponent>(entity.id, tagComponent);
 
-    NewComponents::TransformComponent transformComponent;
-    NewECSRegistry::GetInstance().AddComponent<NewComponents::TransformComponent>(entity.id, transformComponent);
-    NewComponents::MeshComponent meshComponent;
-    NewECSRegistry::GetInstance().AddComponent<NewComponents::MeshComponent>(entity.id, transformComponent);
-    NewComponents::MaterialComponent materialComponent = {am.GetMaterial("Default")};
-    NewECSRegistry::GetInstance().AddComponent<NewComponents::MaterialComponent>(entity.id, transformComponent);
+    TransformComponent transformComponent;
+    ECSRegistry::GetInstance().AddComponent<TransformComponent>(entity.id, transformComponent);
+    MeshComponent meshComponent = {"default", am.LoadMesh("default")};
+    ECSRegistry::GetInstance().AddComponent<MeshComponent>(entity.id, meshComponent);
+    MaterialComponent materialComponent = {am.GetMaterial("Default")};
+    ECSRegistry::GetInstance().AddComponent<MaterialComponent>(entity.id, materialComponent);
 
     m_SceneObjectIds.push_back(entity.id);
     m_SceneHierarchy.push_back({parentObjectId, entity.id, std::vector<uint32_t>()});
+    if (parentObjectId != UINT32_MAX)
+        GetSceneHierarchyElementById(parentObjectId)->childIds.push_back(entity.id);
 
     return entity.id;
 }
 
-uint32_t NewScene::AddEmptySceneObject(uint32_t parentObjectId)
+uint32_t Scene::AddEmptySceneObject(uint32_t parentObjectId)
 {
-    const auto& entity = NewECSRegistry::GetInstance().CreateEntity(this);
-    NewComponents::SceneObjectComponent component;
-    NewECSRegistry::GetInstance().AddComponent<NewComponents::SceneObjectComponent>(entity.id, component);
-    NewComponents::TagComponent tagComponent = {std::string("SceneObject (") + std::to_string(entity.id) + std::string(")")};
-    NewECSRegistry::GetInstance().AddComponent<NewComponents::TagComponent>(entity.id, tagComponent);
+    const auto& entity = ECSRegistry::GetInstance().CreateEntity(this);
+    SceneObjectComponent component;
+    ECSRegistry::GetInstance().AddComponent<SceneObjectComponent>(entity.id, component);
+    TagComponent tagComponent = {std::string("SceneObject (") + std::to_string(entity.id) + std::string(")")};
+    ECSRegistry::GetInstance().AddComponent<TagComponent>(entity.id, tagComponent);
 
     m_SceneObjectIds.push_back(entity.id);
     m_SceneHierarchy.push_back({parentObjectId, entity.id, std::vector<uint32_t>()});
+    if (parentObjectId != UINT32_MAX)
+        GetSceneHierarchyElementById(parentObjectId)->childIds.push_back(entity.id);
 
     return entity.id;
 }
 
-void NewScene::RemoveSceneObject(uint32_t sceneObjectId)
+void Scene::RemoveSceneObject(uint32_t sceneObjectId)
 {
-    NewECSRegistry::GetInstance().RemoveEntity(sceneObjectId);
+    ECSRegistry::GetInstance().RemoveEntity(sceneObjectId);
     std::erase(m_SceneObjectIds, sceneObjectId);
     std::vector<uint32_t> childIdsToDelete;
-    if (auto hierarchyElement = GetSceneHierarchyElementById(sceneObjectId))
+    if (const auto hierarchyElement = GetSceneHierarchyElementById(sceneObjectId))
     {
         // Clear Elem from Parent "ChildList"
         if (hierarchyElement->parentId != UINT32_MAX)
         {
             if(const auto parentElem = GetSceneHierarchyElementById(hierarchyElement->parentId))
-                std::erase(parentElem->childIds, hierarchyElement);
+                std::erase(parentElem->childIds, hierarchyElement->entityId);
         }
 
         // Remember which childIds to delete
@@ -82,42 +86,42 @@ void NewScene::RemoveSceneObject(uint32_t sceneObjectId)
         RemoveSceneObject(id);
 }
 
-void NewScene::RemoveSkyboxObject()
+void Scene::RemoveSkyboxObject()
 {
     if (!m_HasSkybox)
         return;
 
-    NewECSRegistry::GetInstance().RemoveEntity(m_SkyboxId);
+    ECSRegistry::GetInstance().RemoveEntity(m_SkyboxId);
     m_HasSkybox = false;
     m_SkyboxId = UINT32_MAX;
 }
 
-void NewScene::RemovePointLight(uint32_t pointLightId)
+void Scene::RemovePointLight(uint32_t pointLightId)
 {
-    NewECSRegistry::GetInstance().RemoveEntity(pointLightId);
+    ECSRegistry::GetInstance().RemoveEntity(pointLightId);
     std::erase(m_PointLightIds, pointLightId);
 }
 
-void NewScene::RemoveDirectionalLight()
+void Scene::RemoveDirectionalLight()
 {
     if (!m_HasDirectionalLight)
         return;
 
-    NewECSRegistry::GetInstance().RemoveEntity(m_DirectionalLightId);
+    ECSRegistry::GetInstance().RemoveEntity(m_DirectionalLightId);
     m_HasDirectionalLight = false;
     m_DirectionalLightId = UINT32_MAX;
 }
 
-void NewScene::RemoveMaterialAsset(uint32_t materialAssetId) const
+void Scene::RemoveMaterialAsset(uint32_t materialAssetId) const
 {
     // Remove Material from all SceneObjects that use it (Set Material back to Default)
     const auto defaultMaterial = AssetManager::GetInstance().GetMaterial("Default");
     for (const uint32_t sceneObjectId : m_SceneObjectIds)
     {
-        const auto sceneObject = NewECSRegistry::GetInstance().GetEntity(sceneObjectId);
+        const auto sceneObject = ECSRegistry::GetInstance().GetEntity(sceneObjectId);
         const auto sceneObjectComponent =
-            NewECSRegistry::GetInstance().GetComponent<NewComponents::SceneObjectComponent>(sceneObjectId);
-        const auto materialComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::MaterialComponent>(sceneObjectId);
+            ECSRegistry::GetInstance().GetComponent<SceneObjectComponent>(sceneObjectId);
+        const auto materialComponent = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(sceneObjectId);
         if (materialComponent->materialAsset->GetId() != materialAssetId)
             continue;
 
@@ -141,16 +145,16 @@ void NewScene::RemoveMaterialAsset(uint32_t materialAssetId) const
     AssetManager::GetInstance().RemoveMaterial(materialAssetId);
 }
 
-uint32_t NewScene::AddDirectionalLight()
+uint32_t Scene::AddDirectionalLight()
 {
     if (m_HasDirectionalLight)
         return UINT32_MAX;
 
-    const auto& entity = NewECSRegistry::GetInstance().CreateEntity(this);
-    NewComponents::DirectionalLightComponent component;
-    NewECSRegistry::GetInstance().AddComponent<NewComponents::DirectionalLightComponent>(entity.id, component);
-    NewComponents::TagComponent tagComponent = {"Directional Light"};
-    NewECSRegistry::GetInstance().AddComponent<NewComponents::TagComponent>(entity.id, tagComponent);
+    const auto& entity = ECSRegistry::GetInstance().CreateEntity(this);
+    DirectionalLightComponent component;
+    ECSRegistry::GetInstance().AddComponent<DirectionalLightComponent>(entity.id, component);
+    TagComponent tagComponent = {"Directional Light"};
+    ECSRegistry::GetInstance().AddComponent<TagComponent>(entity.id, tagComponent);
 
     m_DirectionalLightId = entity.id;
     m_HasDirectionalLight = true;
@@ -158,30 +162,30 @@ uint32_t NewScene::AddDirectionalLight()
     return entity.id;
 }
 
-uint32_t NewScene::AddPointLight()
+uint32_t Scene::AddPointLight()
 {
-    const auto& entity = NewECSRegistry::GetInstance().CreateEntity(this);
-    NewComponents::PointLightComponent component;
-    NewECSRegistry::GetInstance().AddComponent<NewComponents::PointLightComponent>(entity.id, component);
-    NewComponents::TagComponent tagComponent = {std::string("Point Light (") + std::to_string(entity.id) +
+    const auto& entity = ECSRegistry::GetInstance().CreateEntity(this);
+    PointLightComponent component;
+    ECSRegistry::GetInstance().AddComponent<PointLightComponent>(entity.id, component);
+    TagComponent tagComponent = {std::string("Point Light (") + std::to_string(entity.id) +
                                                 std::string(")")};
-    NewECSRegistry::GetInstance().AddComponent<NewComponents::TagComponent>(entity.id, tagComponent);
+    ECSRegistry::GetInstance().AddComponent<TagComponent>(entity.id, tagComponent);
 
     m_PointLightIds.push_back(entity.id);
 
     return entity.id;
 }
 
-uint32_t NewScene::AddSkybox()
+uint32_t Scene::AddSkybox()
 {
     if (m_HasSkybox)
         return UINT32_MAX;
 
-    const auto& entity = NewECSRegistry::GetInstance().CreateEntity(this);
-    NewComponents::SkyboxComponent component;
-    NewECSRegistry::GetInstance().AddComponent<NewComponents::DirectionalLightComponent>(entity.id, component);
-    NewComponents::TagComponent tagComponent = {"Skybox"};
-    NewECSRegistry::GetInstance().AddComponent<NewComponents::TagComponent>(entity.id, tagComponent);
+    const auto& entity = ECSRegistry::GetInstance().CreateEntity(this);
+    SkyboxComponent component;
+    ECSRegistry::GetInstance().AddComponent<SkyboxComponent>(entity.id, component);
+    TagComponent tagComponent = {"Skybox"};
+    ECSRegistry::GetInstance().AddComponent<TagComponent>(entity.id, tagComponent);
 
     m_SkyboxId = entity.id;
     m_HasSkybox = true;
@@ -189,19 +193,19 @@ uint32_t NewScene::AddSkybox()
     return entity.id;
 }
 
-uint32_t NewScene::AddMaterialAsset()
+uint32_t Scene::AddMaterialAsset()
 {
     const auto materialAsset = AssetManager::GetInstance().CreateMaterial();
     return materialAsset->GetId();
 }
 
-uint32_t NewScene::AddCamera(Camera* cameraPtr)
+uint32_t Scene::AddCamera(Camera* cameraPtr)
 {
-    const auto& entity = NewECSRegistry::GetInstance().CreateEntity(this);
-    NewComponents::CameraComponent component = {cameraPtr};
-    NewECSRegistry::GetInstance().AddComponent<NewComponents::CameraComponent>(entity.id, component);
-    NewComponents::TagComponent tagComponent = {"Camera"};
-    NewECSRegistry::GetInstance().AddComponent<NewComponents::TagComponent>(entity.id, tagComponent);
+    const auto& entity = ECSRegistry::GetInstance().CreateEntity(this);
+    CameraComponent component = {cameraPtr};
+    ECSRegistry::GetInstance().AddComponent<CameraComponent>(entity.id, component);
+    TagComponent tagComponent = {"Camera"};
+    ECSRegistry::GetInstance().AddComponent<TagComponent>(entity.id, tagComponent);
 
     m_CameraIds.push_back(entity.id);
     if (m_ActiveCameraId == UINT32_MAX)
@@ -210,36 +214,42 @@ uint32_t NewScene::AddCamera(Camera* cameraPtr)
     return entity.id;
 }
 
-void NewScene::LoadModel(uint32_t sceneObjectId)
+void Scene::LoadModel(uint32_t sceneObjectId)
 {
     if (const auto meshComponent =
-            NewECSRegistry::GetInstance().GetComponent<NewComponents::MeshComponent>(sceneObjectId))
+        ECSRegistry::GetInstance().GetComponent<MeshComponent>(sceneObjectId))
     {
-        NewECSRegistry::GetInstance().RemoveComponent<NewComponents::MeshComponent>(sceneObjectId);
+        ECSRegistry::GetInstance().RemoveComponent<MeshComponent>(sceneObjectId);
     }
-    if (const auto materialComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::MaterialComponent>(sceneObjectId))
+    if (const auto materialComponent = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(sceneObjectId))
     {
-        NewECSRegistry::GetInstance().RemoveComponent<NewComponents::MaterialComponent>(sceneObjectId);
+        ECSRegistry::GetInstance().RemoveComponent<MaterialComponent>(sceneObjectId);
     }
-    if (!NewECSRegistry::GetInstance().GetComponent<NewComponents::TransformComponent>(sceneObjectId))
+    if (!ECSRegistry::GetInstance().GetComponent<TransformComponent>(sceneObjectId))
     {
-        NewECSRegistry::GetInstance().AddComponent<NewComponents::TransformComponent>(sceneObjectId);
+        ECSRegistry::GetInstance().AddComponent<TransformComponent>(sceneObjectId);
     }
 
-    const auto sceneObjectComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::SceneObjectComponent>(sceneObjectId);
-    const auto tagComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::TagComponent>(sceneObjectId);
+    const auto sceneObjectComponent = ECSRegistry::GetInstance().GetComponent<SceneObjectComponent>(sceneObjectId);
+    const auto tagComponent = ECSRegistry::GetInstance().GetComponent<TagComponent>(sceneObjectId);
     const auto model = AssetManager::GetInstance().LoadModel(sceneObjectComponent->modelPath);
     tagComponent->name = model->name;
     for (auto& subModel : model->subModels)
-        createChildSceneObjectFromSubModel(subModel, GetId());
+        createChildSceneObjectFromSubModel(subModel, sceneObjectId);
 }
 
-void NewScene::SetSkyboxTexturePathsFromFolder()
+void Scene::LoadMesh(uint32_t sceneObjectId)
+{
+    const auto meshComponent = ECSRegistry::GetInstance().GetComponent<MeshComponent>(sceneObjectId);
+    meshComponent->meshAsset = AssetManager::GetInstance().LoadMesh(meshComponent->path);
+}
+
+void Scene::SetSkyboxTexturePathsFromFolder() const
 {
     // Assumes files are named "WHATEVER_Right.WHATEVER", "WHATEVER_Left.WHATEVER", etc.
     // Automatically populates Texture paths in the following order: Right, Left, Top, Bottom, Front, Back
 
-    const auto skyboxComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::SkyboxComponent>(m_SkyboxId);
+    const auto skyboxComponent = ECSRegistry::GetInstance().GetComponent<SkyboxComponent>(m_SkyboxId);
 
     if (skyboxComponent->textureFolder.back() != '/')
         skyboxComponent->textureFolder += '/';
@@ -272,9 +282,9 @@ void NewScene::SetSkyboxTexturePathsFromFolder()
         LoadSkyboxTextures();
 }
 
-void NewScene::LoadSkyboxTextures() const
+void Scene::LoadSkyboxTextures() const
 {
-    const auto skyboxComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::SkyboxComponent>(m_SkyboxId);
+    const auto skyboxComponent = ECSRegistry::GetInstance().GetComponent<SkyboxComponent>(m_SkyboxId);
 
     uint8_t i = 0;
     for (auto& path : skyboxComponent->texturePaths)
@@ -285,7 +295,7 @@ void NewScene::LoadSkyboxTextures() const
     }
 }
 
-nlohmann::ordered_json NewScene::SerializeObject()
+nlohmann::ordered_json Scene::SerializeObject()
 {
     //TODO
     /*
@@ -363,7 +373,7 @@ nlohmann::ordered_json NewScene::SerializeObject()
     return nlohmann::ordered_json();
 }
 
-void NewScene::DeSerializeObject(nlohmann::json jsonObject)
+void Scene::DeSerializeObject(nlohmann::json jsonObject)
 {
     //TODO
     /*
@@ -453,26 +463,26 @@ void NewScene::DeSerializeObject(nlohmann::json jsonObject)
     */
 }
 
-void NewScene::createChildSceneObjectFromSubModel(const SubModel& subModel, const uint32_t parentId)
+void Scene::createChildSceneObjectFromSubModel(const SubModel& subModel, const uint32_t parentId)
 {
     if (!subModel.mesh && subModel.subModels.empty())
         return; // Empty node, not interesting for us
 
     const uint32_t subObjectId = AddEmptySceneObject(parentId);
-    const auto subObject = NewECSRegistry::GetInstance().GetComponent<NewComponents::SceneObjectComponent>(subObjectId);
-    const auto transform = NewECSRegistry::GetInstance().AddComponent<NewComponents::TransformComponent>(subObjectId);
-    const auto tag = NewECSRegistry::GetInstance().GetComponent<NewComponents::TagComponent>(subObjectId);
+    ECSRegistry::GetInstance().GetComponent<SceneObjectComponent>(subObjectId);
+    const auto transform = ECSRegistry::GetInstance().AddComponent<TransformComponent>(subObjectId);
+    const auto tag = ECSRegistry::GetInstance().GetComponent<TagComponent>(subObjectId);
 
     if (subModel.mesh)
     {
-        const auto meshComponent = NewECSRegistry::GetInstance().AddComponent<NewComponents::MeshComponent>(subObjectId);
+        const auto meshComponent = ECSRegistry::GetInstance().AddComponent<MeshComponent>(subObjectId);
         meshComponent->meshAsset = subModel.mesh;
         const std::string meshPath = subModel.mesh->GetPath();
         meshComponent->path = meshPath;
     }
     if (subModel.material)
     {
-        const auto materialComponent = NewECSRegistry::GetInstance().AddComponent<NewComponents::MaterialComponent>(subObjectId);
+        const auto materialComponent = ECSRegistry::GetInstance().AddComponent<MaterialComponent>(subObjectId);
         materialComponent->materialAsset = subModel.material;
     }
     tag->name = subModel.name;
@@ -484,7 +494,7 @@ void NewScene::createChildSceneObjectFromSubModel(const SubModel& subModel, cons
         createChildSceneObjectFromSubModel(nextSubModel, subObjectId);
 }
 
-SceneHierarchyElement* NewScene::GetSceneHierarchyElementById(uint32_t id)
+SceneHierarchyElement* Scene::GetSceneHierarchyElementById(uint32_t id)
 {
     if (const auto it = std::ranges::find_if(m_SceneHierarchy, [&id](const SceneHierarchyElement& elem) { return elem.entityId == id; }); it != m_SceneHierarchy.end())
     {

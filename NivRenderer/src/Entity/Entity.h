@@ -1,10 +1,10 @@
 #pragma once
-#include "Application/NewScene.h"
+#include "..\Application\Scene.h"
 #include "entt/entt.hpp"
 
-struct NewEntity
+struct Entity
 {
     uint32_t id;
-    NewScene* scenePtr = nullptr;
+    Scene* scenePtr = nullptr;
     entt::entity entityHandle{entt::null};
 };

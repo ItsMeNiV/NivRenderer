@@ -1,26 +1,26 @@
 #pragma once
 #include "Base.h"
-#include "Application/NewScene.h"
-#include "Entity/NewEntity.h"
+#include "..\Application\Scene.h"
+#include "Entity.h"
 #include "Entity/Components.h"
 #include "entt/entt.hpp"
 
-class NewECSRegistry
+class ECSRegistry
 {
 public:
-    NewECSRegistry(class NewECSRegistry const&) = delete;
-    void operator=(NewECSRegistry const&) = delete;
+    ECSRegistry(class ECSRegistry const&) = delete;
+    void operator=(ECSRegistry const&) = delete;
 
-    static NewECSRegistry& GetInstance()
+    static ECSRegistry& GetInstance()
     {
-        static NewECSRegistry instance;
+        static ECSRegistry instance;
 
         return instance;
     }
 
 
-    NewEntity& CreateEntity(NewScene* scene);
-    NewEntity* GetEntity(uint32_t entityId);
+    Entity& CreateEntity(Scene* scene);
+    Entity* GetEntity(uint32_t entityId);
     void RemoveEntity(const uint32_t entityId);
     void Reset() const;
 
@@ -35,15 +35,15 @@ public:
 
 private:
     Scope<entt::registry> m_Registry;
-    std::unordered_map<uint32_t, NewEntity> m_Entities;
+    std::unordered_map<uint32_t, Entity> m_Entities;
 
     // Private Constructor
-    NewECSRegistry();
+    ECSRegistry();
 };
 
 // Template implementations
 template <typename T, typename... Args>
-T* NewECSRegistry::AddComponent(const uint32_t entityId, Args&&... args)
+T* ECSRegistry::AddComponent(const uint32_t entityId, Args&&... args)
 {
     if (!m_Entities.contains(entityId))
     {
@@ -57,7 +57,7 @@ T* NewECSRegistry::AddComponent(const uint32_t entityId, Args&&... args)
 }
 
 template <typename T>
-T* NewECSRegistry::GetComponent(const uint32_t entityId)
+T* ECSRegistry::GetComponent(const uint32_t entityId)
 {
     if (!m_Entities.contains(entityId))
     {
@@ -75,7 +75,7 @@ T* NewECSRegistry::GetComponent(const uint32_t entityId)
 }
 
 template <typename T>
-void NewECSRegistry::RemoveComponent(const uint32_t entityId)
+void ECSRegistry::RemoveComponent(const uint32_t entityId)
 {
     if (!m_Entities.contains(entityId))
     {

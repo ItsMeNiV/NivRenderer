@@ -11,7 +11,7 @@ ForwardPass::ForwardPass(Shader* passShader, uint32_t resolutionWidth, uint32_t 
     m_ShadowmapShader(AssetManager::GetInstance().LoadShader("assets/shaders/shadowmap.glsl", ShaderType::VERTEX_AND_FRAGMENT))
 {}
 
-void ForwardPass::Run(NewScene* scene, ProxyManager& proxyManager, CommandBuffer& commandBuffer)
+void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& commandBuffer)
 {
     RendererState rendererState;
 
@@ -227,7 +227,7 @@ void ForwardPass::Run(NewScene* scene, ProxyManager& proxyManager, CommandBuffer
     m_OutputFramebuffer->Unbind();
 }
 
-void ForwardPass::updateShadowmapFramebuffer(NewScene* scene)
+void ForwardPass::updateShadowmapFramebuffer(Scene* scene)
 {
     if (!m_ShadowmapFramebuffer ||
         scene->GetSceneSettings().shadowmapResolution.x != m_ShadowmapFramebuffer->GetWidth() ||

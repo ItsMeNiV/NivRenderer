@@ -15,7 +15,7 @@ MeshProxy::~MeshProxy()
     glDeleteVertexArrays(1, &m_VertexArray);
 }
 
-void MeshProxy::CreateBuffers(const NewComponents::MeshComponent* const mesh)
+void MeshProxy::CreateBuffers(const MeshComponent* const mesh)
 {
     const auto& vertices = mesh->meshAsset->GetVertices();
     const auto& indices = mesh->meshAsset->GetIndices();

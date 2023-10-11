@@ -1,5 +1,5 @@
 #pragma once
-#include "Entity/NewECSRegistry.h"
+#include "Entity/ECSRegistry.h"
 #include "Entity/Components.h"
 
 #include "imgui.h"
@@ -34,7 +34,7 @@ static int InputTextCallback(ImGuiInputTextCallbackData* data)
 	return 0;
 }
 
-inline void BuildProperties(const int32_t& selectedSceneObject, NewScene* scene)
+inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
 {
 	ImGui::Begin("Properties", nullptr, ImGuiWindowFlags_NoCollapse);
 
@@ -46,13 +46,13 @@ inline void BuildProperties(const int32_t& selectedSceneObject, NewScene* scene)
 
     //TagComponent
     {
-        const auto tagComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::TagComponent>(selectedSceneObject);
+        const auto tagComponent = ECSRegistry::GetInstance().GetComponent<TagComponent>(selectedSceneObject);
         const auto inputString = &tagComponent->name;
         ImGui::InputText("Name", inputString, 0, InputTextCallback, (void*)inputString);
         ImGui::Spacing();
     }
 
-    const auto sceneObjectComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::SceneObjectComponent>(selectedSceneObject);
+    const auto sceneObjectComponent = ECSRegistry::GetInstance().GetComponent<SceneObjectComponent>(selectedSceneObject);
     if (sceneObjectComponent)
     {
         {
@@ -83,7 +83,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, NewScene* scene)
     }
 
     if (const auto directionalLightComponent =
-        NewECSRegistry::GetInstance().GetComponent<NewComponents::DirectionalLightComponent>(selectedSceneObject))
+        ECSRegistry::GetInstance().GetComponent<DirectionalLightComponent>(selectedSceneObject))
     {
         if (ImGui::ColorEdit3("Color", glm::value_ptr(directionalLightComponent->lightColor)))
             directionalLightComponent->dirtyFlag = true;
@@ -94,7 +94,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, NewScene* scene)
     }
 
     if (const auto pointLightComponent =
-        NewECSRegistry::GetInstance().GetComponent<NewComponents::PointLightComponent>(selectedSceneObject))
+        ECSRegistry::GetInstance().GetComponent<PointLightComponent>(selectedSceneObject))
     {
         if (ImGui::ColorEdit3("Color", glm::value_ptr(pointLightComponent->lightColor)))
             pointLightComponent->dirtyFlag = true;
@@ -107,7 +107,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, NewScene* scene)
     }
 
     if (const auto skyboxComponent =
-        NewECSRegistry::GetInstance().GetComponent<NewComponents::SkyboxComponent>(selectedSceneObject))
+        ECSRegistry::GetInstance().GetComponent<SkyboxComponent>(selectedSceneObject))
     {
         {
             auto* inputString = &skyboxComponent->textureFolder;
@@ -157,7 +157,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, NewScene* scene)
     }
 
     if (const auto cameraComponent =
-        NewECSRegistry::GetInstance().GetComponent<NewComponents::CameraComponent>(selectedSceneObject))
+        ECSRegistry::GetInstance().GetComponent<CameraComponent>(selectedSceneObject))
     {
         bool isActiveCamera = scene->GetActiveCameraId() == selectedSceneObject;
         if(ImGui::Checkbox("Active", &isActiveCamera))
@@ -169,7 +169,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, NewScene* scene)
     }
 
     if (const auto transformComponent =
-        NewECSRegistry::GetInstance().GetComponent<NewComponents::TransformComponent>(selectedSceneObject))
+        ECSRegistry::GetInstance().GetComponent<TransformComponent>(selectedSceneObject))
     {
         if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
         {
@@ -190,7 +190,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, NewScene* scene)
     }
 
     if (const auto meshComponent =
-        NewECSRegistry::GetInstance().GetComponent<NewComponents::MeshComponent>(selectedSceneObject))
+        ECSRegistry::GetInstance().GetComponent<MeshComponent>(selectedSceneObject))
     {
         if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen))
         {
@@ -200,7 +200,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, NewScene* scene)
             if (ImGui::Button("Reload"))
             {
                 *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                scene->LoadModel(selectedSceneObject);
+                scene->LoadMesh(selectedSceneObject);
                 sceneObjectComponent->dirtyFlag = true;
             }
             ImGui::SameLine();
@@ -211,7 +211,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, NewScene* scene)
                 {
                     *inputString = paths[0];
                     *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                    scene->LoadModel(selectedSceneObject);
+                    scene->LoadMesh(selectedSceneObject);
                     sceneObjectComponent->dirtyFlag = true;
                 }
             }
@@ -221,22 +221,25 @@ inline void BuildProperties(const int32_t& selectedSceneObject, NewScene* scene)
     }
 
     if (const auto materialComponent =
-        NewECSRegistry::GetInstance().GetComponent<NewComponents::MaterialComponent>(selectedSceneObject))
+        ECSRegistry::GetInstance().GetComponent<MaterialComponent>(selectedSceneObject))
     {
-        auto* materialAsset = &materialComponent->materialAsset;
-        if (ImGui::BeginCombo("Material", (*materialAsset)->GetName().c_str()))
+        if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            for (const uint32_t materialId : AssetManager::GetInstance().GetMaterialIds(true))
+            auto* materialAsset = &materialComponent->materialAsset;
+            if (ImGui::BeginCombo("Material", (*materialAsset)->GetName().c_str()))
             {
-                const bool isSelected = (*materialAsset)->GetId() == materialId;
-                const auto currentMaterial = AssetManager::GetInstance().GetMaterial(materialId);
-                if (ImGui::Selectable(currentMaterial->GetName().c_str(), isSelected))
+                for (const uint32_t materialId : AssetManager::GetInstance().GetMaterialIds(true))
                 {
-                    *materialAsset = currentMaterial;
-                    sceneObjectComponent->dirtyFlag = true;
+                    const bool isSelected = (*materialAsset)->GetId() == materialId;
+                    const auto currentMaterial = AssetManager::GetInstance().GetMaterial(materialId);
+                    if (ImGui::Selectable(currentMaterial->GetName().c_str(), isSelected))
+                    {
+                        *materialAsset = currentMaterial;
+                        sceneObjectComponent->dirtyFlag = true;
+                    }
                 }
+                ImGui::EndCombo();
             }
-            ImGui::EndCombo();
         }
     }
 

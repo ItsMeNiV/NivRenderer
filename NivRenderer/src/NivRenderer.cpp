@@ -27,7 +27,7 @@ Application::Application() :
 	m_Window->SetCommandHandler([&](WindowCommandEvent command) { handleWindowCommand(command); });
 
 	m_Renderer = CreateScope<Renderer>(m_Window.get());
-    NewScene* scene = m_Project->GetActiveScene();
+    Scene* scene = m_Project->GetActiveScene();
     m_Renderer->SetScene(scene);
 
 	setupDefaultScene();
@@ -137,7 +137,7 @@ void Application::handleWindowCommand(WindowCommandEvent command)
 
 void Application::setupDefaultScene() const
 {
-    NewScene* scene = m_Renderer->GetScene();
+    Scene* scene = m_Renderer->GetScene();
     scene->AddSceneObject();
     scene->AddDirectionalLight();
     m_Window->CreateCameraAndController(scene->GetSceneSettings().renderResolution);

@@ -1,12 +1,12 @@
 #include "ProxyManager.h"
 
-#include "Entity/NewECSRegistry.h"
+#include "Entity/ECSRegistry.h"
 #include "Entity/Components.h"
 #include "Entity/Assets/AssetManager.h"
 
 ProxyManager::ProxyManager() = default;
 
-void ProxyManager::UpdateProxies(NewScene* const scene)
+void ProxyManager::UpdateProxies(Scene* const scene)
 {
     updateCameraProxy(scene->GetActiveCameraId());
 
@@ -35,29 +35,29 @@ Proxy* ProxyManager::GetProxy(const uint32_t id)
     return nullptr;
 }
 
-std::vector<SceneObjectProxy*> ProxyManager::GetSceneObjectsToRender(NewScene* const scene)
+std::vector<SceneObjectProxy*> ProxyManager::GetSceneObjectsToRender(Scene* const scene)
 {
     return m_SceneObjectsToRender;
 }
 
-std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>> ProxyManager::GetSceneObjectsToRenderByMaterial(const NewScene* const scene)
+std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>> ProxyManager::GetSceneObjectsToRenderByMaterial(const Scene* const scene)
 {
     return m_SceneObjectsToRenderByMaterial;
 }
 
-void ProxyManager::updateSceneObjectProxy(NewScene* const scene, const uint32_t sceneObjectId,
+void ProxyManager::updateSceneObjectProxy(Scene* const scene, const uint32_t sceneObjectId,
                                           SceneObjectProxy* const parentProxy)
 {
-    const auto sceneObjectComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::SceneObjectComponent>(sceneObjectId);
-    const auto meshComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::MeshComponent>(sceneObjectId);
-    const auto transformComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::TransformComponent>(sceneObjectId);
-    const auto materialComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::MaterialComponent>(sceneObjectId);
+    const auto sceneObjectComponent = ECSRegistry::GetInstance().GetComponent<SceneObjectComponent>(sceneObjectId);
+    const auto meshComponent = ECSRegistry::GetInstance().GetComponent<MeshComponent>(sceneObjectId);
+    const auto transformComponent = ECSRegistry::GetInstance().GetComponent<TransformComponent>(sceneObjectId);
+    const auto materialComponent = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(sceneObjectId);
 
     const auto& childIds = scene->GetSceneHierarchyElementById(sceneObjectId)->childIds;
     if (sceneObjectComponent->dirtyFlag) // Do we have to update the Proxy?
     {
         for (const auto& childId : childIds)
-            NewECSRegistry::GetInstance().GetComponent<NewComponents::SceneObjectComponent>(sceneObjectId)->dirtyFlag = true;
+            ECSRegistry::GetInstance().GetComponent<SceneObjectComponent>(childId)->dirtyFlag = true;
 
         if (!m_Proxies.contains(sceneObjectId))
         {
@@ -163,12 +163,12 @@ void ProxyManager::updateCameraProxy(const uint32_t cameraId)
         m_Proxies[cameraId] = CreateScope<CameraProxy>(cameraId);
     }
     CameraProxy* cameraProxy = dynamic_cast<CameraProxy*>(m_Proxies[cameraId].get());
-    cameraProxy->UpdateData(NewECSRegistry::GetInstance().GetComponent<NewComponents::CameraComponent>(cameraId)->cameraPtr);
+    cameraProxy->UpdateData(ECSRegistry::GetInstance().GetComponent<CameraComponent>(cameraId)->cameraPtr);
 }
 
 void ProxyManager::updateSkyboxProxy(const uint32_t skyboxId)
 {
-    const auto skyboxComponent = NewECSRegistry::GetInstance().GetComponent<NewComponents::SkyboxComponent>(skyboxId);
+    const auto skyboxComponent = ECSRegistry::GetInstance().GetComponent<SkyboxComponent>(skyboxId);
 
     if (!skyboxComponent->dirtyFlag)
         return;
@@ -200,7 +200,7 @@ void ProxyManager::updateSceneLightProxy(const uint32_t sceneLightId, const bool
     if (isDirectionalLight)
     {
         const auto directionalLightComponent =
-            NewECSRegistry::GetInstance().GetComponent<NewComponents::DirectionalLightComponent>(sceneLightId);
+            ECSRegistry::GetInstance().GetComponent<DirectionalLightComponent>(sceneLightId);
         if (!directionalLightComponent->dirtyFlag)
             return;
 
@@ -216,7 +216,7 @@ void ProxyManager::updateSceneLightProxy(const uint32_t sceneLightId, const bool
     else
     {
         const auto pointLightComponent =
-            NewECSRegistry::GetInstance().GetComponent<NewComponents::PointLightComponent>(sceneLightId);
+            ECSRegistry::GetInstance().GetComponent<PointLightComponent>(sceneLightId);
         if (!pointLightComponent->dirtyFlag)
             return;
 
