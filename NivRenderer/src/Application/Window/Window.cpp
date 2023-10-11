@@ -225,7 +225,7 @@ void Window::RenderImGui(Scene* scene)
 	BuildSceneHierarchy(scene, m_SelectedObject);
     BuildProperties(m_SelectedObject, scene);
 	m_RenderWindowHovered = BuildRenderWindow(this);
-    if (m_SelectedObject != -1)
+    if (m_SelectedObject != -1 && m_SelectedObject != scene->GetId())
     {
         // Entity Transform
         const auto transformComponent = ECSRegistry::GetInstance().GetComponent<TransformComponent>(m_SelectedObject);

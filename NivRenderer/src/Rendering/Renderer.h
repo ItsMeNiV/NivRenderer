@@ -16,6 +16,7 @@ public:
 	Scene* GetScene() const { return m_Scene; }
     void SetScene(Scene* scene) { m_Scene = scene; }
 	void SetActivePipeline(RenderPipeline* renderPipeline) { m_ActiveRenderPipeline.reset(renderPipeline); }
+    void ResetProxies();
 
 	RenderPipeline* GetActivePipeline() const { return m_ActiveRenderPipeline.get(); }
 

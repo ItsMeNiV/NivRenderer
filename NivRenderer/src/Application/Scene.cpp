@@ -3,6 +3,7 @@
 #include "IdManager.h"
 #include "Entity/ECSRegistry.h"
 #include "Entity/Assets/AssetManager.h"
+#include "Entity/Assets/AssetManager.h"
 #include "Util/Math.h"
 
 Scene::Scene() :
@@ -297,10 +298,9 @@ void Scene::LoadSkyboxTextures() const
 
 nlohmann::ordered_json Scene::SerializeObject()
 {
-    //TODO
-    /*
     using namespace nlohmann;
     ordered_json scene;
+    scene["Id"] = m_Id;
     scene["SceneSettings"] = {
         {"VisualizeLights", m_SceneSettings.visualizeLights},
         {"AnimateDirectionalLight", m_SceneSettings.animateDirectionalLight},
@@ -312,22 +312,138 @@ nlohmann::ordered_json Scene::SerializeObject()
     scene["CurrentId"] = IdManager::GetInstance().GetCurrentId();
 
     scene["SceneObjects"] = json::array();
-    scene["SceneLights"] = json::array();
+    scene["PointLights"] = json::array();
+
     uint32_t i = 0;
-    for (const auto& id : m_SceneObjectIds)
+    for (const auto& hierarchyElement : m_SceneHierarchy)
     {
-        scene["SceneObjects"][i] = ECSRegistry::GetInstance().GetEntity<SceneObject>(id)->SerializeObject();
+        const auto id = hierarchyElement.entityId;
+        const auto sceneObjectComponent = ECSRegistry::GetInstance().GetComponent<SceneObjectComponent>(id);
+        const auto tagComponent = ECSRegistry::GetInstance().GetComponent<TagComponent>(id);
+        const auto transformComponent = ECSRegistry::GetInstance().GetComponent<TransformComponent>(id);
+        const auto materialComponent = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(id);
+        const auto meshComponent = ECSRegistry::GetInstance().GetComponent<MeshComponent>(id);
+
+        ordered_json sceneObjectJson;
+        sceneObjectJson["Id"] = id;
+        sceneObjectJson["ParentId"] = hierarchyElement.parentId;
+
+        sceneObjectJson["ModelPath"] = sceneObjectComponent->modelPath;
+        sceneObjectJson["Components"] = json::array();
+        sceneObjectJson["Components"][0]["Type"] = "TagComponent";
+        sceneObjectJson["Components"][0]["Name"] = tagComponent->name;
+
+        if (transformComponent)
+        {
+            ordered_json transformJson;
+            transformJson["Type"] = "TransformComponent";
+            transformJson["Position"] = {
+                {"x", transformComponent->position.x},
+                {"y", transformComponent->position.y},
+                {"z", transformComponent->position.z}
+            };
+            transformJson["Scale"] = {
+                {"x", transformComponent->scale.x},
+                {"y", transformComponent->scale.y},
+                {"z", transformComponent->scale.z}
+            };
+            transformJson["Rotation"] = {
+                {"x", transformComponent->rotation.x},
+                {"y", transformComponent->rotation.y},
+                {"z", transformComponent->rotation.z}
+            };
+            transformJson["DegRotation"] = {
+                {"x", transformComponent->degRotation.x},
+                {"y", transformComponent->degRotation.y},
+                {"z", transformComponent->degRotation.z}
+            };
+
+            sceneObjectJson["Components"][1] = transformJson;
+        }
+
+        if (materialComponent)
+        {
+            ordered_json materialJson;
+            materialJson["Type"] = "MaterialComponent";
+            materialJson["MaterialAssetId"] = materialComponent->materialAsset->GetId();
+
+            sceneObjectJson["Components"][2] = materialJson;
+        }
+
+        if (meshComponent)
+        {
+            ordered_json meshJson;
+            meshJson["Type"] = "MeshComponent";
+            meshJson["Path"] = meshComponent->path;
+            meshJson["MeshAssetId"] = meshComponent->meshAsset->GetId();
+
+            sceneObjectJson["Components"][3] = meshJson;
+        }
+
+        scene["SceneObjects"][i] = sceneObjectJson;
+
         i++;
     }
+
+    if (m_HasDirectionalLight)
+    {
+        scene["DirectionalLight"] = json::object();
+        ordered_json directionalLightJson;
+        const auto directionalLightComponent = ECSRegistry::GetInstance().GetComponent<DirectionalLightComponent>(m_DirectionalLightId);
+        directionalLightJson["Id"] = m_DirectionalLightId;
+        directionalLightJson["LightColor"] = {
+            {"r", directionalLightComponent->lightColor.r},
+            {"g", directionalLightComponent->lightColor.g},
+            {"b", directionalLightComponent->lightColor.b}
+        };
+        directionalLightJson["Direction"] = {
+            {"x", directionalLightComponent->direction.x},
+            {"y", directionalLightComponent->direction.y},
+            {"z", directionalLightComponent->direction.z}
+        };
+
+        scene["DirectionalLight"] = directionalLightJson;
+    }
+
     i = 0;
-    for (const auto& id : m_SceneLightIds)
+    for (const auto& id : m_PointLightIds)
     {
-        scene["SceneLights"][i] = ECSRegistry::GetInstance().GetEntity<LightObject>(id)->SerializeObject();
+        ordered_json pointLightJson;
+        const auto pointLightComponent = ECSRegistry::GetInstance().GetComponent<PointLightComponent>(id);
+        pointLightJson["Id"] = id;
+        pointLightJson["Strength"] = pointLightComponent->strength;
+        pointLightJson["LightColor"] = {
+            {"r", pointLightComponent->lightColor.r},
+            {"g", pointLightComponent->lightColor.g},
+            {"b", pointLightComponent->lightColor.b}
+        };
+        pointLightJson["Position"] = {
+            {"x", pointLightComponent->position.x},
+            {"y", pointLightComponent->position.y},
+            {"z", pointLightComponent->position.z}
+        };
+
+        scene["PointLights"][i] = pointLightJson;
         i++;
     }
+
     if (m_HasSkybox)
     {
-        scene["Skybox"] = ECSRegistry::GetInstance().GetEntity<SkyboxObject>(m_SkyboxId)->SerializeObject();
+        ordered_json skyboxJson;
+        const auto skyboxComponent = ECSRegistry::GetInstance().GetComponent<SkyboxComponent>(m_SkyboxId);
+        skyboxJson["Id"] = m_SkyboxId;
+        skyboxJson["TextureFolder"] = skyboxComponent->textureFolder;
+        skyboxJson["FlipTextures"] = skyboxComponent->flipTextures;
+        skyboxJson["Textures"] = json::array();
+        for (uint32_t j = 0; j < 6; j++)
+        {
+            ordered_json texture;
+            texture["Path"] = skyboxComponent->texturePaths[j];
+            texture["AssetId"] = skyboxComponent->textureAssets[j]->GetId();
+            skyboxJson["Textures"][j] = texture;
+        }
+
+        scene["Skybox"] = skyboxJson;
     }
 
     scene["Assets"]["ModelAssets"] = json::array();
@@ -369,14 +485,10 @@ nlohmann::ordered_json Scene::SerializeObject()
     }
 
     return scene;
-     */
-    return nlohmann::ordered_json();
 }
 
 void Scene::DeSerializeObject(nlohmann::json jsonObject)
 {
-    //TODO
-    /*
     using namespace nlohmann;
     json sceneSettings = jsonObject["SceneSettings"];
     m_SceneSettings.visualizeLights = sceneSettings["VisualizeLights"];
@@ -422,45 +534,79 @@ void Scene::DeSerializeObject(nlohmann::json jsonObject)
         modelAsset->DeserializeObject(model);
         AssetManager::GetInstance().AddModel(model["Path"], std::move(modelAsset));
     }
-
     if (jsonObject.contains("Skybox"))
     {
         json skybox = jsonObject["Skybox"];
         IdManager::GetInstance().SetNextId(skybox["Id"]);
         AddSkybox();
-        ECSRegistry::GetInstance().GetEntity<SkyboxObject>(m_SkyboxId)->DeSerializeObject(skybox);
+        auto skyboxComponent = ECSRegistry::GetInstance().GetComponent<SkyboxComponent>(m_SkyboxId);
+        skyboxComponent->flipTextures = skybox["FlipTextures"];
+        skyboxComponent->textureFolder = skybox["TextureFolder"];
+        for (uint32_t i = 0; i < 6; i++)
+        {
+            skyboxComponent->texturePaths[i] = skybox["Textures"][i]["Path"];
+            skyboxComponent->textureAssets[i] = AssetManager::GetInstance().GetTexture(skybox["Textures"][i]["AssetId"]);
+        }
     }
-
-    json sceneLights = jsonObject["SceneLights"];
-    for (json sceneLight : sceneLights)
+    if (jsonObject.contains("DirectionalLight"))
     {
-        if (sceneLight["Type"] == "DirectionalLight")
-        {
-            IdManager::GetInstance().SetNextId(sceneLight["Id"]);
-            const uint32_t directionalLightId = AddDirectionalLight();
-            ECSRegistry::GetInstance()
-                .GetEntity<DirectionalLightObject>(directionalLightId)
-                ->DeSerializeObject(sceneLight);
-        }
-        else if (sceneLight["Type"] == "PointLight")
-        {
-            IdManager::GetInstance().SetNextId(sceneLight["Id"]);
-            const uint32_t pointLightId = AddPointLight();
-            ECSRegistry::GetInstance().GetEntity<PointLightObject>(pointLightId)->DeSerializeObject(sceneLight);
-        }
+        json directionalLight = jsonObject["DirectionalLight"];
+        IdManager::GetInstance().SetNextId(directionalLight["Id"]);
+        AddDirectionalLight();
+        auto directionalLightComponent = ECSRegistry::GetInstance().GetComponent<DirectionalLightComponent>(m_DirectionalLightId);
+        directionalLightComponent->lightColor = {directionalLight["LightColor"]["r"], directionalLight["LightColor"]["g"], directionalLight["LightColor"]["b"]};
+        directionalLightComponent->direction = {directionalLight["Direction"]["x"], directionalLight["Direction"]["y"], directionalLight["Direction"]["z"]};
+    }
+    const json pointLights = jsonObject["PointLights"];
+    for (json pointLight : pointLights)
+    {
+        IdManager::GetInstance().SetNextId(pointLight["Id"]);
+        const uint32_t pointLightId = AddPointLight();
+        auto pointLightComponent = ECSRegistry::GetInstance().GetComponent<PointLightComponent>(pointLightId);
+        pointLightComponent->lightColor = {pointLight["LightColor"]["r"], pointLight["LightColor"]["g"], pointLight["LightColor"]["b"]};
+        pointLightComponent->position = {pointLight["Position"]["x"], pointLight["Position"]["y"], pointLight["Position"]["z"]};
+        pointLightComponent->strength = pointLight["Strength"];
     }
 
     json sceneObjects = jsonObject["SceneObjects"];
     for (json sceneObject : sceneObjects)
     {
         IdManager::GetInstance().SetNextId(sceneObject["Id"]);
-        const uint32_t sceneObjectId = AddEmptySceneObject();
-        ECSRegistry::GetInstance().GetEntity<SceneObject>(sceneObjectId)->DeSerializeObject(sceneObject);
+        const uint32_t sceneObjectId = AddEmptySceneObject(sceneObject["ParentId"]);
+        const auto sceneObjectComponent = ECSRegistry::GetInstance().GetComponent<SceneObjectComponent>(sceneObjectId);
+        sceneObjectComponent->modelPath = sceneObject["ModelPath"];
+        for (json component : sceneObject["Components"])
+        {
+            if (component["Type"] == "TagComponent")
+            {
+                auto tagComponent = ECSRegistry::GetInstance().GetComponent<TagComponent>(sceneObjectId);
+                tagComponent->name = component["Name"];
+            }
+            else if (component["Type"] == "TransformComponent")
+            {
+                const TransformComponent transform = {
+                    {component["Position"]["x"], component["Position"]["y"], component["Position"]["z"]},
+                    {component["Scale"]["x"], component["Scale"]["y"], component["Scale"]["z"]},
+                    {component["Rotation"]["x"], component["Rotation"]["y"], component["Rotation"]["z"]},
+                    {component["DegRotation"]["x"], component["DegRotation"]["y"], component["DegRotation"]["z"]}
+                };
+                ECSRegistry::GetInstance().AddComponent<TransformComponent>(sceneObjectId, transform);
+            }
+            else if (component["Type"] == "MaterialComponent")
+            {
+                const MaterialComponent material = {AssetManager::GetInstance().GetMaterial(static_cast<uint32_t>(component["MaterialAssetId"]))};
+                ECSRegistry::GetInstance().AddComponent<MaterialComponent>(sceneObjectId, material);
+            }
+            else if (component["Type"] == "MeshComponent")
+            {
+                const MeshComponent mesh = {component["Path"], AssetManager::GetInstance().GetMesh(component["MeshAssetId"])};
+                ECSRegistry::GetInstance().AddComponent<MeshComponent>(sceneObjectId, mesh);
+            }
+        }
     }
 
     const uint32_t currentId = jsonObject["CurrentId"];
     IdManager::GetInstance().SetNextId(currentId + 1);
-    */
 }
 
 void Scene::createChildSceneObjectFromSubModel(const SubModel& subModel, const uint32_t parentId)

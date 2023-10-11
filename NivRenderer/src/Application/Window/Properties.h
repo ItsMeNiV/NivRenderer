@@ -44,405 +44,421 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
 		return;
 	}
 
-    //TagComponent
+    if (selectedSceneObject == scene->GetId())
     {
-        const auto tagComponent = ECSRegistry::GetInstance().GetComponent<TagComponent>(selectedSceneObject);
-        const auto inputString = &tagComponent->name;
-        ImGui::InputText("Name", inputString, 0, InputTextCallback, (void*)inputString);
-        ImGui::Spacing();
-    }
-
-    const auto sceneObjectComponent = ECSRegistry::GetInstance().GetComponent<SceneObjectComponent>(selectedSceneObject);
-    if (sceneObjectComponent)
-    {
+        ImGui::Checkbox("Visualize Point Lights", &scene->GetSceneSettings().visualizeLights);
+        ImGui::Checkbox("Animate Directional Light", &scene->GetSceneSettings().animateDirectionalLight);
+        int msaaSamples = scene->GetSceneSettings().sampleCount;
+        if (ImGui::InputInt("MSAA Sample Count", &msaaSamples))
         {
-            const auto inputString = &sceneObjectComponent->modelPath;
-            ImGui::InputText("Model Path", inputString, 0, InputTextCallback, (void*)inputString);
-            ImGui::PushID((std::string("Reload") + std::to_string(selectedSceneObject)).c_str());
-            if (ImGui::Button("Reload"))
-            {
-                *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                scene->LoadModel(selectedSceneObject);
-                sceneObjectComponent->dirtyFlag = true;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Open File"))
-            {
-                const auto paths = pfd::open_file("Open File", ".").result();
-                if (!paths.empty())
-                {
-                    *inputString = paths[0];
-                    *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                    scene->LoadModel(selectedSceneObject);
-                    sceneObjectComponent->dirtyFlag = true;
-                }
-            }
-            ImGui::PopID();
-            ImGui::Spacing();
+            scene->GetSceneSettings().sampleCount = std::max(1, msaaSamples);
+        }
+        ImGui::InputInt2("Render Resolution", glm::value_ptr(scene->GetSceneSettings().tempRenderResolution));
+        ImGui::InputInt2("Render Resolution", glm::value_ptr(scene->GetSceneSettings().tempShadowmapResolution));
+        if (ImGui::Button("Apply Resolution"))
+        {
+            scene->GetSceneSettings().renderResolution = scene->GetSceneSettings().tempRenderResolution;
+            scene->GetSceneSettings().shadowmapResolution = scene->GetSceneSettings().tempShadowmapResolution;
         }
     }
-
-    if (const auto directionalLightComponent =
-        ECSRegistry::GetInstance().GetComponent<DirectionalLightComponent>(selectedSceneObject))
+    else
     {
-        if (ImGui::ColorEdit3("Color", glm::value_ptr(directionalLightComponent->lightColor)))
-            directionalLightComponent->dirtyFlag = true;
-        ImGui::Spacing();
-        if (ImGui::InputFloat3("Direction", glm::value_ptr(directionalLightComponent->direction)))
-            directionalLightComponent->dirtyFlag = true;
-        ImGui::Spacing();
-    }
-
-    if (const auto pointLightComponent =
-        ECSRegistry::GetInstance().GetComponent<PointLightComponent>(selectedSceneObject))
-    {
-        if (ImGui::ColorEdit3("Color", glm::value_ptr(pointLightComponent->lightColor)))
-            pointLightComponent->dirtyFlag = true;
-        ImGui::Spacing();
-        if (ImGui::InputFloat3("Position", glm::value_ptr(pointLightComponent->position)))
-            pointLightComponent->dirtyFlag = true;
-        if (ImGui::InputInt("Strength", &pointLightComponent->strength))
-            pointLightComponent->dirtyFlag = true;
-        ImGui::Spacing();
-    }
-
-    if (const auto skyboxComponent =
-        ECSRegistry::GetInstance().GetComponent<SkyboxComponent>(selectedSceneObject))
-    {
+        if (const auto tagComponent = ECSRegistry::GetInstance().GetComponent<TagComponent>(selectedSceneObject))
         {
-            auto* inputString = &skyboxComponent->textureFolder;
-            ImGui::InputText("Texture Folder", inputString, 0, InputTextCallback, (void*)inputString);
-            ImGui::PushID((std::string("Reload") + std::to_string(selectedSceneObject)).c_str());
-            if (ImGui::Button("Reload"))
-            {
-                *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                scene->SetSkyboxTexturePathsFromFolder();
-                skyboxComponent->dirtyFlag = true;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Open File"))
-            {
-                const auto paths = pfd::select_folder("Select Folder", ".").result();
-                if (!paths.empty())
-                {
-                    *inputString = paths[0];
-                    *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                    scene->SetSkyboxTexturePathsFromFolder();
-                    skyboxComponent->dirtyFlag = true;
-                }
-            }
-            ImGui::PopID();
-            ImGui::Spacing();
-        }
-        for (uint32_t i = 0; i < 6; i++)
-        {
-            auto* inputString = &skyboxComponent->texturePaths[i];
-            ImGui::InputText(("Path [" + std::to_string(i+1) + "]").c_str(), inputString, 0, InputTextCallback, (void*)inputString);
-            ImGui::Spacing();
-        }
-
-        {
-            ImGui::PushID("Reload##Skybox");
-            if (ImGui::Button("Reload Textures"))
-            {
-                scene->LoadSkyboxTextures();
-                skyboxComponent->dirtyFlag = true;
-            }
-            ImGui::PopID();
-            ImGui::Spacing();
-        }
-        if (ImGui::Checkbox("Flip Textures", &skyboxComponent->flipTextures))
-            skyboxComponent->dirtyFlag = true;
-
-    }
-
-    if (const auto cameraComponent =
-        ECSRegistry::GetInstance().GetComponent<CameraComponent>(selectedSceneObject))
-    {
-        bool isActiveCamera = scene->GetActiveCameraId() == selectedSceneObject;
-        if(ImGui::Checkbox("Active", &isActiveCamera))
-        {
-            if (isActiveCamera)
-                scene->SetActiveCamera(selectedSceneObject);
-        }
-
-    }
-
-    if (const auto transformComponent =
-        ECSRegistry::GetInstance().GetComponent<TransformComponent>(selectedSceneObject))
-    {
-        if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            if (ImGui::InputFloat3("Position", glm::value_ptr(transformComponent->position)))
-                sceneObjectComponent->dirtyFlag = true;
-            ImGui::Spacing();
-            if (ImGui::InputFloat3("Scale", glm::value_ptr(transformComponent->scale)))
-                sceneObjectComponent->dirtyFlag = true;
-            ImGui::Spacing();
-            transformComponent->degRotation = glm::degrees(transformComponent->rotation);
-            if (ImGui::InputFloat3("Rotation", glm::value_ptr(transformComponent->degRotation)))
-            {
-                transformComponent->rotation = glm::radians(transformComponent->degRotation);
-                sceneObjectComponent->dirtyFlag = true;
-            }
-            ImGui::Spacing();
-        }
-    }
-
-    if (const auto meshComponent =
-        ECSRegistry::GetInstance().GetComponent<MeshComponent>(selectedSceneObject))
-    {
-        if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            const auto inputString = &meshComponent->path;
-            ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
-            ImGui::PushID((std::string("Reload") + std::to_string(selectedSceneObject)).c_str());
-            if (ImGui::Button("Reload"))
-            {
-                *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                scene->LoadMesh(selectedSceneObject);
-                sceneObjectComponent->dirtyFlag = true;
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Open File"))
-            {
-                const auto paths = pfd::open_file("Open File", ".").result();
-                if (!paths.empty())
-                {
-                    *inputString = paths[0];
-                    *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                    scene->LoadMesh(selectedSceneObject);
-                    sceneObjectComponent->dirtyFlag = true;
-                }
-            }
-            ImGui::PopID();
-            ImGui::Spacing();
-        }
-    }
-
-    if (const auto materialComponent =
-        ECSRegistry::GetInstance().GetComponent<MaterialComponent>(selectedSceneObject))
-    {
-        if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            auto* materialAsset = &materialComponent->materialAsset;
-            if (ImGui::BeginCombo("Material", (*materialAsset)->GetName().c_str()))
-            {
-                for (const uint32_t materialId : AssetManager::GetInstance().GetMaterialIds(true))
-                {
-                    const bool isSelected = (*materialAsset)->GetId() == materialId;
-                    const auto currentMaterial = AssetManager::GetInstance().GetMaterial(materialId);
-                    if (ImGui::Selectable(currentMaterial->GetName().c_str(), isSelected))
-                    {
-                        *materialAsset = currentMaterial;
-                        sceneObjectComponent->dirtyFlag = true;
-                    }
-                }
-                ImGui::EndCombo();
-            }
-        }
-    }
-
-    if(const auto materialAsset = AssetManager::GetInstance().GetMaterial(selectedSceneObject))
-	{
-        {
-            auto* inputString = &materialAsset->GetName();
+            const auto inputString = &tagComponent->name;
             ImGui::InputText("Name", inputString, 0, InputTextCallback, (void*)inputString);
             ImGui::Spacing();
         }
 
-        //Diffuse
+        const auto sceneObjectComponent =
+            ECSRegistry::GetInstance().GetComponent<SceneObjectComponent>(selectedSceneObject);
+        if (sceneObjectComponent)
         {
-            ImGui::SeparatorText("Diffuse");
-
-            auto* inputString = &materialAsset->GetDiffusePath();
-            ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
-            ImGui::PushID((std::string("Reload##Diffuse")).c_str());
-            if (ImGui::Button("Reload"))
             {
-                *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                materialAsset->ReloadDiffuseTexture();
-                materialAsset->SetDirtyFlag(true);
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Open File"))
-            {
-                const auto paths = pfd::open_file("Open File", ".").result();
-                if (!paths.empty())
+                const auto inputString = &sceneObjectComponent->modelPath;
+                ImGui::InputText("Model Path", inputString, 0, InputTextCallback, (void*)inputString);
+                ImGui::PushID((std::string("Reload") + std::to_string(selectedSceneObject)).c_str());
+                if (ImGui::Button("Reload"))
                 {
-                    *inputString = paths[0];
+                    *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                    scene->LoadModel(selectedSceneObject);
+                    sceneObjectComponent->dirtyFlag = true;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Open File"))
+                {
+                    const auto paths = pfd::open_file("Open File", ".").result();
+                    if (!paths.empty())
+                    {
+                        *inputString = paths[0];
+                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                        scene->LoadModel(selectedSceneObject);
+                        sceneObjectComponent->dirtyFlag = true;
+                    }
+                }
+                ImGui::PopID();
+                ImGui::Spacing();
+            }
+        }
+
+        if (const auto directionalLightComponent =
+                ECSRegistry::GetInstance().GetComponent<DirectionalLightComponent>(selectedSceneObject))
+        {
+            if (ImGui::ColorEdit3("Color", glm::value_ptr(directionalLightComponent->lightColor)))
+                directionalLightComponent->dirtyFlag = true;
+            ImGui::Spacing();
+            if (ImGui::InputFloat3("Direction", glm::value_ptr(directionalLightComponent->direction)))
+                directionalLightComponent->dirtyFlag = true;
+            ImGui::Spacing();
+        }
+
+        if (const auto pointLightComponent =
+                ECSRegistry::GetInstance().GetComponent<PointLightComponent>(selectedSceneObject))
+        {
+            if (ImGui::ColorEdit3("Color", glm::value_ptr(pointLightComponent->lightColor)))
+                pointLightComponent->dirtyFlag = true;
+            ImGui::Spacing();
+            if (ImGui::InputFloat3("Position", glm::value_ptr(pointLightComponent->position)))
+                pointLightComponent->dirtyFlag = true;
+            if (ImGui::InputInt("Strength", &pointLightComponent->strength))
+                pointLightComponent->dirtyFlag = true;
+            ImGui::Spacing();
+        }
+
+        if (const auto skyboxComponent = ECSRegistry::GetInstance().GetComponent<SkyboxComponent>(selectedSceneObject))
+        {
+            {
+                auto* inputString = &skyboxComponent->textureFolder;
+                ImGui::InputText("Texture Folder", inputString, 0, InputTextCallback, (void*)inputString);
+                ImGui::PushID((std::string("Reload") + std::to_string(selectedSceneObject)).c_str());
+                if (ImGui::Button("Reload"))
+                {
+                    *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                    scene->SetSkyboxTexturePathsFromFolder();
+                    skyboxComponent->dirtyFlag = true;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Open Folder"))
+                {
+                    const auto path = pfd::select_folder("Select Folder", ".").result();
+                    if (!path.empty())
+                    {
+                        *inputString = path;
+                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                        scene->SetSkyboxTexturePathsFromFolder();
+                        skyboxComponent->dirtyFlag = true;
+                    }
+                }
+                ImGui::PopID();
+                ImGui::Spacing();
+            }
+            for (uint32_t i = 0; i < 6; i++)
+            {
+                auto* inputString = &skyboxComponent->texturePaths[i];
+                ImGui::InputText(("Path [" + std::to_string(i + 1) + "]").c_str(), inputString, 0, InputTextCallback,
+                                 (void*)inputString);
+                ImGui::Spacing();
+            }
+
+            {
+                ImGui::PushID("Reload##Skybox");
+                if (ImGui::Button("Reload Textures"))
+                {
+                    scene->LoadSkyboxTextures();
+                    skyboxComponent->dirtyFlag = true;
+                }
+                ImGui::PopID();
+                ImGui::Spacing();
+            }
+            if (ImGui::Checkbox("Flip Textures", &skyboxComponent->flipTextures))
+                skyboxComponent->dirtyFlag = true;
+        }
+
+        if (const auto cameraComponent = ECSRegistry::GetInstance().GetComponent<CameraComponent>(selectedSceneObject))
+        {
+            bool isActiveCamera = scene->GetActiveCameraId() == selectedSceneObject;
+            if (ImGui::Checkbox("Active", &isActiveCamera))
+            {
+                if (isActiveCamera)
+                    scene->SetActiveCamera(selectedSceneObject);
+            }
+        }
+
+        if (const auto transformComponent =
+                ECSRegistry::GetInstance().GetComponent<TransformComponent>(selectedSceneObject))
+        {
+            if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                if (ImGui::InputFloat3("Position", glm::value_ptr(transformComponent->position)))
+                    sceneObjectComponent->dirtyFlag = true;
+                ImGui::Spacing();
+                if (ImGui::InputFloat3("Scale", glm::value_ptr(transformComponent->scale)))
+                    sceneObjectComponent->dirtyFlag = true;
+                ImGui::Spacing();
+                transformComponent->degRotation = glm::degrees(transformComponent->rotation);
+                if (ImGui::InputFloat3("Rotation", glm::value_ptr(transformComponent->degRotation)))
+                {
+                    transformComponent->rotation = glm::radians(transformComponent->degRotation);
+                    sceneObjectComponent->dirtyFlag = true;
+                }
+                ImGui::Spacing();
+            }
+        }
+
+        if (const auto meshComponent = ECSRegistry::GetInstance().GetComponent<MeshComponent>(selectedSceneObject))
+        {
+            if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                const auto inputString = &meshComponent->path;
+                ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
+                ImGui::PushID((std::string("Reload") + std::to_string(selectedSceneObject)).c_str());
+                if (ImGui::Button("Reload"))
+                {
+                    *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                    scene->LoadMesh(selectedSceneObject);
+                    sceneObjectComponent->dirtyFlag = true;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Open File"))
+                {
+                    const auto paths = pfd::open_file("Open File", ".").result();
+                    if (!paths.empty())
+                    {
+                        *inputString = paths[0];
+                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                        scene->LoadMesh(selectedSceneObject);
+                        sceneObjectComponent->dirtyFlag = true;
+                    }
+                }
+                ImGui::PopID();
+                ImGui::Spacing();
+            }
+        }
+
+        if (const auto materialComponent =
+                ECSRegistry::GetInstance().GetComponent<MaterialComponent>(selectedSceneObject))
+        {
+            if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                auto* materialAsset = &materialComponent->materialAsset;
+                if (ImGui::BeginCombo("Material", (*materialAsset)->GetName().c_str()))
+                {
+                    for (const uint32_t materialId : AssetManager::GetInstance().GetMaterialIds(true))
+                    {
+                        const bool isSelected = (*materialAsset)->GetId() == materialId;
+                        const auto currentMaterial = AssetManager::GetInstance().GetMaterial(materialId);
+                        if (ImGui::Selectable(currentMaterial->GetName().c_str(), isSelected))
+                        {
+                            *materialAsset = currentMaterial;
+                            sceneObjectComponent->dirtyFlag = true;
+                        }
+                    }
+                    ImGui::EndCombo();
+                }
+            }
+        }
+
+        if (const auto materialAsset = AssetManager::GetInstance().GetMaterial(selectedSceneObject))
+        {
+            {
+                auto* inputString = &materialAsset->GetName();
+                ImGui::InputText("Name", inputString, 0, InputTextCallback, (void*)inputString);
+                ImGui::Spacing();
+            }
+
+            // Diffuse
+            {
+                ImGui::SeparatorText("Diffuse");
+
+                auto* inputString = &materialAsset->GetDiffusePath();
+                ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
+                ImGui::PushID((std::string("Reload##Diffuse")).c_str());
+                if (ImGui::Button("Reload"))
+                {
                     *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
                     materialAsset->ReloadDiffuseTexture();
                     materialAsset->SetDirtyFlag(true);
                 }
-            }
-            ImGui::PopID();
-            ImGui::Spacing();
-
-            if (ImGui::Checkbox("Flip Diffuse Texture", &materialAsset->GetFlipDiffuseTexture()))
-                materialAsset->SetDirtyFlag(true);
-        }
-
-        //Normal
-        {
-            ImGui::SeparatorText("Normal");
-
-            auto* inputString = &materialAsset->GetNormalPath();
-            ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
-            ImGui::PushID((std::string("Reload##Normal")).c_str());
-            if (ImGui::Button("Reload"))
-            {
-                *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                materialAsset->ReloadNormalTexture();
-                materialAsset->SetDirtyFlag(true);
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Open File"))
-            {
-                const auto paths = pfd::open_file("Open File", ".").result();
-                if (!paths.empty())
+                ImGui::SameLine();
+                if (ImGui::Button("Open File"))
                 {
-                    *inputString = paths[0];
+                    const auto paths = pfd::open_file("Open File", ".").result();
+                    if (!paths.empty())
+                    {
+                        *inputString = paths[0];
+                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                        materialAsset->ReloadDiffuseTexture();
+                        materialAsset->SetDirtyFlag(true);
+                    }
+                }
+                ImGui::PopID();
+                ImGui::Spacing();
+
+                if (ImGui::Checkbox("Flip Diffuse Texture", &materialAsset->GetFlipDiffuseTexture()))
+                    materialAsset->SetDirtyFlag(true);
+            }
+
+            // Normal
+            {
+                ImGui::SeparatorText("Normal");
+
+                auto* inputString = &materialAsset->GetNormalPath();
+                ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
+                ImGui::PushID((std::string("Reload##Normal")).c_str());
+                if (ImGui::Button("Reload"))
+                {
                     *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
                     materialAsset->ReloadNormalTexture();
                     materialAsset->SetDirtyFlag(true);
                 }
-            }
-            ImGui::PopID();
-            ImGui::Spacing();
-
-            if (ImGui::Checkbox("Flip Normal Texture", &materialAsset->GetFlipNormalTexture()))
-                materialAsset->SetDirtyFlag(true);
-        }
-
-        //Metallic
-        {
-            ImGui::SeparatorText("Metallic");
-
-            auto* inputString = &materialAsset->GetMetallicPath();
-            ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
-            ImGui::PushID((std::string("Reload##Metallic")).c_str());
-            if (ImGui::Button("Reload"))
-            {
-                *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                materialAsset->ReloadMetallicTexture();
-                materialAsset->SetDirtyFlag(true);
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Open File"))
-            {
-                const auto paths = pfd::open_file("Open File", ".").result();
-                if (!paths.empty())
+                ImGui::SameLine();
+                if (ImGui::Button("Open File"))
                 {
-                    *inputString = paths[0];
+                    const auto paths = pfd::open_file("Open File", ".").result();
+                    if (!paths.empty())
+                    {
+                        *inputString = paths[0];
+                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                        materialAsset->ReloadNormalTexture();
+                        materialAsset->SetDirtyFlag(true);
+                    }
+                }
+                ImGui::PopID();
+                ImGui::Spacing();
+
+                if (ImGui::Checkbox("Flip Normal Texture", &materialAsset->GetFlipNormalTexture()))
+                    materialAsset->SetDirtyFlag(true);
+            }
+
+            // Metallic
+            {
+                ImGui::SeparatorText("Metallic");
+
+                auto* inputString = &materialAsset->GetMetallicPath();
+                ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
+                ImGui::PushID((std::string("Reload##Metallic")).c_str());
+                if (ImGui::Button("Reload"))
+                {
                     *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
                     materialAsset->ReloadMetallicTexture();
                     materialAsset->SetDirtyFlag(true);
                 }
-            }
-            ImGui::PopID();
-            ImGui::Spacing();
-
-            if (ImGui::Checkbox("Flip Metallic Texture", &materialAsset->GetFlipMetallicTexture()))
-                materialAsset->SetDirtyFlag(true);
-        }
-
-        //Roughness
-        {
-            ImGui::SeparatorText("Roughness");
-
-            auto* inputString = &materialAsset->GetRoughnessPath();
-            ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
-            ImGui::PushID((std::string("Reload##Roughness")).c_str());
-            if (ImGui::Button("Reload"))
-            {
-                *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                materialAsset->ReloadRoughnessTexture();
-                materialAsset->SetDirtyFlag(true);
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Open File"))
-            {
-                const auto paths = pfd::open_file("Open File", ".").result();
-                if (!paths.empty())
+                ImGui::SameLine();
+                if (ImGui::Button("Open File"))
                 {
-                    *inputString = paths[0];
+                    const auto paths = pfd::open_file("Open File", ".").result();
+                    if (!paths.empty())
+                    {
+                        *inputString = paths[0];
+                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                        materialAsset->ReloadMetallicTexture();
+                        materialAsset->SetDirtyFlag(true);
+                    }
+                }
+                ImGui::PopID();
+                ImGui::Spacing();
+
+                if (ImGui::Checkbox("Flip Metallic Texture", &materialAsset->GetFlipMetallicTexture()))
+                    materialAsset->SetDirtyFlag(true);
+            }
+
+            // Roughness
+            {
+                ImGui::SeparatorText("Roughness");
+
+                auto* inputString = &materialAsset->GetRoughnessPath();
+                ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
+                ImGui::PushID((std::string("Reload##Roughness")).c_str());
+                if (ImGui::Button("Reload"))
+                {
                     *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
                     materialAsset->ReloadRoughnessTexture();
                     materialAsset->SetDirtyFlag(true);
                 }
-            }
-            ImGui::PopID();
-            ImGui::Spacing();
-
-            if (ImGui::Checkbox("Flip Roughness Texture", &materialAsset->GetFlipRoughnessTexture()))
-                materialAsset->SetDirtyFlag(true);
-        }
-
-        //AO
-        {
-            ImGui::SeparatorText("AO");
-
-            auto* inputString = &materialAsset->GetAOPath();
-            ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
-            ImGui::PushID((std::string("Reload##AO")).c_str());
-            if (ImGui::Button("Reload"))
-            {
-                *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                materialAsset->ReloadAOTexture();
-                materialAsset->SetDirtyFlag(true);
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Open File"))
-            {
-                const auto paths = pfd::open_file("Open File", ".").result();
-                if (!paths.empty())
+                ImGui::SameLine();
+                if (ImGui::Button("Open File"))
                 {
-                    *inputString = paths[0];
+                    const auto paths = pfd::open_file("Open File", ".").result();
+                    if (!paths.empty())
+                    {
+                        *inputString = paths[0];
+                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                        materialAsset->ReloadRoughnessTexture();
+                        materialAsset->SetDirtyFlag(true);
+                    }
+                }
+                ImGui::PopID();
+                ImGui::Spacing();
+
+                if (ImGui::Checkbox("Flip Roughness Texture", &materialAsset->GetFlipRoughnessTexture()))
+                    materialAsset->SetDirtyFlag(true);
+            }
+
+            // AO
+            {
+                ImGui::SeparatorText("AO");
+
+                auto* inputString = &materialAsset->GetAOPath();
+                ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
+                ImGui::PushID((std::string("Reload##AO")).c_str());
+                if (ImGui::Button("Reload"))
+                {
                     *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
                     materialAsset->ReloadAOTexture();
                     materialAsset->SetDirtyFlag(true);
                 }
-            }
-            ImGui::PopID();
-            ImGui::Spacing();
-
-            if (ImGui::Checkbox("Flip AO Texture", &materialAsset->GetFlipAOTexture()))
-                materialAsset->SetDirtyFlag(true);
-        }
-
-        //Emissive
-        {
-            ImGui::SeparatorText("Emissive");
-
-            auto* inputString = &materialAsset->GetEmissivePath();
-            ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
-            ImGui::PushID((std::string("Reload##Emissive")).c_str());
-            if (ImGui::Button("Reload"))
-            {
-                *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                materialAsset->ReloadEmissiveTexture();
-                materialAsset->SetDirtyFlag(true);
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Open File"))
-            {
-                const auto paths = pfd::open_file("Open File", ".").result();
-                if (!paths.empty())
+                ImGui::SameLine();
+                if (ImGui::Button("Open File"))
                 {
-                    *inputString = paths[0];
+                    const auto paths = pfd::open_file("Open File", ".").result();
+                    if (!paths.empty())
+                    {
+                        *inputString = paths[0];
+                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                        materialAsset->ReloadAOTexture();
+                        materialAsset->SetDirtyFlag(true);
+                    }
+                }
+                ImGui::PopID();
+                ImGui::Spacing();
+
+                if (ImGui::Checkbox("Flip AO Texture", &materialAsset->GetFlipAOTexture()))
+                    materialAsset->SetDirtyFlag(true);
+            }
+
+            // Emissive
+            {
+                ImGui::SeparatorText("Emissive");
+
+                auto* inputString = &materialAsset->GetEmissivePath();
+                ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
+                ImGui::PushID((std::string("Reload##Emissive")).c_str());
+                if (ImGui::Button("Reload"))
+                {
                     *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
                     materialAsset->ReloadEmissiveTexture();
                     materialAsset->SetDirtyFlag(true);
                 }
-            }
-            ImGui::PopID();
-            ImGui::Spacing();
+                ImGui::SameLine();
+                if (ImGui::Button("Open File"))
+                {
+                    const auto paths = pfd::open_file("Open File", ".").result();
+                    if (!paths.empty())
+                    {
+                        *inputString = paths[0];
+                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                        materialAsset->ReloadEmissiveTexture();
+                        materialAsset->SetDirtyFlag(true);
+                    }
+                }
+                ImGui::PopID();
+                ImGui::Spacing();
 
-            if (ImGui::Checkbox("Flip Emissive Texture", &materialAsset->GetFlipEmissiveTexture()))
-                materialAsset->SetDirtyFlag(true);
+                if (ImGui::Checkbox("Flip Emissive Texture", &materialAsset->GetFlipEmissiveTexture()))
+                    materialAsset->SetDirtyFlag(true);
+            }
         }
-	}
+    }
 
 	ImGui::End();
 }

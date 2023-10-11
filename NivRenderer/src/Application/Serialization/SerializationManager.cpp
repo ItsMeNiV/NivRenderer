@@ -38,3 +38,20 @@ Project* SerializationManager::LoadProject()
 
     return nullptr;
 }
+
+Project* SerializationManager::LoadProject(const std::string& path)
+{
+    if (!path.empty())
+    {
+        std::ifstream iStream(path);
+        nlohmann::json fileJson;
+
+        iStream >> fileJson;
+
+        const auto project = new Project(path);
+        project->DeSerializeObject(fileJson);
+        return project;
+    }
+
+    return nullptr;
+}

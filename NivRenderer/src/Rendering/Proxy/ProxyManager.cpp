@@ -45,6 +45,8 @@ std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>> ProxyManager::GetSc
     return m_SceneObjectsToRenderByMaterial;
 }
 
+void ProxyManager::Reset() { m_Proxies.clear(); }
+
 void ProxyManager::updateSceneObjectProxy(Scene* const scene, const uint32_t sceneObjectId,
                                           SceneObjectProxy* const parentProxy)
 {

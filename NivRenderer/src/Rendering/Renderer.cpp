@@ -54,6 +54,8 @@ void Renderer::RenderScene() const
 
 }
 
+void Renderer::ResetProxies() { m_ProxyManager->Reset(); }
+
 void Renderer::AnimateDirectionalLight() const
 {
     if (const auto directionalLightObject = ECSRegistry::GetInstance().GetEntity(m_Scene->GetDirectionalLightId()))

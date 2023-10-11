@@ -21,6 +21,8 @@ public:
     std::unordered_map<uint32_t, std::vector<SceneObjectProxy*>>
     GetSceneObjectsToRenderByMaterial(const Scene* const scene);
 
+    void Reset();
+
 private:
     std::unordered_map<uint32_t, Scope<Proxy>> m_Proxies;
     std::vector<SceneObjectProxy*> m_SceneObjectsToRender;

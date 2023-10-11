@@ -10,8 +10,7 @@ Project::Project(const std::string& projectPath) : m_Path(projectPath)
     ECSRegistry::GetInstance().Reset();
     AssetManager::GetInstance().Reset();
 
-    if (projectPath.empty())
-        m_ActiveScene = CreateScene();
+    m_ActiveScene = CreateScene();
 }
 
 Scene* Project::CreateScene()
@@ -36,10 +35,9 @@ nlohmann::ordered_json Project::SerializeObject()
     ordered_json project;
     project["Path"] = m_Path;
     project["Scenes"] = json::array();
+    project["ActiveSceneId"] = m_ActiveScene->GetId();
     for (uint32_t i = 0; i < m_Scenes.size(); i++)
     {
-        if (m_Scenes[i].get() == m_ActiveScene)
-            project["ActiveScene"] = i;
         project["Scenes"][i] = m_Scenes[i]->SerializeObject();
     }
     return project;
@@ -53,10 +51,11 @@ void Project::DeSerializeObject(nlohmann::json jsonObject)
     uint32_t i = 0;
     for (const json& sceneJson : scenes)
     {
+        IdManager::GetInstance().SetNextId(sceneJson["Id"]);
         Scene* scene = CreateScene();
         scene->DeSerializeObject(sceneJson);
 
-        if (jsonObject["ActiveScene"] == i)
+        if (jsonObject["ActiveSceneId"] == scene->GetId())
             m_ActiveScene = scene;
 
         i++;
