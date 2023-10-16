@@ -155,7 +155,8 @@ set(SRC_FILES
  "src/Rendering/Proxy/TextureProxy.h" "src/Rendering/Proxy/TextureProxy.cpp"
  "src/Rendering/Proxy/MaterialProxy.h" "src/Rendering/Proxy/MaterialProxy.cpp"
  "src/Rendering/ForwardPipeline/ForwardPass.h" "src/Rendering/ForwardPipeline/ForwardPass.cpp"
-)
+
+  "src/Assets/Assets.h" "src/Assets/NewAssetManager.h" "src/Assets/NewAssetManager.cpp")
 
 list(APPEND SRC_FILES
     ${DEAR_IMGUI_PREFIX}/imgui.cpp
