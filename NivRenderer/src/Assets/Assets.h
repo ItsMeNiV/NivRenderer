@@ -3,7 +3,24 @@
 
 struct TextureAsset
 {
+    uint32_t id = UINT32_MAX;
+    std::string path = "";
+    bool flipVertical = false;
+    bool loadOnlyOneChannel = false;
+    int32_t width = -1;
+    int32_t height = -1;
+    int32_t nrComponents = -1;
+    int32_t channelIndex = -1;
+    unsigned char* textureData = nullptr;
 
+    TextureAsset() = default;
+    TextureAsset(const TextureAsset&) = default;
+    TextureAsset(uint32_t Id, const std::string& Path, bool FlipVertical, bool LoadOnlyOneChannel, int32_t ChannelIndex) :
+        id(Id), path(Path), flipVertical(FlipVertical), loadOnlyOneChannel(LoadOnlyOneChannel), channelIndex(ChannelIndex) {}
+    TextureAsset(uint32_t Id, const std::string& Path, bool FlipVertical, bool LoadOnlyOneChannel,
+                 int32_t ChannelIndex, int32_t Width, int32_t Height, int32_t NrComponents)
+    : id(Id), path(Path), flipVertical(FlipVertical), loadOnlyOneChannel(LoadOnlyOneChannel),
+    width(Width), height(Height), nrComponents(NrComponents), channelIndex(ChannelIndex) {}
 };
 
 struct MeshVertex
@@ -24,6 +41,10 @@ struct MeshAsset
     MeshAsset() = default;
     MeshAsset(const MeshAsset&) = default;
     MeshAsset(uint32_t Id, const std::string& Path) : id(Id), path(Path) {}
+    MeshAsset(uint32_t Id, const std::string& Path, std::vector<MeshVertex>& Vertices, std::vector<uint32_t>& Indices) :
+        id(Id), path(Path), vertices(Vertices), indices(Indices)
+    {
+    }
 };
 
 struct ShaderAsset

@@ -8,7 +8,7 @@ void ECSRegistry::RemoveEntity(const uint32_t entityId)
     if (!m_Entities.contains(entityId))
         SPDLOG_ERROR("Entity with Id {} does not exist", entityId);
 
-    m_Registry->destroy(m_Entities[entityId].entityHandle);
+    m_Registry->destroy(m_Entities[entityId]->entityHandle);
     m_Entities.erase(entityId);
 }
 
@@ -20,8 +20,8 @@ void ECSRegistry::Reset() const
 Entity& ECSRegistry::CreateEntity(Scene* scene)
 {
     const uint32_t entityId = IdManager::GetInstance().CreateNewId();
-    m_Entities[entityId] = {entityId, scene, m_Registry->create()};
-    return m_Entities[entityId];
+    m_Entities[entityId] = CreateScope<Entity>(entityId, scene, m_Registry->create());
+    return *m_Entities[entityId];
 }
 
 Entity* ECSRegistry::GetEntity(uint32_t entityId)
@@ -32,5 +32,5 @@ Entity* ECSRegistry::GetEntity(uint32_t entityId)
         return nullptr;
     }
 
-    return &m_Entities[entityId];
+    return m_Entities[entityId].get();
 }

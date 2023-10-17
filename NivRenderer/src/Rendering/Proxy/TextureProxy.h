@@ -1,7 +1,7 @@
 #pragma once
 #include "Base.h"
 #include "Rendering/Proxy/Proxy.h"
-#include "Entity/Assets/TextureAsset.h"
+#include "Assets/Assets.h"
 
 class TextureProxy : public Proxy
 {

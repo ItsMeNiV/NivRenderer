@@ -17,8 +17,8 @@ MeshProxy::~MeshProxy()
 
 void MeshProxy::CreateBuffers(const MeshComponent* const mesh)
 {
-    const auto& vertices = mesh->meshAsset->GetVertices();
-    const auto& indices = mesh->meshAsset->GetIndices();
+    const auto& vertices = mesh->meshAsset->vertices;
+    const auto& indices = mesh->meshAsset->indices;
 
     m_IndexCount = indices.size();
     m_VerticesCount = vertices.size();

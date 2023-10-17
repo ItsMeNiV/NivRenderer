@@ -2,7 +2,7 @@
 
 #include "Entity/ECSRegistry.h"
 #include "Entity/Components.h"
-#include "Entity/Assets/AssetManager.h"
+#include "Assets/NewAssetManager.h"
 
 ProxyManager::ProxyManager() = default;
 
@@ -71,7 +71,7 @@ void ProxyManager::updateSceneObjectProxy(Scene* const scene, const uint32_t sce
         {
 
             MeshProxy* meshProxy;
-            auto meshId = meshComponent->meshAsset->GetId();
+            auto meshId = meshComponent->meshAsset->id;
             if (!m_Proxies.contains(meshId))
             {
                 m_Proxies[meshId] = CreateScope<MeshProxy>(meshId);
@@ -92,7 +92,7 @@ void ProxyManager::updateSceneObjectProxy(Scene* const scene, const uint32_t sce
 
         if (materialComponent)
         {
-            const uint32_t materialId = materialComponent->materialAsset->GetId();
+            const uint32_t materialId = materialComponent->materialAsset->id;
             updateMaterialProxy(materialId);
             sceneObjectProxy->SetMaterial(dynamic_cast<MaterialProxy*>(m_Proxies[materialId].get()));
         }
@@ -121,13 +121,13 @@ void ProxyManager::updateSceneObjectProxy(Scene* const scene, const uint32_t sce
     if (meshComponent)
     {
         m_SceneObjectsToRender.push_back(dynamic_cast<SceneObjectProxy*>(m_Proxies[sceneObjectId].get()));
-        m_SceneObjectsToRenderByMaterial[materialComponent->materialAsset->GetId()].push_back(dynamic_cast<SceneObjectProxy*>(m_Proxies[sceneObjectId].get()));
+        m_SceneObjectsToRenderByMaterial[materialComponent->materialAsset->id].push_back(dynamic_cast<SceneObjectProxy*>(m_Proxies[sceneObjectId].get()));
     }
 }
 
 void ProxyManager::updateMaterialProxy(const uint32_t materialId)
 {
-    const auto materialAsset = AssetManager::GetInstance().GetMaterial(materialId);
+    const auto materialAsset = NewAssetManager::GetInstance().GetMaterial(materialId);
 
     if (!m_Proxies.contains(materialId))
     {
@@ -135,27 +135,28 @@ void ProxyManager::updateMaterialProxy(const uint32_t materialId)
     }
     const auto materialProxy = dynamic_cast<MaterialProxy*>(m_Proxies[materialId].get());
 
+    /* TODO: Check if needed
     if (!materialAsset->GetDirtyFlag())
         return;
+    */
+    const auto whiteTextureProxy = NewAssetManager::GetInstance().GetTexture("white");
+    const auto blackTextureProxy = NewAssetManager::GetInstance().GetTexture("black");
+    setupMaterialProxy(materialAsset->diffusePath, materialProxy->GetDiffuseTexturePtr(),
+                       materialAsset->diffuseTextureAsset, whiteTextureProxy);
+    setupMaterialProxy(materialAsset->normalPath, materialProxy->GetNormalTexturePtr(),
+                       materialAsset->normalTextureAsset, nullptr);
+    setupMaterialProxy(materialAsset->metallicPath, materialProxy->GetMetallicTexturePtr(),
+                       materialAsset->metallicTextureAsset, blackTextureProxy);
+    setupMaterialProxy(materialAsset->roughnessPath, materialProxy->GetRoughnessTexturePtr(),
+                       materialAsset->roughnessTextureAsset, blackTextureProxy);
+    setupMaterialProxy(materialAsset->aoPath, materialProxy->GetAOTexturePtr(),
+                       materialAsset->aoTextureAsset, whiteTextureProxy);
+    setupMaterialProxy(materialAsset->emissivePath, materialProxy->GetEmissiveTexturePtr(),
+                       materialAsset->emissiveTextureAsset, blackTextureProxy);
 
-    std::string whitePath("white");
-    const auto whiteTextureProxy = AssetManager::GetInstance().LoadTexture(whitePath, false);
-    std::string blackPath("black");
-    const auto blackTextureProxy = AssetManager::GetInstance().LoadTexture(blackPath, false);
-    setupMaterialProxy(materialAsset->GetDiffusePath(), materialProxy->GetDiffuseTexturePtr(),
-                       *materialAsset->GetDiffuseTextureAsset(), whiteTextureProxy);
-    setupMaterialProxy(materialAsset->GetNormalPath(), materialProxy->GetNormalTexturePtr(),
-                       *materialAsset->GetNormalTextureAsset(), nullptr);
-    setupMaterialProxy(materialAsset->GetMetallicPath(), materialProxy->GetMetallicTexturePtr(),
-                       *materialAsset->GetMetallicTextureAsset(), blackTextureProxy);
-    setupMaterialProxy(materialAsset->GetRoughnessPath(), materialProxy->GetRoughnessTexturePtr(),
-                       *materialAsset->GetRoughnessTextureAsset(), blackTextureProxy);
-    setupMaterialProxy(materialAsset->GetAOPath(), materialProxy->GetAOTexturePtr(),
-                       *materialAsset->GetAOTextureAsset(), whiteTextureProxy);
-    setupMaterialProxy(materialAsset->GetEmissivePath(), materialProxy->GetEmissiveTexturePtr(),
-                       *materialAsset->GetEmissiveTextureAsset(), blackTextureProxy);
-
+    /* TODO: Check if needed
     materialAsset->SetDirtyFlag(false);
+    */
 }
 
 void ProxyManager::updateCameraProxy(const uint32_t cameraId)
@@ -242,7 +243,7 @@ void ProxyManager::setupMaterialProxy(const std::string& assetPath, TextureProxy
 
     if (assetToUse)
     {
-        const uint32_t assetId = assetToUse->GetId();
+        const uint32_t assetId = assetToUse->id;
         if (!m_Proxies.contains(assetId))
         {
             m_Proxies[assetId] = CreateScope<TextureProxy>(assetId);

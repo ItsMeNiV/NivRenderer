@@ -35,6 +35,7 @@ public:
 
     void Reset();
 
+    //TODO: Check where Load methods are wrongfully used
     ShaderAsset* LoadShader(const std::string& path, ShaderType shaderType);
     ShaderAsset* GetShader(uint32_t id);
     ShaderAsset* GetShader(const std::string& path);
@@ -44,9 +45,13 @@ public:
     TextureAsset* LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel = false, uint32_t channelIndex = 0);
     TextureAsset* GetTexture(uint32_t id);
     TextureAsset* GetTexture(const std::string& path);
+    std::vector<uint32_t> GetTextureIds(bool includeDefault) const;
     MaterialAsset* GetMaterial(const std::string& name);
     MaterialAsset* GetMaterial(uint32_t id);
     MaterialAsset* CreateMaterial();
+    void RemoveMaterial(uint32_t id);
+    std::vector<uint32_t> GetMaterialIds(bool includeDefault) const;
+    Model* LoadModel(const std::string& path);
     
 private:
     NewAssetManager();
@@ -60,7 +65,7 @@ private:
     std::unordered_map<uint32_t, Scope<MaterialAsset>> m_LoadedMaterials;
     std::unordered_map<std::string, MaterialAsset*> m_MaterialsByName;
     std::unordered_map<uint32_t, Scope<TextureAsset>> m_LoadedTextures;
-    std::unordered_map<std::string, TextureAsset*> m_TexturesByName;
+    std::unordered_map<std::string, TextureAsset*> m_TexturesByPath;
 
     static constexpr int MESH_IMPORT_POSTPROCESS_FLAGS = aiProcess_FlipUVs | aiProcess_OptimizeMeshes |
         aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices |
@@ -68,8 +73,7 @@ private:
         aiProcess_FixInfacingNormals;
 
     void loadDefaults();
-    TextureAsset* LoadTextureInternal(std::string& path, bool flipVertical, uint32_t assignedId, bool loadOnlyOneChannel = false, uint32_t channelIndex = 0);
-    void importTexture(TextureAsset* textureAsset);
+    static void importTexture(TextureAsset* textureAsset);
     void processNode(const aiNode* node, const aiScene* scene, std::vector<SubModel>& subModels, const std::string& path);
     MeshAsset* processMesh(aiMesh* mesh, const aiScene* scene, const std::string& path);
     void processMaterials(const aiScene* scene, SubModel& subModel, const std::string& path, const uint32_t materialIndex);

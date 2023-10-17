@@ -2,7 +2,7 @@
 #include "imgui.h"
 #include "Application/Util/Instrumentor.h"
 #include "..\Scene.h"
-#include "Entity/Assets/AssetManager.h"
+#include "Assets/NewAssetManager.h"
 
 inline void displaySceneObjectContextMenu(Scene* scene, const uint32_t sceneObjectId, int32_t& selectedObjectId, const bool allowDelete)
 {
@@ -144,14 +144,14 @@ inline void displaySceneLight(Scene* scene, const uint32_t& sceneLightId, int32_
 inline void displayMaterialAsset(Scene* scene, const uint32_t& sceneAssetId, int32_t& selectedObjectId)
 {
     ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-    const auto materialAsset = AssetManager::GetInstance().GetMaterial(sceneAssetId);
+    const auto materialAsset = NewAssetManager::GetInstance().GetMaterial(sceneAssetId);
 
     if (selectedObjectId == sceneAssetId)
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
 
-    ImGui::TreeNodeEx(materialAsset->GetName().c_str(), nodeFlags);
+    ImGui::TreeNodeEx(materialAsset->name.c_str(), nodeFlags);
     if (ImGui::IsItemClicked())
-        selectedObjectId = materialAsset->GetId();
+        selectedObjectId = materialAsset->id;
     ImGui::PushID(sceneAssetId);
     displayMaterialAssetContextMenu(scene, sceneAssetId, selectedObjectId, true);
     ImGui::PopID();
@@ -237,7 +237,7 @@ inline void BuildSceneHierarchy(Scene* scene, int32_t& selectedSceneObjectId)
             if (assetsOpen)
             {
                 int32_t selectedObject = selectedSceneObjectId;
-                for (uint32_t assetId : AssetManager::GetInstance().GetMaterialIds(false))
+                for (uint32_t assetId : NewAssetManager::GetInstance().GetMaterialIds(false))
                     displayMaterialAsset(scene, assetId, selectedObject);
                 selectedSceneObjectId = selectedObject;
                 ImGui::TreePop();   

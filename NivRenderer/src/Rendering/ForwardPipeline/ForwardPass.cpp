@@ -8,7 +8,7 @@
 
 ForwardPass::ForwardPass(Shader* passShader, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount) :
     RenderPass(passShader, resolutionWidth, resolutionHeight, sampleCount),
-    m_ShadowmapShader(AssetManager::GetInstance().LoadShader("assets/shaders/shadowmap.glsl", ShaderType::VERTEX_AND_FRAGMENT))
+    m_ShadowmapShader(NewAssetManager::GetInstance().LoadShader("assets/shaders/shadowmap.glsl", ShaderType::VERTEX_AND_FRAGMENT)->shaderPtr)
 {}
 
 void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& commandBuffer)
@@ -176,10 +176,12 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
 
         if (scene->GetSceneSettings().visualizeLights && pointLightIndex)
         {
-            const auto lightVisualizeShader = AssetManager::GetInstance().LoadShader(
-                "assets/shaders/lightcube.glsl", ShaderType::VERTEX_AND_FRAGMENT);
-            lightVisualizeShader->Bind();
-            rendererState.BoundShader = lightVisualizeShader->GetId();
+            auto lightVisualizeShader = NewAssetManager::GetInstance().GetShader("assets/shaders/lightcube.glsl");
+            if (!lightVisualizeShader)
+                lightVisualizeShader = NewAssetManager::GetInstance().LoadShader("assets/shaders/lightcube.glsl", ShaderType::VERTEX_AND_FRAGMENT);
+
+            lightVisualizeShader->shaderPtr->Bind();
+            rendererState.BoundShader = lightVisualizeShader->shaderPtr->GetId();
 
             rendererState.BoundVertexArray = LightProxy::GetVertexArrayId();
             LightProxy::Bind();
@@ -187,10 +189,10 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
             {
                 if (const auto pointLightProxy = dynamic_cast<PointLightProxy*>(proxyManager.GetProxy(id)))
                 {
-                    rendererState.BoundUniforms[0] = {lightVisualizeShader->GetUniformLocation("model"),
+                    rendererState.BoundUniforms[0] = {lightVisualizeShader->shaderPtr->GetUniformLocation("model"),
                                                       UniformType::FLOAT4X4,
                                                       glm::value_ptr(pointLightProxy->GetModelMatrix())};
-                    rendererState.BoundUniforms[1] = {lightVisualizeShader->GetUniformLocation("lightColor"),
+                    rendererState.BoundUniforms[1] = {lightVisualizeShader->shaderPtr->GetUniformLocation("lightColor"),
                                                       UniformType::FLOAT3,
                                                       glm::value_ptr(pointLightProxy->GetLightColor())};
 
@@ -201,18 +203,21 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
 
         if (scene->HasSkybox())
         {
-            const auto skyboxShader =
-                AssetManager::GetInstance().LoadShader("assets/shaders/skybox.glsl", ShaderType::VERTEX_AND_FRAGMENT);
+            auto skyboxShader = NewAssetManager::GetInstance().GetShader("assets/shaders/skybox.glsl");
+            if (!skyboxShader)
+                skyboxShader = NewAssetManager::GetInstance().LoadShader("assets/shaders/skybox.glsl",ShaderType::VERTEX_AND_FRAGMENT);
             const auto skyboxProxy = dynamic_cast<SkyboxProxy*>(proxyManager.GetProxy(scene->GetSkyboxObjectId()));
 
-            rendererState.BoundShader = skyboxShader->GetId();
+            rendererState.BoundShader = skyboxShader->id;
 
             if (skyboxProxy->HasAllTexturesSet())
             {
-                skyboxShader->Bind();
-                rendererState.BoundUniforms[0] = {skyboxShader->GetUniformLocation("view"), UniformType::FLOAT4X4,
+                skyboxShader->shaderPtr->Bind();
+                rendererState.BoundUniforms[0] = {skyboxShader->shaderPtr->GetUniformLocation("view"),
+                                                  UniformType::FLOAT4X4,
                                                   glm::value_ptr(camera->GetView())};
-                rendererState.BoundUniforms[1] = {skyboxShader->GetUniformLocation("projection"), UniformType::FLOAT4X4,
+                rendererState.BoundUniforms[1] = {skyboxShader->shaderPtr->GetUniformLocation("projection"),
+                                                  UniformType::FLOAT4X4,
                                                   glm::value_ptr(camera->GetProjection())};
                 rendererState.BoundTextures[0] = {static_cast<int32_t>(skyboxProxy->GetTextureId()),
                     m_PassShader->GetUniformLocation("skybox")};

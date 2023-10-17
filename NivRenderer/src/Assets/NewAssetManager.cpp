@@ -1,6 +1,8 @@
 #include "NewAssetManager.h"
 
 #include "IdManager.h"
+#include "stb_image.h"
+#include "stb_image_resize.h"
 
 NewAssetManager::NewAssetManager()
 {
@@ -77,14 +79,63 @@ MeshAsset* NewAssetManager::GetMesh(const std::string& path)
 
 TextureAsset* NewAssetManager::LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel, uint32_t channelIndex)
 {
+    if (loadOnlyOneChannel)
+    {
+        std::string fileName = path.substr(0, path.find_last_of('.'));
+        const std::string fileEnding = path.substr(path.find_last_of('.'), path.size());
+        fileName += "_@" + std::to_string(channelIndex);
+        path = fileName + fileEnding;
+    }
+
+    std::string pathToUse = path;
+    if (path.find_last_of('@') != std::string::npos)
+    {
+        loadOnlyOneChannel = true;
+        channelIndex = std::stoi(path.substr(path.find_last_of('@') + 1, path.size()));
+        pathToUse = path.substr(0, path.find_last_of('@') - 1) + path.substr(path.find_last_of('@') + 2, path.size());
+    }
+
+    const auto textureId = IdManager::GetInstance().CreateNewId();
+    m_LoadedTextures[textureId] = CreateScope<TextureAsset>(textureId, pathToUse, flipVertical, loadOnlyOneChannel, channelIndex);
+    m_TexturesByPath[path] = m_LoadedTextures[textureId].get();
+    const auto textureAsset = m_LoadedTextures[textureId].get();
+
+    stbi_set_flip_vertically_on_load(textureAsset->flipVertical);
+
+    importTexture(textureAsset);
+
+    return textureAsset;
 }
 
 TextureAsset* NewAssetManager::GetTexture(uint32_t id)
 {
+    if (m_LoadedTextures.contains(id))
+        return m_LoadedTextures[id].get();
+
+    return nullptr;
 }
 
 TextureAsset* NewAssetManager::GetTexture(const std::string& path)
 {
+    if (m_TexturesByPath.contains(path))
+        return m_TexturesByPath[path];
+
+    return nullptr;
+}
+
+std::vector<uint32_t> NewAssetManager::GetTextureIds(bool includeDefault) const
+{
+    std::vector<uint32_t> returnVector;
+    for (auto& it : m_LoadedTextures)
+    {
+        const bool isDefaultPath = it.second->path == "default" || it.second->path == "black" || it.second->path == "white";
+        if (!includeDefault && isDefaultPath)
+            continue;
+
+        returnVector.push_back(it.first);
+    }
+
+    return returnVector;
 }
 
 MaterialAsset* NewAssetManager::GetMaterial(const std::string& name)
@@ -106,13 +157,213 @@ MaterialAsset* NewAssetManager::GetMaterial(uint32_t id)
 MaterialAsset* NewAssetManager::CreateMaterial()
 {
     const uint32_t id = IdManager::GetInstance().CreateNewId();
-    m_LoadedMaterials[id] = CreateScope<MaterialAsset>(id, "New Material");
-    m_MaterialsByName["New Material"] = m_LoadedMaterials[id].get();
+    const std::string materialName = "New Material (" + std::to_string(id) + ")";
+    m_LoadedMaterials[id] = CreateScope<MaterialAsset>(id, materialName);
+    m_MaterialsByName[materialName] = m_LoadedMaterials[id].get();
     const auto newMaterial = m_LoadedMaterials[id].get();
     newMaterial->diffusePath = "default";
-    newMaterial->diffuseTextureAsset = m_TexturesByName["default"];
+    newMaterial->diffuseTextureAsset = m_TexturesByPath["default"];
 
     return newMaterial;
+}
+
+void NewAssetManager::RemoveMaterial(uint32_t id)
+{
+    const auto material = m_LoadedMaterials[id].get();
+    m_MaterialsByName.erase(material->name);
+    m_LoadedMaterials.erase(id);
+}
+
+std::vector<uint32_t> NewAssetManager::GetMaterialIds(bool includeDefault) const
+{
+    std::vector<uint32_t> returnVector;
+    for (auto& it : m_LoadedMaterials)
+    {
+        if (!includeDefault && it.second->name == "Default")
+            continue;
+
+        returnVector.push_back(it.first);
+    }
+
+    return returnVector;
+}
+
+Model* NewAssetManager::LoadModel(const std::string& path)
+{
+    const aiScene* scene = m_Importer->ReadFile(
+        path, MESH_IMPORT_POSTPROCESS_FLAGS);
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+    {
+        SPDLOG_DEBUG(std::string("ERROR::ASSIMP::") + m_Importer->GetErrorString());
+
+        return nullptr;
+    }
+
+    const auto model = new Model();
+    processNode(scene->mRootNode, scene, model->subModels, path);
+    model->name = path.substr(path.find_last_of('/') + 1, path.find_last_of('.'));
+
+    return model;
+}
+
+void NewAssetManager::loadDefaults()
+{
+    // Setup default cube
+    std::vector<MeshVertex> defaultVertices;
+
+    // Back
+    defaultVertices.push_back(
+        {{-1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, -1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{-1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+
+    // Left
+    defaultVertices.push_back(
+        {{-1.0f, -1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{-1.0f, -1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{-1.0f, 1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{-1.0f, 1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{-1.0f, 1.0f, -1.0f}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{-1.0f, -1.0f, 1.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+
+    // Right
+    defaultVertices.push_back(
+        {{1.0f, -1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, 1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, 1.0f, 1.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, -1.0f, -1.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+
+    // Front
+    defaultVertices.push_back(
+        {{-1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{-1.0f, -1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+
+    // Top
+    defaultVertices.push_back(
+        {{1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{-1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{-1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{-1.0f, 1.0f, -1.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+
+    // Bottom
+    defaultVertices.push_back(
+        {{-1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{-1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{-1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, -1.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+    defaultVertices.push_back(
+        {{1.0f, -1.0f, 1.0f}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}});
+
+    std::vector<uint32_t> defaultIndices;
+
+    m_LoadedMeshes[0] = CreateScope<MeshAsset>(0, "default", defaultVertices, defaultIndices);
+    m_MeshesByPath["default"] = m_LoadedMeshes[0].get();
+
+    // Default "Prototype" Texture and Material
+    m_LoadedTextures[1] = CreateScope<TextureAsset>(1, "assets/textures/default.png", false, false, 0);
+    m_TexturesByPath["default"] = m_LoadedTextures[1].get();
+    importTexture(m_LoadedTextures[1].get());
+    m_LoadedMaterials[2] = CreateScope<MaterialAsset>(2, "Default");
+    m_MaterialsByName["Default"] = m_LoadedMaterials[2].get();
+    const auto defaultMaterial = m_LoadedMaterials[2].get();
+    defaultMaterial->diffusePath = "default";
+    defaultMaterial->diffuseTextureAsset = m_LoadedTextures[1].get();
+
+    // White 1x1 Texture
+    m_LoadedTextures[3] = CreateScope<TextureAsset>(3, "assets/textures/default_white.png", false, false, 0);
+    m_TexturesByPath["white"] = m_LoadedTextures[3].get();
+    importTexture(m_LoadedTextures[3].get());
+
+    // Black 1x1 Texture
+    m_LoadedTextures[4] = CreateScope<TextureAsset>(4, "assets/textures/default_black.png", false, false, 0);
+    m_TexturesByPath["black"] = m_LoadedTextures[4].get();
+    importTexture(m_LoadedTextures[4].get());
+}
+
+void NewAssetManager::importTexture(TextureAsset* textureAsset)
+{
+    const std::string pathToUse = textureAsset->path;
+    unsigned char* loadedData = stbi_load(pathToUse.c_str(), &textureAsset->width, &textureAsset->height,
+                                          &textureAsset->nrComponents, 0);
+
+    unsigned char* resizedData = nullptr;
+    if (textureAsset->width > 4000 && textureAsset->height > 4000)
+    {
+        resizedData = new unsigned char[1920 * 1080 * textureAsset->nrComponents];
+        stbir_resize_uint8(loadedData, textureAsset->width, textureAsset->height, 0, resizedData, 1920, 1080, 0, textureAsset->nrComponents);
+        textureAsset->width = 1920;
+        textureAsset->height = 1080;
+        stbi_image_free(loadedData);
+    }
+
+    if (textureAsset->loadOnlyOneChannel)
+    {
+        const size_t dataCount = textureAsset->width * textureAsset->height;
+        textureAsset->textureData = new unsigned char[dataCount];
+
+        for (int32_t y = 0; y < textureAsset->height; y++)
+        {
+            for (int32_t x = 0; x < textureAsset->width; x++)
+            {
+                const unsigned char* pixelOffset =
+                    textureAsset->nrComponents * (y * textureAsset->width + x) +
+                    (resizedData ? resizedData : loadedData);
+                textureAsset->textureData[y * textureAsset->width + x] = pixelOffset[textureAsset->channelIndex];
+            }
+        }
+        textureAsset->nrComponents = 1;
+
+        stbi_image_free(resizedData ? resizedData : loadedData);
+    }
+    else
+    {
+        const size_t dataCount = textureAsset->width * textureAsset->height * textureAsset->nrComponents;
+        const size_t dataSize = sizeof(unsigned char) * dataCount;
+        textureAsset->textureData = new unsigned char[dataCount];
+        memcpy(textureAsset->textureData, resizedData ? resizedData : loadedData, dataSize);
+        stbi_image_free(resizedData ? resizedData : loadedData);
+    }
 }
 
 void NewAssetManager::processNode(const aiNode* node, const aiScene* scene, std::vector<SubModel>& subModels,
@@ -218,16 +469,17 @@ void NewAssetManager::processMaterials(const aiScene* scene, SubModel& subModel,
         return;
     }
 
-    const uint32_t materialAssetId = IdManager::GetInstance().CreateNewId();
-    m_LoadedMaterialAssets[materialAssetId] = CreateScope<MaterialAsset>(materialAssetId, materialName);
-    materialAsset = m_LoadedMaterialAssets[materialAssetId].get();
+    const auto materialAssetId = IdManager::GetInstance().CreateNewId();
+    m_LoadedMaterials[materialAssetId] = CreateScope<MaterialAsset>(materialAssetId, materialName);
+    m_MaterialsByName[materialName] = m_LoadedMaterials[materialAssetId].get();
+    materialAsset = m_LoadedMaterials[materialAssetId].get();
 
-    auto& diffusePath = materialAsset->GetDiffusePath();
-    auto& normalPath = materialAsset->GetNormalPath();
-    auto& metallicPath = materialAsset->GetMetallicPath();
-    auto& roughnessPath = materialAsset->GetRoughnessPath();
-    auto& aoPath = materialAsset->GetAOPath();
-    auto& emissivePath = materialAsset->GetEmissivePath();
+    auto& diffusePath = materialAsset->diffusePath;
+    auto& normalPath = materialAsset->normalPath;
+    auto& metallicPath = materialAsset->metallicPath;
+    auto& roughnessPath = materialAsset->roughnessPath;
+    auto& aoPath = materialAsset->aoPath;
+    auto& emissivePath = materialAsset->emissivePath;
 
     const aiMaterial* aiMaterial = scene->mMaterials[materialIndex];
 
@@ -282,19 +534,22 @@ void NewAssetManager::processMaterials(const aiScene* scene, SubModel& subModel,
 
     const bool metalRoughnessIsShared = metallicPath == roughnessPath;
     if (!diffusePath.empty())
-        *materialAsset->GetDiffuseTextureAsset() = LoadTexture(diffusePath, materialAsset->GetFlipDiffuseTexture());
+        materialAsset->diffuseTextureAsset = LoadTexture(diffusePath, materialAsset->flipDiffuseTexture);
+
     if (!normalPath.empty())
-        *materialAsset->GetNormalTextureAsset() = LoadTexture(normalPath, materialAsset->GetFlipNormalTexture());
+        materialAsset->normalTextureAsset = LoadTexture(normalPath, materialAsset->flipNormalTexture);
+
     if (!metallicPath.empty())
-        *materialAsset->GetMetallicTextureAsset() =
-            LoadTexture(metallicPath, materialAsset->GetFlipMetallicTexture(), metalRoughnessIsShared, 2);
+        materialAsset->metallicTextureAsset = LoadTexture(metallicPath, materialAsset->flipMetallicTexture, metalRoughnessIsShared, 2);
+
     if (!roughnessPath.empty())
-        *materialAsset->GetRoughnessTextureAsset() =
-            LoadTexture(roughnessPath, materialAsset->GetFlipRoughnessTexture(), metalRoughnessIsShared, 1);
+        materialAsset->roughnessTextureAsset = LoadTexture(roughnessPath, materialAsset->flipRoughnessTexture, metalRoughnessIsShared, 1);
+
     if (!aoPath.empty())
-        *materialAsset->GetAOTextureAsset() = LoadTexture(aoPath, materialAsset->GetFlipAOTexture());
+        materialAsset->aoTextureAsset = LoadTexture(aoPath, materialAsset->flipAOTexture);
+
     if (!emissivePath.empty())
-        *materialAsset->GetEmissiveTextureAsset() = LoadTexture(emissivePath, materialAsset->GetFlipEmissiveTexture());
+        materialAsset->emissiveTextureAsset = LoadTexture(emissivePath, materialAsset->flipEmissiveTexture);
 
     subModel.material = materialAsset;
 }

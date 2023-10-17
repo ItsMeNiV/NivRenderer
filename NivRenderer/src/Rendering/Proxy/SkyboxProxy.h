@@ -52,7 +52,7 @@ public:
         glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_Texture);
         GLenum format;
         GLenum sizedFormat;
-        switch (*textures[0]->GetNrComponents())
+        switch (textures[0]->nrComponents)
         {
         case 1:
             format = GL_RED;
@@ -69,12 +69,12 @@ public:
             break;
         }
 
-        glTextureStorage2D(m_Texture, 1, sizedFormat, *textures[0]->GetWidth(), *textures[0]->GetHeight());
+        glTextureStorage2D(m_Texture, 1, sizedFormat, textures[0]->width, textures[0]->height);
         uint8_t i = 0;
         for (auto& textureAsset : textures)
         {
-            glTextureSubImage3D(m_Texture, 0, 0, 0, i, *textureAsset->GetWidth(), *textureAsset->GetHeight(), 1, format,
-                                GL_UNSIGNED_BYTE, textureAsset->GetTextureData());
+            glTextureSubImage3D(m_Texture, 0, 0, 0, i, textureAsset->width, textureAsset->height, 1, format,
+                                GL_UNSIGNED_BYTE, textureAsset->textureData);
             i++;
         }
         glTextureParameteri(m_Texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

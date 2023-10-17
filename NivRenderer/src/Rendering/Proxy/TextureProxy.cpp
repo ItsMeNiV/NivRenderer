@@ -10,12 +10,12 @@ TextureProxy::~TextureProxy() = default;
 
 void TextureProxy::CreateTextureFromAsset(TextureAsset* const textureAsset) const
 {
-    if (textureAsset->isUnloaded())
-        textureAsset->ReloadData();
+    /*if (textureAsset->isUnloaded()) TODO
+        textureAsset->ReloadData();*/ 
 
     GLenum format;
     GLenum sizedFormat;
-    switch (*textureAsset->GetNrComponents())
+    switch (textureAsset->nrComponents)
     {
     case 1:
         format = GL_RED;
@@ -32,9 +32,9 @@ void TextureProxy::CreateTextureFromAsset(TextureAsset* const textureAsset) cons
         break;
     }
 
-    glTextureStorage2D(m_TextureId, 1, sizedFormat, *textureAsset->GetWidth(), *textureAsset->GetHeight());
-    glTextureSubImage2D(m_TextureId, 0, 0, 0, *textureAsset->GetWidth(), *textureAsset->GetHeight(), format,
-                        GL_UNSIGNED_BYTE, textureAsset->GetTextureData());
+    glTextureStorage2D(m_TextureId, 1, sizedFormat, textureAsset->width, textureAsset->height);
+    glTextureSubImage2D(m_TextureId, 0, 0, 0, textureAsset->width, textureAsset->height, format,
+                        GL_UNSIGNED_BYTE, textureAsset->textureData);
     glGenerateTextureMipmap(m_TextureId);
 
     glTextureParameteri(m_TextureId, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -42,7 +42,7 @@ void TextureProxy::CreateTextureFromAsset(TextureAsset* const textureAsset) cons
     glTextureParameteri(m_TextureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTextureParameteri(m_TextureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    textureAsset->UnloadData();
+    //textureAsset->UnloadData(); TODO
 }
 
 void TextureProxy::BindToSlot(uint32_t slot) const

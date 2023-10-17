@@ -1,6 +1,5 @@
 #pragma once
-#include "Assets/MaterialAsset.h"
-#include "Assets/MeshAsset.h"
+#include "Assets/Assets.h"
 
 // Optional Components
 struct TransformComponent
