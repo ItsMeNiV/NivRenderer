@@ -72,6 +72,8 @@ private:
         aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType | aiProcess_RemoveRedundantMaterials |
         aiProcess_FixInfacingNormals;
 
+    static inline std::unordered_map<std::string, std::string> s_DefaultTexturesMap = {{"default", "assets/textures/default.png"}, {"white", "assets/textures/default_white.png"}, {"black", "assets/textures/default_black.png"}};
+
     void loadDefaults();
     static void importTexture(TextureAsset* textureAsset);
     void processNode(const aiNode* node, const aiScene* scene, std::vector<SubModel>& subModels, const std::string& path);

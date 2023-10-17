@@ -38,7 +38,7 @@ static int InputTextCallback(ImGuiInputTextCallbackData* data)
 inline void DrawTextureDropdown(TextureAsset** textureAsset)
 {
 
-    if (ImGui::BeginCombo("Texture##Combo", (*textureAsset) ? (*textureAsset)->path.c_str() : ""))
+    if (ImGui::BeginCombo("Texture", (*textureAsset) ? (*textureAsset)->path.c_str() : ""))
     {
         for (const uint32_t textureId : NewAssetManager::GetInstance().GetTextureIds(true))
         {
@@ -82,201 +82,6 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
     }
     else
     {
-        if (const auto tagComponent = ECSRegistry::GetInstance().GetComponent<TagComponent>(selectedSceneObject))
-        {
-            const auto inputString = &tagComponent->name;
-            ImGui::InputText("Name", inputString, 0, InputTextCallback, (void*)inputString);
-            ImGui::Spacing();
-        }
-
-        const auto sceneObjectComponent =
-            ECSRegistry::GetInstance().GetComponent<SceneObjectComponent>(selectedSceneObject);
-        if (sceneObjectComponent)
-        {
-            {
-                const auto inputString = &sceneObjectComponent->modelPath;
-                ImGui::InputText("Model Path", inputString, 0, InputTextCallback, (void*)inputString);
-                ImGui::PushID((std::string("Reload") + std::to_string(selectedSceneObject)).c_str());
-                if (ImGui::Button("Reload"))
-                {
-                    *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                    scene->LoadModel(selectedSceneObject);
-                    sceneObjectComponent->dirtyFlag = true;
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Open File"))
-                {
-                    const auto paths = pfd::open_file("Open File", ".").result();
-                    if (!paths.empty())
-                    {
-                        *inputString = paths[0];
-                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                        scene->LoadModel(selectedSceneObject);
-                        sceneObjectComponent->dirtyFlag = true;
-                    }
-                }
-                ImGui::PopID();
-                ImGui::Spacing();
-            }
-        }
-
-        if (const auto directionalLightComponent =
-                ECSRegistry::GetInstance().GetComponent<DirectionalLightComponent>(selectedSceneObject))
-        {
-            if (ImGui::ColorEdit3("Color", glm::value_ptr(directionalLightComponent->lightColor)))
-                directionalLightComponent->dirtyFlag = true;
-            ImGui::Spacing();
-            if (ImGui::InputFloat3("Direction", glm::value_ptr(directionalLightComponent->direction)))
-                directionalLightComponent->dirtyFlag = true;
-            ImGui::Spacing();
-        }
-
-        if (const auto pointLightComponent =
-                ECSRegistry::GetInstance().GetComponent<PointLightComponent>(selectedSceneObject))
-        {
-            if (ImGui::ColorEdit3("Color", glm::value_ptr(pointLightComponent->lightColor)))
-                pointLightComponent->dirtyFlag = true;
-            ImGui::Spacing();
-            if (ImGui::InputFloat3("Position", glm::value_ptr(pointLightComponent->position)))
-                pointLightComponent->dirtyFlag = true;
-            if (ImGui::SliderInt("Strength", &pointLightComponent->strength, 1, 100))
-                pointLightComponent->dirtyFlag = true;
-            ImGui::Spacing();
-        }
-
-        if (const auto skyboxComponent = ECSRegistry::GetInstance().GetComponent<SkyboxComponent>(selectedSceneObject))
-        {
-            {
-                auto* inputString = &skyboxComponent->textureFolder;
-                ImGui::InputText("Texture Folder", inputString, 0, InputTextCallback, (void*)inputString);
-                ImGui::PushID((std::string("Reload") + std::to_string(selectedSceneObject)).c_str());
-                if (ImGui::Button("Reload"))
-                {
-                    *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                    scene->SetSkyboxTexturePathsFromFolder();
-                    skyboxComponent->dirtyFlag = true;
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Open Folder"))
-                {
-                    const auto path = pfd::select_folder("Select Folder", ".").result();
-                    if (!path.empty())
-                    {
-                        *inputString = path;
-                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                        scene->SetSkyboxTexturePathsFromFolder();
-                        skyboxComponent->dirtyFlag = true;
-                    }
-                }
-                ImGui::PopID();
-                ImGui::Spacing();
-            }
-            for (uint32_t i = 0; i < 6; i++)
-            {
-                auto* inputString = &skyboxComponent->texturePaths[i];
-                ImGui::InputText(("Path [" + std::to_string(i + 1) + "]").c_str(), inputString, 0, InputTextCallback,
-                                 (void*)inputString);
-                ImGui::Spacing();
-            }
-
-            {
-                ImGui::PushID("Reload##Skybox");
-                if (ImGui::Button("Reload Textures"))
-                {
-                    scene->LoadSkyboxTextures();
-                    skyboxComponent->dirtyFlag = true;
-                }
-                ImGui::PopID();
-                ImGui::Spacing();
-            }
-            if (ImGui::Checkbox("Flip Textures", &skyboxComponent->flipTextures))
-                skyboxComponent->dirtyFlag = true;
-        }
-
-        if (const auto cameraComponent = ECSRegistry::GetInstance().GetComponent<CameraComponent>(selectedSceneObject))
-        {
-            bool isActiveCamera = scene->GetActiveCameraId() == selectedSceneObject;
-            if (ImGui::Checkbox("Active", &isActiveCamera))
-            {
-                if (isActiveCamera)
-                    scene->SetActiveCamera(selectedSceneObject);
-            }
-        }
-
-        if (const auto transformComponent =
-                ECSRegistry::GetInstance().GetComponent<TransformComponent>(selectedSceneObject))
-        {
-            if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                if (ImGui::InputFloat3("Position", glm::value_ptr(transformComponent->position)))
-                    sceneObjectComponent->dirtyFlag = true;
-                ImGui::Spacing();
-                if (ImGui::InputFloat3("Scale", glm::value_ptr(transformComponent->scale)))
-                    sceneObjectComponent->dirtyFlag = true;
-                ImGui::Spacing();
-                transformComponent->degRotation = glm::degrees(transformComponent->rotation);
-                if (ImGui::InputFloat3("Rotation", glm::value_ptr(transformComponent->degRotation)))
-                {
-                    transformComponent->rotation = glm::radians(transformComponent->degRotation);
-                    sceneObjectComponent->dirtyFlag = true;
-                }
-                ImGui::Spacing();
-            }
-        }
-
-        if (const auto meshComponent = ECSRegistry::GetInstance().GetComponent<MeshComponent>(selectedSceneObject))
-        {
-            if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                const auto inputString = &meshComponent->path;
-                ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
-                ImGui::PushID((std::string("Reload") + std::to_string(selectedSceneObject)).c_str());
-                if (ImGui::Button("Reload"))
-                {
-                    *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                    scene->LoadMesh(selectedSceneObject);
-                    sceneObjectComponent->dirtyFlag = true;
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Open File"))
-                {
-                    const auto paths = pfd::open_file("Open File", ".").result();
-                    if (!paths.empty())
-                    {
-                        *inputString = paths[0];
-                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
-                        scene->LoadMesh(selectedSceneObject);
-                        sceneObjectComponent->dirtyFlag = true;
-                    }
-                }
-                ImGui::PopID();
-                ImGui::Spacing();
-            }
-        }
-
-        if (const auto materialComponent =
-                ECSRegistry::GetInstance().GetComponent<MaterialComponent>(selectedSceneObject))
-        {
-            if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                auto* materialAsset = &materialComponent->materialAsset;
-                if (ImGui::BeginCombo("Material##Combo", (*materialAsset)->name.c_str()))
-                {
-                    for (const uint32_t materialId : NewAssetManager::GetInstance().GetMaterialIds(true))
-                    {
-                        const bool isSelected = (*materialAsset)->id == materialId;
-                        const auto currentMaterial = NewAssetManager::GetInstance().GetMaterial(materialId);
-                        if (ImGui::Selectable(currentMaterial->name.c_str(), isSelected))
-                        {
-                            *materialAsset = currentMaterial;
-                            sceneObjectComponent->dirtyFlag = true;
-                        }
-                    }
-                    ImGui::EndCombo();
-                }
-            }
-        }
-
         if (const auto materialAsset = NewAssetManager::GetInstance().GetMaterial(selectedSceneObject))
         {
             {
@@ -289,11 +94,13 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
             {
                 ImGui::SeparatorText("Diffuse");
 
+                ImGui::PushID("TextureCombo##Diffuse");
                 DrawTextureDropdown(&materialAsset->diffuseTextureAsset);
+                ImGui::PopID();
                 ImGui::PushID("Reload##Diffuse");
                 if (ImGui::Button("Reload"))
                 {
-                    if (const auto textureAsset = NewAssetManager::GetInstance().GetTexture(materialAsset->diffusePath))
+                    if (const auto textureAsset = materialAsset->diffuseTextureAsset)
                         materialAsset->diffuseTextureAsset = NewAssetManager::GetInstance().LoadTexture(
                             textureAsset->path, materialAsset->flipDiffuseTexture, textureAsset->loadOnlyOneChannel,
                             textureAsset->channelIndex);
@@ -314,7 +121,9 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                 ImGui::PopID();
                 ImGui::Spacing();
 
-                if (ImGui::Checkbox("Flip Diffuse Texture", &materialAsset->flipDiffuseTexture)){}
+                if (ImGui::Checkbox("Flip Diffuse Texture", &materialAsset->flipDiffuseTexture))
+                {
+                }
                 // materialAsset->SetDirtyFlag(true); TODO
             }
 
@@ -322,11 +131,13 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
             {
                 ImGui::SeparatorText("Normal");
 
+                ImGui::PushID("TextureCombo##Normal");
                 DrawTextureDropdown(&materialAsset->normalTextureAsset);
+                ImGui::PopID();
                 ImGui::PushID("Reload##Normal");
                 if (ImGui::Button("Reload"))
                 {
-                    if (const auto textureAsset = NewAssetManager::GetInstance().GetTexture(materialAsset->normalPath))
+                    if (const auto textureAsset = materialAsset->normalTextureAsset)
                         materialAsset->normalTextureAsset = NewAssetManager::GetInstance().LoadTexture(
                             textureAsset->path, materialAsset->flipNormalTexture, textureAsset->loadOnlyOneChannel,
                             textureAsset->channelIndex);
@@ -347,20 +158,23 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                 ImGui::PopID();
                 ImGui::Spacing();
 
-                if (ImGui::Checkbox("Flip Normal Texture", &materialAsset->flipNormalTexture)){}
-                    //materialAsset->SetDirtyFlag(true); TODO
+                if (ImGui::Checkbox("Flip Normal Texture", &materialAsset->flipNormalTexture))
+                {
+                }
+                // materialAsset->SetDirtyFlag(true); TODO
             }
 
             // Metallic
             {
                 ImGui::SeparatorText("Metallic");
 
+                ImGui::PushID("TextureCombo##Metallic");
                 DrawTextureDropdown(&materialAsset->metallicTextureAsset);
+                ImGui::PopID();
                 ImGui::PushID("Reload##Metallic");
                 if (ImGui::Button("Reload"))
                 {
-                    if (const auto textureAsset =
-                            NewAssetManager::GetInstance().GetTexture(materialAsset->metallicPath))
+                    if (const auto textureAsset = materialAsset->metallicTextureAsset)
                         materialAsset->metallicTextureAsset = NewAssetManager::GetInstance().LoadTexture(
                             textureAsset->path, materialAsset->flipMetallicTexture, textureAsset->loadOnlyOneChannel,
                             textureAsset->channelIndex);
@@ -381,20 +195,23 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                 ImGui::PopID();
                 ImGui::Spacing();
 
-                if (ImGui::Checkbox("Flip Metallic Texture", &materialAsset->flipMetallicTexture)){}
-                    //materialAsset->SetDirtyFlag(true); TODO
+                if (ImGui::Checkbox("Flip Metallic Texture", &materialAsset->flipMetallicTexture))
+                {
+                }
+                // materialAsset->SetDirtyFlag(true); TODO
             }
 
             // Roughness
             {
                 ImGui::SeparatorText("Roughness");
 
+                ImGui::PushID("TextureCombo##Roughness");
                 DrawTextureDropdown(&materialAsset->roughnessTextureAsset);
+                ImGui::PopID();
                 ImGui::PushID("Reload##Roughness");
                 if (ImGui::Button("Reload"))
                 {
-                    if (const auto textureAsset =
-                            NewAssetManager::GetInstance().GetTexture(materialAsset->roughnessPath))
+                    if (const auto textureAsset = materialAsset->roughnessTextureAsset)
                         materialAsset->roughnessTextureAsset = NewAssetManager::GetInstance().LoadTexture(
                             textureAsset->path, materialAsset->flipRoughnessTexture, textureAsset->loadOnlyOneChannel,
                             textureAsset->channelIndex);
@@ -415,19 +232,23 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                 ImGui::PopID();
                 ImGui::Spacing();
 
-                if (ImGui::Checkbox("Flip Roughness Texture", &materialAsset->flipRoughnessTexture)){}
-                    //materialAsset->SetDirtyFlag(true); TODO
+                if (ImGui::Checkbox("Flip Roughness Texture", &materialAsset->flipRoughnessTexture))
+                {
+                }
+                // materialAsset->SetDirtyFlag(true); TODO
             }
 
             // AO
             {
                 ImGui::SeparatorText("AO");
 
+                ImGui::PushID("TextureCombo##AO");
                 DrawTextureDropdown(&materialAsset->aoTextureAsset);
+                ImGui::PopID();
                 ImGui::PushID("Reload##AO");
                 if (ImGui::Button("Reload"))
                 {
-                    if (const auto textureAsset = NewAssetManager::GetInstance().GetTexture(materialAsset->aoPath))
+                    if (const auto textureAsset = materialAsset->aoTextureAsset)
                         materialAsset->aoTextureAsset = NewAssetManager::GetInstance().LoadTexture(
                             textureAsset->path, materialAsset->flipAOTexture, textureAsset->loadOnlyOneChannel,
                             textureAsset->channelIndex);
@@ -448,20 +269,23 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                 ImGui::PopID();
                 ImGui::Spacing();
 
-                if (ImGui::Checkbox("Flip AO Texture", &materialAsset->flipAOTexture)){}
-                    //materialAsset->SetDirtyFlag(true); TODO
+                if (ImGui::Checkbox("Flip AO Texture", &materialAsset->flipAOTexture))
+                {
+                }
+                // materialAsset->SetDirtyFlag(true); TODO
             }
 
             // Emissive
             {
                 ImGui::SeparatorText("Emissive");
 
+                ImGui::PushID("TextureCombo##Emissive");
                 DrawTextureDropdown(&materialAsset->emissiveTextureAsset);
+                ImGui::PopID();
                 ImGui::PushID("Reload##Emissive");
                 if (ImGui::Button("Reload"))
                 {
-                    if (const auto textureAsset =
-                            NewAssetManager::GetInstance().GetTexture(materialAsset->emissivePath))
+                    if (const auto textureAsset = materialAsset->emissiveTextureAsset)
                         materialAsset->emissiveTextureAsset = NewAssetManager::GetInstance().LoadTexture(
                             textureAsset->path, materialAsset->flipEmissiveTexture, textureAsset->loadOnlyOneChannel,
                             textureAsset->channelIndex);
@@ -482,8 +306,209 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                 ImGui::PopID();
                 ImGui::Spacing();
 
-                if (ImGui::Checkbox("Flip Emissive Texture", &materialAsset->flipEmissiveTexture)){}
-                    //materialAsset->SetDirtyFlag(true); TODO
+                if (ImGui::Checkbox("Flip Emissive Texture", &materialAsset->flipEmissiveTexture))
+                {
+                }
+                // materialAsset->SetDirtyFlag(true); TODO
+            }
+        }
+        else
+        {
+            if (const auto tagComponent = ECSRegistry::GetInstance().GetComponent<TagComponent>(selectedSceneObject))
+            {
+                const auto inputString = &tagComponent->name;
+                ImGui::InputText("Name", inputString, 0, InputTextCallback, (void*)inputString);
+                ImGui::Spacing();
+            }
+
+            const auto sceneObjectComponent =
+                ECSRegistry::GetInstance().GetComponent<SceneObjectComponent>(selectedSceneObject);
+            if (sceneObjectComponent)
+            {
+                {
+                    const auto inputString = &sceneObjectComponent->modelPath;
+                    ImGui::InputText("Model Path", inputString, 0, InputTextCallback, (void*)inputString);
+                    ImGui::PushID((std::string("Reload") + std::to_string(selectedSceneObject)).c_str());
+                    if (ImGui::Button("Reload"))
+                    {
+                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                        scene->LoadModel(selectedSceneObject);
+                        sceneObjectComponent->dirtyFlag = true;
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Open File"))
+                    {
+                        const auto paths = pfd::open_file("Open File", ".").result();
+                        if (!paths.empty())
+                        {
+                            *inputString = paths[0];
+                            *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                            scene->LoadModel(selectedSceneObject);
+                            sceneObjectComponent->dirtyFlag = true;
+                        }
+                    }
+                    ImGui::PopID();
+                    ImGui::Spacing();
+                }
+            }
+
+            if (const auto directionalLightComponent =
+                    ECSRegistry::GetInstance().GetComponent<DirectionalLightComponent>(selectedSceneObject))
+            {
+                if (ImGui::ColorEdit3("Color", glm::value_ptr(directionalLightComponent->lightColor)))
+                    directionalLightComponent->dirtyFlag = true;
+                ImGui::Spacing();
+                if (ImGui::InputFloat3("Direction", glm::value_ptr(directionalLightComponent->direction)))
+                    directionalLightComponent->dirtyFlag = true;
+                ImGui::Spacing();
+            }
+
+            if (const auto pointLightComponent =
+                    ECSRegistry::GetInstance().GetComponent<PointLightComponent>(selectedSceneObject))
+            {
+                if (ImGui::ColorEdit3("Color", glm::value_ptr(pointLightComponent->lightColor)))
+                    pointLightComponent->dirtyFlag = true;
+                ImGui::Spacing();
+                if (ImGui::InputFloat3("Position", glm::value_ptr(pointLightComponent->position)))
+                    pointLightComponent->dirtyFlag = true;
+                if (ImGui::SliderInt("Strength", &pointLightComponent->strength, 1, 100))
+                    pointLightComponent->dirtyFlag = true;
+                ImGui::Spacing();
+            }
+
+            if (const auto skyboxComponent =
+                    ECSRegistry::GetInstance().GetComponent<SkyboxComponent>(selectedSceneObject))
+            {
+                {
+                    auto* inputString = &skyboxComponent->textureFolder;
+                    ImGui::InputText("Texture Folder", inputString, 0, InputTextCallback, (void*)inputString);
+                    ImGui::PushID((std::string("Reload") + std::to_string(selectedSceneObject)).c_str());
+                    if (ImGui::Button("Reload"))
+                    {
+                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                        scene->SetSkyboxTexturePathsFromFolder();
+                        skyboxComponent->dirtyFlag = true;
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Open Folder"))
+                    {
+                        const auto path = pfd::select_folder("Select Folder", ".").result();
+                        if (!path.empty())
+                        {
+                            *inputString = path;
+                            *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                            scene->SetSkyboxTexturePathsFromFolder();
+                            skyboxComponent->dirtyFlag = true;
+                        }
+                    }
+                    ImGui::PopID();
+                    ImGui::Spacing();
+                }
+                for (uint32_t i = 0; i < 6; i++)
+                {
+                    auto* inputString = &skyboxComponent->texturePaths[i];
+                    ImGui::InputText(("Path [" + std::to_string(i + 1) + "]").c_str(), inputString, 0,
+                                     InputTextCallback, (void*)inputString);
+                    ImGui::Spacing();
+                }
+
+                {
+                    ImGui::PushID("Reload##Skybox");
+                    if (ImGui::Button("Reload Textures"))
+                    {
+                        scene->LoadSkyboxTextures();
+                        skyboxComponent->dirtyFlag = true;
+                    }
+                    ImGui::PopID();
+                    ImGui::Spacing();
+                }
+                if (ImGui::Checkbox("Flip Textures", &skyboxComponent->flipTextures))
+                    skyboxComponent->dirtyFlag = true;
+            }
+
+            if (const auto cameraComponent =
+                    ECSRegistry::GetInstance().GetComponent<CameraComponent>(selectedSceneObject))
+            {
+                bool isActiveCamera = scene->GetActiveCameraId() == selectedSceneObject;
+                if (ImGui::Checkbox("Active", &isActiveCamera))
+                {
+                    if (isActiveCamera)
+                        scene->SetActiveCamera(selectedSceneObject);
+                }
+            }
+
+            if (const auto transformComponent =
+                    ECSRegistry::GetInstance().GetComponent<TransformComponent>(selectedSceneObject))
+            {
+                if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    if (ImGui::InputFloat3("Position", glm::value_ptr(transformComponent->position)))
+                        sceneObjectComponent->dirtyFlag = true;
+                    ImGui::Spacing();
+                    if (ImGui::InputFloat3("Scale", glm::value_ptr(transformComponent->scale)))
+                        sceneObjectComponent->dirtyFlag = true;
+                    ImGui::Spacing();
+                    transformComponent->degRotation = glm::degrees(transformComponent->rotation);
+                    if (ImGui::InputFloat3("Rotation", glm::value_ptr(transformComponent->degRotation)))
+                    {
+                        transformComponent->rotation = glm::radians(transformComponent->degRotation);
+                        sceneObjectComponent->dirtyFlag = true;
+                    }
+                    ImGui::Spacing();
+                }
+            }
+
+            if (const auto meshComponent = ECSRegistry::GetInstance().GetComponent<MeshComponent>(selectedSceneObject))
+            {
+                if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    const auto inputString = &meshComponent->path;
+                    ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
+                    ImGui::PushID((std::string("Reload") + std::to_string(selectedSceneObject)).c_str());
+                    if (ImGui::Button("Reload"))
+                    {
+                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                        scene->LoadMesh(selectedSceneObject);
+                        sceneObjectComponent->dirtyFlag = true;
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Open File"))
+                    {
+                        const auto paths = pfd::open_file("Open File", ".").result();
+                        if (!paths.empty())
+                        {
+                            *inputString = paths[0];
+                            *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                            scene->LoadMesh(selectedSceneObject);
+                            sceneObjectComponent->dirtyFlag = true;
+                        }
+                    }
+                    ImGui::PopID();
+                    ImGui::Spacing();
+                }
+            }
+
+            if (const auto materialComponent =
+                    ECSRegistry::GetInstance().GetComponent<MaterialComponent>(selectedSceneObject))
+            {
+                if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    auto* materialAsset = &materialComponent->materialAsset;
+                    if (ImGui::BeginCombo("Material##Combo", (*materialAsset)->name.c_str()))
+                    {
+                        for (const uint32_t materialId : NewAssetManager::GetInstance().GetMaterialIds(true))
+                        {
+                            const bool isSelected = (*materialAsset)->id == materialId;
+                            const auto currentMaterial = NewAssetManager::GetInstance().GetMaterial(materialId);
+                            if (ImGui::Selectable(currentMaterial->name.c_str(), isSelected))
+                            {
+                                *materialAsset = currentMaterial;
+                                sceneObjectComponent->dirtyFlag = true;
+                            }
+                        }
+                        ImGui::EndCombo();
+                    }
+                }
             }
         }
     }

@@ -79,6 +79,10 @@ MeshAsset* NewAssetManager::GetMesh(const std::string& path)
 
 TextureAsset* NewAssetManager::LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel, uint32_t channelIndex)
 {
+    // Replace default paths
+    if (s_DefaultTexturesMap.contains(path))
+        path = s_DefaultTexturesMap[path];
+
     if (loadOnlyOneChannel)
     {
         std::string fileName = path.substr(0, path.find_last_of('.'));
@@ -95,16 +99,29 @@ TextureAsset* NewAssetManager::LoadTexture(std::string& path, bool flipVertical,
         pathToUse = path.substr(0, path.find_last_of('@') - 1) + path.substr(path.find_last_of('@') + 2, path.size());
     }
 
-    const auto textureId = IdManager::GetInstance().CreateNewId();
-    m_LoadedTextures[textureId] = CreateScope<TextureAsset>(textureId, pathToUse, flipVertical, loadOnlyOneChannel, channelIndex);
-    m_TexturesByPath[path] = m_LoadedTextures[textureId].get();
-    const auto textureAsset = m_LoadedTextures[textureId].get();
+    if (auto textureAsset = m_TexturesByPath[path])
+    {
+        textureAsset->flipVertical = flipVertical;
+        stbi_set_flip_vertically_on_load(flipVertical);
 
-    stbi_set_flip_vertically_on_load(textureAsset->flipVertical);
+        delete[] textureAsset->textureData;
+        importTexture(textureAsset);
 
-    importTexture(textureAsset);
+        return textureAsset;
+    }
+    else
+    {
+        const auto textureId = IdManager::GetInstance().CreateNewId();
+        m_LoadedTextures[textureId] = CreateScope<TextureAsset>(textureId, pathToUse, flipVertical, loadOnlyOneChannel, channelIndex);
+        m_TexturesByPath[path] = m_LoadedTextures[textureId].get();
+       textureAsset = m_LoadedTextures[textureId].get();
 
-    return textureAsset;
+        stbi_set_flip_vertically_on_load(textureAsset->flipVertical);
+
+        importTexture(textureAsset);
+
+        return textureAsset;
+    }
 }
 
 TextureAsset* NewAssetManager::GetTexture(uint32_t id)
@@ -117,8 +134,13 @@ TextureAsset* NewAssetManager::GetTexture(uint32_t id)
 
 TextureAsset* NewAssetManager::GetTexture(const std::string& path)
 {
-    if (m_TexturesByPath.contains(path))
-        return m_TexturesByPath[path];
+    // Replace default paths
+    std::string pathKey = path;
+    if (s_DefaultTexturesMap.contains(path))
+        pathKey = s_DefaultTexturesMap[path];
+
+    if (m_TexturesByPath.contains(pathKey))
+        return m_TexturesByPath[pathKey];
 
     return nullptr;
 }
@@ -128,7 +150,8 @@ std::vector<uint32_t> NewAssetManager::GetTextureIds(bool includeDefault) const
     std::vector<uint32_t> returnVector;
     for (auto& it : m_LoadedTextures)
     {
-        const bool isDefaultPath = it.second->path == "default" || it.second->path == "black" || it.second->path == "white";
+        const bool isDefaultPath = it.second->path == s_DefaultTexturesMap["default"] ||
+            it.second->path == s_DefaultTexturesMap["black"] || it.second->path == s_DefaultTexturesMap["white"];
         if (!includeDefault && isDefaultPath)
             continue;
 
@@ -302,22 +325,22 @@ void NewAssetManager::loadDefaults()
 
     // Default "Prototype" Texture and Material
     m_LoadedTextures[1] = CreateScope<TextureAsset>(1, "assets/textures/default.png", false, false, 0);
-    m_TexturesByPath["default"] = m_LoadedTextures[1].get();
+    m_TexturesByPath["assets/textures/default.png"] = m_LoadedTextures[1].get();
     importTexture(m_LoadedTextures[1].get());
     m_LoadedMaterials[2] = CreateScope<MaterialAsset>(2, "Default");
     m_MaterialsByName["Default"] = m_LoadedMaterials[2].get();
     const auto defaultMaterial = m_LoadedMaterials[2].get();
-    defaultMaterial->diffusePath = "default";
+    defaultMaterial->diffusePath = "assets/textures/default.png";
     defaultMaterial->diffuseTextureAsset = m_LoadedTextures[1].get();
 
     // White 1x1 Texture
     m_LoadedTextures[3] = CreateScope<TextureAsset>(3, "assets/textures/default_white.png", false, false, 0);
-    m_TexturesByPath["white"] = m_LoadedTextures[3].get();
+    m_TexturesByPath["assets/textures/default_white.png"] = m_LoadedTextures[3].get();
     importTexture(m_LoadedTextures[3].get());
 
     // Black 1x1 Texture
     m_LoadedTextures[4] = CreateScope<TextureAsset>(4, "assets/textures/default_black.png", false, false, 0);
-    m_TexturesByPath["black"] = m_LoadedTextures[4].get();
+    m_TexturesByPath["assets/textures/default_black.png"] = m_LoadedTextures[4].get();
     importTexture(m_LoadedTextures[4].get());
 }
 
