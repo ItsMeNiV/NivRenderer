@@ -421,7 +421,7 @@ MeshAsset* NewAssetManager::processMesh(aiMesh* mesh, const aiScene* scene, cons
 {
     auto meshId = IdManager::GetInstance().CreateNewId();
     std::string meshPath = path + '@' + mesh->mName.C_Str();
-    m_LoadedMeshes[meshId] = CreateScope<MeshAsset>(meshId, meshPath);
+    m_LoadedMeshes[meshId] = CreateScope<MeshAsset>(meshId, meshPath, mesh->mNumVertices, mesh->mNumFaces);
     m_MeshesByPath[meshPath] = m_LoadedMeshes[meshId].get();
 
     auto& vertices = m_LoadedMeshes[meshId]->vertices;

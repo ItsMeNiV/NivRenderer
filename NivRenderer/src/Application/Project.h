@@ -19,6 +19,9 @@ public:
     nlohmann::ordered_json SerializeObject();
     void DeSerializeObject(nlohmann::json jsonObject);
 
+    static constexpr const char* DEFAULT_FOLDER = "New Project";
+    static constexpr const char* DEFAULT_PATH = "New Project\\\\NewProject";
+
 private:
     std::vector<Scope<Scene>> m_Scenes;
     Scene* m_ActiveScene;

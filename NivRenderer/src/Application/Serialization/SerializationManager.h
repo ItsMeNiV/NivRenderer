@@ -5,7 +5,7 @@
 class SerializationManager
 {
 public:
-    static void SaveProject(Project* const project, bool saveOnSetPath);
+    static void SaveProject(Project* const project, bool saveOnSetPath, bool temporarySave);
     static Project* LoadProject();
     static Project* LoadProject(const std::string& path);
 };

@@ -41,10 +41,12 @@ struct MeshAsset
     MeshAsset() = default;
     MeshAsset(const MeshAsset&) = default;
     MeshAsset(uint32_t Id, const std::string& Path) : id(Id), path(Path) {}
+    MeshAsset(uint32_t Id, const std::string& Path, size_t VerticesSize, size_t IndicesSize) :
+        id(Id), path(Path), vertices(std::vector<MeshVertex>(VerticesSize)),
+        indices(std::vector<uint32_t>(IndicesSize))
+    {}
     MeshAsset(uint32_t Id, const std::string& Path, std::vector<MeshVertex>& Vertices, std::vector<uint32_t>& Indices) :
-        id(Id), path(Path), vertices(Vertices), indices(Indices)
-    {
-    }
+        id(Id), path(Path), vertices(Vertices), indices(Indices) {}
 };
 
 struct ShaderAsset

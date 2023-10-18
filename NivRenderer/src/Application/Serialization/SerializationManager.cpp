@@ -1,12 +1,20 @@
 #include "SerializationManager.h"
 #include "portable-file-dialogs.h"
 
-void SerializationManager::SaveProject(Project* const project, bool saveOnSetPath)
+void SerializationManager::SaveProject(Project* const project, bool saveOnSetPath, bool temporarySave)
 {
     std::string savePath = project->GetPath();
-    if (savePath.empty() || !saveOnSetPath)
+    if (savePath.empty() || (savePath == Project::DEFAULT_PATH && !temporarySave) || !saveOnSetPath)
     {
         savePath = pfd::save_file("Save Scene", ".", {"NivRenderer Project", "*.nivproj"}).result();
+        if (project->GetPath() == Project::DEFAULT_PATH)
+        {
+            const auto saveFolder = std::filesystem::path(savePath).parent_path();
+            std::filesystem::remove_all(saveFolder);
+            std::filesystem::create_directory(saveFolder);
+            //std::filesystem::copy(Project::DEFAULT_PATH, saveFolder, std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive); TODO: No assetfiles to copy yet
+            std::filesystem::remove_all(Project::DEFAULT_FOLDER);
+        }
         project->SetPath(savePath);
     }
 
@@ -26,6 +34,9 @@ Project* SerializationManager::LoadProject()
     const auto paths = pfd::open_file("Load Project", ".", {"NivRenderer Project", "*.nivproj"}).result();
     if (!paths.empty())
     {
+        // Remove Default Folder and files (if needed)
+        std::filesystem::remove_all(Project::DEFAULT_FOLDER);
+
         std::ifstream iStream(paths[0]);
         nlohmann::json fileJson;
 
