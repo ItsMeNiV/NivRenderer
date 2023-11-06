@@ -2,7 +2,7 @@
 
 #include "Entity/ECSRegistry.h"
 #include "Entity/Components.h"
-#include "Assets/NewAssetManager.h"
+#include "Assets/AssetManager.h"
 
 ProxyManager::ProxyManager() = default;
 
@@ -127,7 +127,7 @@ void ProxyManager::updateSceneObjectProxy(Scene* const scene, const uint32_t sce
 
 void ProxyManager::updateMaterialProxy(const uint32_t materialId)
 {
-    const auto materialAsset = NewAssetManager::GetInstance().GetMaterial(materialId);
+    const auto materialAsset = AssetManager::GetInstance().GetMaterial(materialId);
 
     if (!m_Proxies.contains(materialId))
     {
@@ -139,8 +139,8 @@ void ProxyManager::updateMaterialProxy(const uint32_t materialId)
     if (!materialAsset->GetDirtyFlag())
         return;
     */
-    const auto whiteTextureProxy = NewAssetManager::GetInstance().GetTexture("white");
-    const auto blackTextureProxy = NewAssetManager::GetInstance().GetTexture("black");
+    const auto whiteTextureProxy = AssetManager::GetInstance().GetTexture("white");
+    const auto blackTextureProxy = AssetManager::GetInstance().GetTexture("black");
     setupMaterialProxy(materialAsset->diffusePath, materialProxy->GetDiffuseTexturePtr(),
                        materialAsset->diffuseTextureAsset, whiteTextureProxy);
     setupMaterialProxy(materialAsset->normalPath, materialProxy->GetNormalTexturePtr(),

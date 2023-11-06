@@ -5,7 +5,7 @@
 #include "imgui.h"
 #include "misc/cpp/imgui_stdlib.h"
 #include "portable-file-dialogs.h"
-#include "Assets/NewAssetManager.h"
+#include "Assets/AssetManager.h"
 
 struct InputTextCallback_UserData
 {
@@ -40,10 +40,10 @@ inline void DrawTextureDropdown(TextureAsset** textureAsset)
 
     if (ImGui::BeginCombo("Texture", (*textureAsset) ? (*textureAsset)->path.c_str() : ""))
     {
-        for (const uint32_t textureId : NewAssetManager::GetInstance().GetTextureIds(true))
+        for (const uint32_t textureId : AssetManager::GetInstance().GetTextureIds(true))
         {
             const bool isSelected = (*textureAsset) ? (*textureAsset)->id == textureId : false;
-            const auto currentTexture = NewAssetManager::GetInstance().GetTexture(textureId);
+            const auto currentTexture = AssetManager::GetInstance().GetTexture(textureId);
             if (ImGui::Selectable(currentTexture->path.c_str(), isSelected))
             {
                 *textureAsset = currentTexture;
@@ -82,7 +82,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
     }
     else
     {
-        if (const auto materialAsset = NewAssetManager::GetInstance().GetMaterial(selectedSceneObject))
+        if (const auto materialAsset = AssetManager::GetInstance().GetMaterial(selectedSceneObject))
         {
             {
                 auto* inputString = &materialAsset->name;
@@ -101,7 +101,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                 if (ImGui::Button("Reload"))
                 {
                     if (const auto textureAsset = materialAsset->diffuseTextureAsset)
-                        materialAsset->diffuseTextureAsset = NewAssetManager::GetInstance().LoadTexture(
+                        materialAsset->diffuseTextureAsset = AssetManager::GetInstance().LoadTexture(
                             textureAsset->path, materialAsset->flipDiffuseTexture, textureAsset->loadOnlyOneChannel,
                             textureAsset->channelIndex);
                     // materialAsset->SetDirtyFlag(true); TODO
@@ -114,7 +114,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                     {
                         auto path = paths[0];
                         path = std::regex_replace(path, std::regex("\\\\"), "\/");
-                        materialAsset->diffuseTextureAsset = NewAssetManager::GetInstance().LoadTexture(path, false);
+                        materialAsset->diffuseTextureAsset = AssetManager::GetInstance().LoadTexture(path, false);
                         // materialAsset->SetDirtyFlag(true); TODO
                     }
                 }
@@ -138,7 +138,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                 if (ImGui::Button("Reload"))
                 {
                     if (const auto textureAsset = materialAsset->normalTextureAsset)
-                        materialAsset->normalTextureAsset = NewAssetManager::GetInstance().LoadTexture(
+                        materialAsset->normalTextureAsset = AssetManager::GetInstance().LoadTexture(
                             textureAsset->path, materialAsset->flipNormalTexture, textureAsset->loadOnlyOneChannel,
                             textureAsset->channelIndex);
                     // materialAsset->SetDirtyFlag(true); TODO
@@ -151,7 +151,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                     {
                         auto path = paths[0];
                         path = std::regex_replace(path, std::regex("\\\\"), "\/");
-                        materialAsset->normalTextureAsset = NewAssetManager::GetInstance().LoadTexture(path, false);
+                        materialAsset->normalTextureAsset = AssetManager::GetInstance().LoadTexture(path, false);
                         // materialAsset->SetDirtyFlag(true); TODO
                     }
                 }
@@ -175,7 +175,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                 if (ImGui::Button("Reload"))
                 {
                     if (const auto textureAsset = materialAsset->metallicTextureAsset)
-                        materialAsset->metallicTextureAsset = NewAssetManager::GetInstance().LoadTexture(
+                        materialAsset->metallicTextureAsset = AssetManager::GetInstance().LoadTexture(
                             textureAsset->path, materialAsset->flipMetallicTexture, textureAsset->loadOnlyOneChannel,
                             textureAsset->channelIndex);
                     // materialAsset->SetDirtyFlag(true); TODO
@@ -188,7 +188,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                     {
                         auto path = paths[0];
                         path = std::regex_replace(path, std::regex("\\\\"), "\/");
-                        materialAsset->metallicTextureAsset = NewAssetManager::GetInstance().LoadTexture(path, false);
+                        materialAsset->metallicTextureAsset = AssetManager::GetInstance().LoadTexture(path, false);
                         // materialAsset->SetDirtyFlag(true); TODO
                     }
                 }
@@ -212,7 +212,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                 if (ImGui::Button("Reload"))
                 {
                     if (const auto textureAsset = materialAsset->roughnessTextureAsset)
-                        materialAsset->roughnessTextureAsset = NewAssetManager::GetInstance().LoadTexture(
+                        materialAsset->roughnessTextureAsset = AssetManager::GetInstance().LoadTexture(
                             textureAsset->path, materialAsset->flipRoughnessTexture, textureAsset->loadOnlyOneChannel,
                             textureAsset->channelIndex);
                     // materialAsset->SetDirtyFlag(true); TODO
@@ -225,7 +225,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                     {
                         auto path = paths[0];
                         path = std::regex_replace(path, std::regex("\\\\"), "\/");
-                        materialAsset->roughnessTextureAsset = NewAssetManager::GetInstance().LoadTexture(path, false);
+                        materialAsset->roughnessTextureAsset = AssetManager::GetInstance().LoadTexture(path, false);
                         // materialAsset->SetDirtyFlag(true); TODO
                     }
                 }
@@ -249,7 +249,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                 if (ImGui::Button("Reload"))
                 {
                     if (const auto textureAsset = materialAsset->aoTextureAsset)
-                        materialAsset->aoTextureAsset = NewAssetManager::GetInstance().LoadTexture(
+                        materialAsset->aoTextureAsset = AssetManager::GetInstance().LoadTexture(
                             textureAsset->path, materialAsset->flipAOTexture, textureAsset->loadOnlyOneChannel,
                             textureAsset->channelIndex);
                     // materialAsset->SetDirtyFlag(true); TODO
@@ -262,7 +262,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                     {
                         auto path = paths[0];
                         path = std::regex_replace(path, std::regex("\\\\"), "\/");
-                        materialAsset->aoTextureAsset = NewAssetManager::GetInstance().LoadTexture(path, false);
+                        materialAsset->aoTextureAsset = AssetManager::GetInstance().LoadTexture(path, false);
                         // materialAsset->SetDirtyFlag(true); TODO
                     }
                 }
@@ -286,7 +286,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                 if (ImGui::Button("Reload"))
                 {
                     if (const auto textureAsset = materialAsset->emissiveTextureAsset)
-                        materialAsset->emissiveTextureAsset = NewAssetManager::GetInstance().LoadTexture(
+                        materialAsset->emissiveTextureAsset = AssetManager::GetInstance().LoadTexture(
                             textureAsset->path, materialAsset->flipEmissiveTexture, textureAsset->loadOnlyOneChannel,
                             textureAsset->channelIndex);
                     // materialAsset->SetDirtyFlag(true); TODO
@@ -299,7 +299,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                     {
                         auto path = paths[0];
                         path = std::regex_replace(path, std::regex("\\\\"), "\/");
-                        materialAsset->emissiveTextureAsset = NewAssetManager::GetInstance().LoadTexture(path, false);
+                        materialAsset->emissiveTextureAsset = AssetManager::GetInstance().LoadTexture(path, false);
                         // materialAsset->SetDirtyFlag(true); TODO
                     }
                 }
@@ -496,10 +496,10 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                     auto* materialAsset = &materialComponent->materialAsset;
                     if (ImGui::BeginCombo("Material##Combo", (*materialAsset)->name.c_str()))
                     {
-                        for (const uint32_t materialId : NewAssetManager::GetInstance().GetMaterialIds(true))
+                        for (const uint32_t materialId : AssetManager::GetInstance().GetMaterialIds(true))
                         {
                             const bool isSelected = (*materialAsset)->id == materialId;
-                            const auto currentMaterial = NewAssetManager::GetInstance().GetMaterial(materialId);
+                            const auto currentMaterial = AssetManager::GetInstance().GetMaterial(materialId);
                             if (ImGui::Selectable(currentMaterial->name.c_str(), isSelected))
                             {
                                 *materialAsset = currentMaterial;

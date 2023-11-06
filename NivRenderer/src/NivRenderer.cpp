@@ -7,7 +7,7 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
-#include "Assets/NewAssetManager.h"
+#include "Assets/AssetManager.h"
 #include "backends/imgui_impl_opengl3.h"
 
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_ERROR
@@ -42,7 +42,7 @@ Application::Application() :
 
 	std::vector<Scope<RenderPass>> renderPasses;
     renderPasses.push_back(
-        CreateScope<ForwardPass>(NewAssetManager::GetInstance().LoadShader(
+        CreateScope<ForwardPass>(AssetManager::GetInstance().LoadShader(
                                      "assets/shaders/forwardrender.glsl", ShaderType::VERTEX_AND_FRAGMENT)->shaderPtr,
                                  scene->GetSceneSettings().renderResolution.x,
                                  scene->GetSceneSettings().renderResolution.y, scene->GetSceneSettings().sampleCount));

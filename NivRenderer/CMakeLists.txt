@@ -133,7 +133,7 @@ set(SRC_FILES
  "src/Entity/Entity.h"
  "src/Entity/Components.h"
 
- "src/Assets/NewAssetManager.h" "src/Assets/NewAssetManager.cpp"
+ "src/Assets/AssetManager.h" "src/Assets/AssetManager.cpp"
  "src/Assets/Assets.h"
  
  "src/Rendering/Renderer.cpp" "src/Rendering/Renderer.h"

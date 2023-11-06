@@ -21,15 +21,15 @@ struct Model
     std::vector<SubModel> subModels;
 };
 
-class NewAssetManager
+class AssetManager
 {
 public:
-    NewAssetManager(NewAssetManager const&) = delete;
-    void operator=(NewAssetManager const&) = delete;
+    AssetManager(AssetManager const&) = delete;
+    void operator=(AssetManager const&) = delete;
 
-    static NewAssetManager& GetInstance()
+    static AssetManager& GetInstance()
     {
-        static NewAssetManager instance;
+        static AssetManager instance;
         return instance;
     }
 
@@ -54,7 +54,7 @@ public:
     Model* LoadModel(const std::string& path);
     
 private:
-    NewAssetManager();
+    AssetManager();
 
     Scope<Assimp::Importer> m_Importer;
 

@@ -1,22 +1,22 @@
-#include "NewAssetManager.h"
+#include "AssetManager.h"
 
 #include "IdManager.h"
 #include "stb_image.h"
 #include "stb_image_resize.h"
 
-NewAssetManager::NewAssetManager()
+AssetManager::AssetManager()
 {
     m_Importer = CreateScope<Assimp::Importer>();
     loadDefaults();
 }
 
-void NewAssetManager::Reset()
+void AssetManager::Reset()
 {
     m_LoadedShaders.clear();
     m_ShadersByPath.clear();
 }
 
-ShaderAsset* NewAssetManager::LoadShader(const std::string& path, ShaderType shaderType)
+ShaderAsset* AssetManager::LoadShader(const std::string& path, ShaderType shaderType)
 {
     if (auto shader = new Shader(path.c_str(), shaderType))
     {
@@ -29,7 +29,7 @@ ShaderAsset* NewAssetManager::LoadShader(const std::string& path, ShaderType sha
     return nullptr;
 }
 
-ShaderAsset* NewAssetManager::GetShader(const uint32_t id)
+ShaderAsset* AssetManager::GetShader(const uint32_t id)
 {
     if (m_LoadedShaders.contains(id))
         return m_LoadedShaders[id].get();
@@ -37,7 +37,7 @@ ShaderAsset* NewAssetManager::GetShader(const uint32_t id)
     return nullptr;
 }
 
-ShaderAsset* NewAssetManager::GetShader(const std::string& path)
+ShaderAsset* AssetManager::GetShader(const std::string& path)
 {
     if (m_ShadersByPath.contains(path))
         return m_ShadersByPath[path];
@@ -45,7 +45,7 @@ ShaderAsset* NewAssetManager::GetShader(const std::string& path)
     return nullptr;
 }
 
-MeshAsset* NewAssetManager::LoadMesh(const std::string& path)
+MeshAsset* AssetManager::LoadMesh(const std::string& path)
 {
     const aiScene* scene = m_Importer->ReadFile(path, MESH_IMPORT_POSTPROCESS_FLAGS);
 
@@ -61,7 +61,7 @@ MeshAsset* NewAssetManager::LoadMesh(const std::string& path)
     return tempSubModel.mesh;
 }
 
-MeshAsset* NewAssetManager::GetMesh(uint32_t id)
+MeshAsset* AssetManager::GetMesh(uint32_t id)
 {
     if (m_LoadedMeshes.contains(id))
         return m_LoadedMeshes[id].get();
@@ -69,7 +69,7 @@ MeshAsset* NewAssetManager::GetMesh(uint32_t id)
     return nullptr;
 }
 
-MeshAsset* NewAssetManager::GetMesh(const std::string& path)
+MeshAsset* AssetManager::GetMesh(const std::string& path)
 {
     if (m_MeshesByPath.contains(path))
         return m_MeshesByPath[path];
@@ -77,7 +77,7 @@ MeshAsset* NewAssetManager::GetMesh(const std::string& path)
     return nullptr;
 }
 
-TextureAsset* NewAssetManager::LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel, uint32_t channelIndex)
+TextureAsset* AssetManager::LoadTexture(std::string& path, bool flipVertical, bool loadOnlyOneChannel, uint32_t channelIndex)
 {
     // Replace default paths
     if (s_DefaultTexturesMap.contains(path))
@@ -124,7 +124,7 @@ TextureAsset* NewAssetManager::LoadTexture(std::string& path, bool flipVertical,
     }
 }
 
-TextureAsset* NewAssetManager::GetTexture(uint32_t id)
+TextureAsset* AssetManager::GetTexture(uint32_t id)
 {
     if (m_LoadedTextures.contains(id))
         return m_LoadedTextures[id].get();
@@ -132,7 +132,7 @@ TextureAsset* NewAssetManager::GetTexture(uint32_t id)
     return nullptr;
 }
 
-TextureAsset* NewAssetManager::GetTexture(const std::string& path)
+TextureAsset* AssetManager::GetTexture(const std::string& path)
 {
     // Replace default paths
     std::string pathKey = path;
@@ -145,7 +145,7 @@ TextureAsset* NewAssetManager::GetTexture(const std::string& path)
     return nullptr;
 }
 
-std::vector<uint32_t> NewAssetManager::GetTextureIds(bool includeDefault) const
+std::vector<uint32_t> AssetManager::GetTextureIds(bool includeDefault) const
 {
     std::vector<uint32_t> returnVector;
     for (auto& it : m_LoadedTextures)
@@ -161,7 +161,7 @@ std::vector<uint32_t> NewAssetManager::GetTextureIds(bool includeDefault) const
     return returnVector;
 }
 
-MaterialAsset* NewAssetManager::GetMaterial(const std::string& name)
+MaterialAsset* AssetManager::GetMaterial(const std::string& name)
 {
     if (m_MaterialsByName.contains(name))
         return m_MaterialsByName[name];
@@ -169,7 +169,7 @@ MaterialAsset* NewAssetManager::GetMaterial(const std::string& name)
     return nullptr;
 }
 
-MaterialAsset* NewAssetManager::GetMaterial(uint32_t id)
+MaterialAsset* AssetManager::GetMaterial(uint32_t id)
 {
     if (m_LoadedMaterials.contains(id))
         return m_LoadedMaterials[id].get();
@@ -177,7 +177,7 @@ MaterialAsset* NewAssetManager::GetMaterial(uint32_t id)
     return nullptr;
 }
 
-MaterialAsset* NewAssetManager::CreateMaterial()
+MaterialAsset* AssetManager::CreateMaterial()
 {
     const uint32_t id = IdManager::GetInstance().CreateNewId();
     const std::string materialName = "New Material (" + std::to_string(id) + ")";
@@ -190,14 +190,14 @@ MaterialAsset* NewAssetManager::CreateMaterial()
     return newMaterial;
 }
 
-void NewAssetManager::RemoveMaterial(uint32_t id)
+void AssetManager::RemoveMaterial(uint32_t id)
 {
     const auto material = m_LoadedMaterials[id].get();
     m_MaterialsByName.erase(material->name);
     m_LoadedMaterials.erase(id);
 }
 
-std::vector<uint32_t> NewAssetManager::GetMaterialIds(bool includeDefault) const
+std::vector<uint32_t> AssetManager::GetMaterialIds(bool includeDefault) const
 {
     std::vector<uint32_t> returnVector;
     for (auto& it : m_LoadedMaterials)
@@ -211,7 +211,7 @@ std::vector<uint32_t> NewAssetManager::GetMaterialIds(bool includeDefault) const
     return returnVector;
 }
 
-Model* NewAssetManager::LoadModel(const std::string& path)
+Model* AssetManager::LoadModel(const std::string& path)
 {
     const aiScene* scene = m_Importer->ReadFile(
         path, MESH_IMPORT_POSTPROCESS_FLAGS);
@@ -229,7 +229,7 @@ Model* NewAssetManager::LoadModel(const std::string& path)
     return model;
 }
 
-void NewAssetManager::loadDefaults()
+void AssetManager::loadDefaults()
 {
     // Setup default cube
     std::vector<MeshVertex> defaultVertices;
@@ -344,7 +344,7 @@ void NewAssetManager::loadDefaults()
     importTexture(m_LoadedTextures[4].get());
 }
 
-void NewAssetManager::importTexture(TextureAsset* textureAsset)
+void AssetManager::importTexture(TextureAsset* textureAsset)
 {
     const std::string pathToUse = textureAsset->path;
     unsigned char* loadedData = stbi_load(pathToUse.c_str(), &textureAsset->width, &textureAsset->height,
@@ -389,7 +389,7 @@ void NewAssetManager::importTexture(TextureAsset* textureAsset)
     }
 }
 
-void NewAssetManager::processNode(const aiNode* node, const aiScene* scene, std::vector<SubModel>& subModels,
+void AssetManager::processNode(const aiNode* node, const aiScene* scene, std::vector<SubModel>& subModels,
                                   const std::string& path)
 {
     SubModel subModelNode;
@@ -417,7 +417,7 @@ void NewAssetManager::processNode(const aiNode* node, const aiScene* scene, std:
     subModels.push_back(subModelNode);
 }
 
-MeshAsset* NewAssetManager::processMesh(aiMesh* mesh, const aiScene* scene, const std::string& path)
+MeshAsset* AssetManager::processMesh(aiMesh* mesh, const aiScene* scene, const std::string& path)
 {
     auto meshId = IdManager::GetInstance().CreateNewId();
     std::string meshPath = path + '@' + mesh->mName.C_Str();
@@ -427,7 +427,7 @@ MeshAsset* NewAssetManager::processMesh(aiMesh* mesh, const aiScene* scene, cons
     auto& vertices = m_LoadedMeshes[meshId]->vertices;
     auto& indices = m_LoadedMeshes[meshId]->indices;
 
-    vertices.reserve(mesh->mNumVertices);
+    vertices.resize(mesh->mNumVertices);
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
         MeshVertex vertex;
@@ -465,22 +465,22 @@ MeshAsset* NewAssetManager::processMesh(aiMesh* mesh, const aiScene* scene, cons
         else
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);
 
-        vertices.push_back(vertex);
+        vertices[i] = vertex;
     }
 
-    indices.reserve(mesh->mNumFaces);
+    indices.resize(3 * mesh->mNumFaces);
     for (unsigned int i = 0; i < mesh->mNumFaces; i++)
     {
         aiFace face = mesh->mFaces[i];
         for (unsigned int j = 0; j < face.mNumIndices; j++)
-            indices.push_back(face.mIndices[j]);
+            indices[(i*3) + j] = face.mIndices[j];
     }
 
     // return a MeshAsset created from the extracted mesh data
     return m_LoadedMeshes[meshId].get();
 }
 
-void NewAssetManager::processMaterials(const aiScene* scene, SubModel& subModel, const std::string& path,
+void AssetManager::processMaterials(const aiScene* scene, SubModel& subModel, const std::string& path,
                                        const uint32_t materialIndex)
 {
     const std::string directory = path.substr(0, path.find_last_of('/'));

@@ -2,7 +2,7 @@
 
 #include "IdManager.h"
 #include "Entity/ECSRegistry.h"
-#include "Assets/NewAssetManager.h"
+#include "Assets/AssetManager.h"
 #include "Util/Math.h"
 
 Scene::Scene() :
@@ -23,7 +23,7 @@ Scene::~Scene() = default;
 
 uint32_t Scene::AddSceneObject(uint32_t parentObjectId)
 {
-    NewAssetManager& am = NewAssetManager::GetInstance(); // Create Instance first so the default stuff is loaded on Startup
+    AssetManager& am = AssetManager::GetInstance(); // Create Instance first so the default stuff is loaded on Startup
     const auto& entity = ECSRegistry::GetInstance().CreateEntity(this);
     SceneObjectComponent component;
     ECSRegistry::GetInstance().AddComponent<SceneObjectComponent>(entity.id, component);
@@ -115,7 +115,7 @@ void Scene::RemoveDirectionalLight()
 void Scene::RemoveMaterialAsset(uint32_t materialAssetId) const
 {
     // Remove Material from all SceneObjects that use it (Set Material back to Default)
-    const auto defaultMaterial = NewAssetManager::GetInstance().GetMaterial("Default");
+    const auto defaultMaterial = AssetManager::GetInstance().GetMaterial("Default");
     for (const auto entity : ECSRegistry::GetInstance().GetAllEntitiesWithComponentType<MaterialComponent>())
     {
         const auto materialComponent = ECSRegistry::GetInstance().GetComponent<MaterialComponent>(entity->id);
@@ -128,7 +128,7 @@ void Scene::RemoveMaterialAsset(uint32_t materialAssetId) const
     }
 
     // Remove Material itself
-    NewAssetManager::GetInstance().RemoveMaterial(materialAssetId);
+    AssetManager::GetInstance().RemoveMaterial(materialAssetId);
 }
 
 uint32_t Scene::AddDirectionalLight()
@@ -181,7 +181,7 @@ uint32_t Scene::AddSkybox()
 
 uint32_t Scene::AddMaterialAsset()
 {
-    const auto materialAsset = NewAssetManager::GetInstance().CreateMaterial();
+    const auto materialAsset = AssetManager::GetInstance().CreateMaterial();
     return materialAsset->id;
 }
 
@@ -218,7 +218,7 @@ void Scene::LoadModel(uint32_t sceneObjectId)
 
     const auto sceneObjectComponent = ECSRegistry::GetInstance().GetComponent<SceneObjectComponent>(sceneObjectId);
     const auto tagComponent = ECSRegistry::GetInstance().GetComponent<TagComponent>(sceneObjectId);
-    const auto model = NewAssetManager::GetInstance().LoadModel(sceneObjectComponent->modelPath);
+    const auto model = AssetManager::GetInstance().LoadModel(sceneObjectComponent->modelPath);
     tagComponent->name = model->name;
     for (auto& subModel : model->subModels)
         createChildSceneObjectFromSubModel(subModel, sceneObjectId);
@@ -228,7 +228,7 @@ void Scene::LoadModel(uint32_t sceneObjectId)
 void Scene::LoadMesh(uint32_t sceneObjectId)
 {
     const auto meshComponent = ECSRegistry::GetInstance().GetComponent<MeshComponent>(sceneObjectId);
-    meshComponent->meshAsset = NewAssetManager::GetInstance().LoadMesh(meshComponent->path);
+    meshComponent->meshAsset = AssetManager::GetInstance().LoadMesh(meshComponent->path);
 }
 
 void Scene::SetSkyboxTexturePathsFromFolder() const
@@ -278,7 +278,7 @@ void Scene::LoadSkyboxTextures() const
     {
         if (!path.empty())
             skyboxComponent->textureAssets[i] =
-                NewAssetManager::GetInstance().LoadTexture(path, skyboxComponent->flipTextures);
+                AssetManager::GetInstance().LoadTexture(path, skyboxComponent->flipTextures);
         i++;
     }
 }
@@ -528,7 +528,7 @@ void Scene::DeSerializeObject(nlohmann::json jsonObject)
         {
             skyboxComponent->texturePaths[i] = skybox["Textures"][i]["Path"];
             skyboxComponent->textureAssets[i] =
-                NewAssetManager::GetInstance().GetTexture(static_cast<uint32_t>(skybox["Textures"][i]["AssetId"]));
+                AssetManager::GetInstance().GetTexture(static_cast<uint32_t>(skybox["Textures"][i]["AssetId"]));
         }
     }
     if (jsonObject.contains("DirectionalLight"))
@@ -578,13 +578,13 @@ void Scene::DeSerializeObject(nlohmann::json jsonObject)
             else if (component["Type"] == "MaterialComponent")
             {
                 const MaterialComponent material = {
-                    NewAssetManager::GetInstance().GetMaterial(static_cast<uint32_t>(component["MaterialAssetId"]))};
+                    AssetManager::GetInstance().GetMaterial(static_cast<uint32_t>(component["MaterialAssetId"]))};
                 ECSRegistry::GetInstance().AddComponent<MaterialComponent>(sceneObjectId, material);
             }
             else if (component["Type"] == "MeshComponent")
             {
                 const MeshComponent mesh = {component["Path"],
-                                            NewAssetManager::GetInstance().GetMesh(static_cast<uint32_t>(component["MeshAssetId"]))};
+                                            AssetManager::GetInstance().GetMesh(static_cast<uint32_t>(component["MeshAssetId"]))};
                 ECSRegistry::GetInstance().AddComponent<MeshComponent>(sceneObjectId, mesh);
             }
         }

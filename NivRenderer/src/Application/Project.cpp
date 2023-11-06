@@ -2,13 +2,13 @@
 
 #include "IdManager.h"
 #include "Entity/ECSRegistry.h"
-#include "Assets/NewAssetManager.h"
+#include "Assets/AssetManager.h"
 
 Project::Project(const std::string& projectPath) : m_Path(projectPath)
 {
     IdManager::GetInstance().Reset();
     ECSRegistry::GetInstance().Reset();
-    NewAssetManager::GetInstance().Reset();
+    AssetManager::GetInstance().Reset();
 
     m_ActiveScene = CreateScene();
 }

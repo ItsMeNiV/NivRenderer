@@ -1,6 +1,6 @@
 #pragma once
 #include "Base.h"
-#include "Assets/NewAssetManager.h"
+#include "Assets/AssetManager.h"
 #include "Rendering/Proxy/Proxy.h"
 
 class LightProxy : public Proxy
@@ -12,7 +12,7 @@ public:
         {
             glCreateBuffers(1, &m_VertexBuffer);
 
-            const auto& vertices = NewAssetManager::GetInstance().GetMesh("default")->vertices;
+            const auto& vertices = AssetManager::GetInstance().GetMesh("default")->vertices;
             m_VerticesCount = vertices.size();
 
             glNamedBufferData(m_VertexBuffer, m_VerticesCount * sizeof(MeshVertex), vertices.data(), GL_STATIC_DRAW);

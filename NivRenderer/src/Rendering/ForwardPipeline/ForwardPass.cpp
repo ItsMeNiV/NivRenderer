@@ -8,7 +8,7 @@
 
 ForwardPass::ForwardPass(Shader* passShader, uint32_t resolutionWidth, uint32_t resolutionHeight, uint32_t sampleCount) :
     RenderPass(passShader, resolutionWidth, resolutionHeight, sampleCount),
-    m_ShadowmapShader(NewAssetManager::GetInstance().LoadShader("assets/shaders/shadowmap.glsl", ShaderType::VERTEX_AND_FRAGMENT)->shaderPtr)
+    m_ShadowmapShader(AssetManager::GetInstance().LoadShader("assets/shaders/shadowmap.glsl", ShaderType::VERTEX_AND_FRAGMENT)->shaderPtr)
 {}
 
 void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& commandBuffer)
@@ -176,9 +176,9 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
 
         if (scene->GetSceneSettings().visualizeLights && pointLightIndex)
         {
-            auto lightVisualizeShader = NewAssetManager::GetInstance().GetShader("assets/shaders/lightcube.glsl");
+            auto lightVisualizeShader = AssetManager::GetInstance().GetShader("assets/shaders/lightcube.glsl");
             if (!lightVisualizeShader)
-                lightVisualizeShader = NewAssetManager::GetInstance().LoadShader("assets/shaders/lightcube.glsl", ShaderType::VERTEX_AND_FRAGMENT);
+                lightVisualizeShader = AssetManager::GetInstance().LoadShader("assets/shaders/lightcube.glsl", ShaderType::VERTEX_AND_FRAGMENT);
 
             lightVisualizeShader->shaderPtr->Bind();
             rendererState.BoundShader = lightVisualizeShader->shaderPtr->GetId();
@@ -203,9 +203,9 @@ void ForwardPass::Run(Scene* scene, ProxyManager& proxyManager, CommandBuffer& c
 
         if (scene->HasSkybox())
         {
-            auto skyboxShader = NewAssetManager::GetInstance().GetShader("assets/shaders/skybox.glsl");
+            auto skyboxShader = AssetManager::GetInstance().GetShader("assets/shaders/skybox.glsl");
             if (!skyboxShader)
-                skyboxShader = NewAssetManager::GetInstance().LoadShader("assets/shaders/skybox.glsl",ShaderType::VERTEX_AND_FRAGMENT);
+                skyboxShader = AssetManager::GetInstance().LoadShader("assets/shaders/skybox.glsl",ShaderType::VERTEX_AND_FRAGMENT);
             const auto skyboxProxy = dynamic_cast<SkyboxProxy*>(proxyManager.GetProxy(scene->GetSkyboxObjectId()));
 
             rendererState.BoundShader = skyboxShader->id;
