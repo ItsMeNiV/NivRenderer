@@ -3,6 +3,7 @@
 #include "Application/Util/Instrumentor.h"
 #include "..\Scene.h"
 #include "Assets/AssetManager.h"
+#include "Entity/Components.h"
 
 inline void displaySceneObjectContextMenu(Scene* scene, const uint32_t sceneObjectId, int32_t& selectedObjectId, const bool allowDelete)
 {
@@ -17,11 +18,24 @@ inline void displaySceneObjectContextMenu(Scene* scene, const uint32_t sceneObje
             scene->AddEmptySceneObject(sceneObjectId);
         }
 
-		if (allowDelete && ImGui::MenuItem("Delete"))
+        //Object is a normal Sceneobject
+		if (allowDelete)
 		{
-			scene->RemoveSceneObject(sceneObjectId);
-			if (sceneObjectId == selectedObjectId)
-				selectedObjectId = -1;
+            if (ImGui::MenuItem("Delete"))
+            {
+                scene->RemoveSceneObject(sceneObjectId);
+                if (sceneObjectId == selectedObjectId)
+                    selectedObjectId = -1;   
+            }
+
+            if(ImGui::BeginMenu("Add Component"))
+            {
+                if (ImGui::MenuItem("Custom Shader"))
+                {
+                    ECSRegistry::GetInstance().AddComponent<CustomShaderComponent>(selectedObjectId);
+                }
+                ImGui::EndMenu();
+            }
 		}
 
 		//Object is base "Scene" in Hierarchy

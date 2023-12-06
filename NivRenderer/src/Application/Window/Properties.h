@@ -510,6 +510,40 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
                     }
                 }
             }
+
+            if (const auto customShaderComponent =
+                    ECSRegistry::GetInstance().GetComponent<CustomShaderComponent>(selectedSceneObject))
+            {
+                if (ImGui::CollapsingHeader("Custom Shader", ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    const auto inputString = &customShaderComponent->path;
+                    ImGui::PushID((std::string("CustomShaderPath") + std::to_string(selectedSceneObject)).c_str());
+                    ImGui::InputText("Path", inputString, 0, InputTextCallback, (void*)inputString);
+                    ImGui::PopID();
+                    ImGui::PushID((std::string("Recompile") + std::to_string(selectedSceneObject)).c_str());
+                    if (ImGui::Button("Recompile"))
+                    {
+                        *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                        customShaderComponent->shaderAsset->shaderPtr->RecompileFromSource();
+                        sceneObjectComponent->dirtyFlag = true;
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Open File"))
+                    {
+                        const auto paths = pfd::open_file("Open File", ".", {"Shader Files", "*.glsl"}).result();
+                        if (!paths.empty())
+                        {
+                            *inputString = paths[0];
+                            *inputString = std::regex_replace(*inputString, std::regex("\\\\"), "\/");
+                            AssetManager::GetInstance().LoadShader(customShaderComponent->path,
+                                                                   ShaderType::VERTEX_AND_FRAGMENT);
+                            sceneObjectComponent->dirtyFlag = true;
+                        }
+                    }
+                    ImGui::PopID();
+                    ImGui::Spacing();
+                }
+            }
         }
     }
 

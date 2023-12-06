@@ -107,3 +107,14 @@ struct SkyboxComponent
     SkyboxComponent(const std::string& TextureFolder, bool FlipTextures)
         : textureFolder(TextureFolder), flipTextures(FlipTextures) {}
 };
+
+struct CustomShaderComponent
+{
+    std::string path = "";
+    ShaderAsset* shaderAsset = nullptr;
+
+    CustomShaderComponent() = default;
+    CustomShaderComponent(const CustomShaderComponent&) = default;
+    CustomShaderComponent(const std::string& Path, ShaderAsset* ShaderAsset)
+        : path(Path), shaderAsset(ShaderAsset) {}
+};

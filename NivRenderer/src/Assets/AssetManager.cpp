@@ -45,6 +45,25 @@ ShaderAsset* AssetManager::GetShader(const std::string& path)
     return nullptr;
 }
 
+ShaderAsset* AssetManager::AddCustomShader(const std::string& source)
+{
+    const std::string templateSourceCode = readFile(CUSTOM_SHADER_TEMPLATE_PATH);
+    const std::string customSourceCode = readFile(source.c_str());
+
+    //TODO: Create new File with combined source
+    const std::string path;
+
+    if (auto shader = new Shader(path.c_str(), ShaderType::VERTEX_AND_FRAGMENT))
+    {
+        auto shaderId = IdManager::GetInstance().CreateNewId();
+        m_LoadedShaders[shaderId] = CreateScope<ShaderAsset>(shaderId, shader);
+        m_ShadersByPath[path] = m_LoadedShaders[shaderId].get();
+        return m_ShadersByPath[path];
+    }
+
+    return nullptr;
+}
+
 MeshAsset* AssetManager::LoadMesh(const std::string& path)
 {
     const aiScene* scene = m_Importer->ReadFile(path, MESH_IMPORT_POSTPROCESS_FLAGS);
@@ -575,4 +594,30 @@ void AssetManager::processMaterials(const aiScene* scene, SubModel& subModel, co
         materialAsset->emissiveTextureAsset = LoadTexture(emissivePath, materialAsset->flipEmissiveTexture);
 
     subModel.material = materialAsset;
+}
+
+std::string AssetManager::readFile(const char* path)
+{
+    std::string sourceCode;
+    std::ifstream sourceFile;
+    sourceFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+    try
+    {
+        // open files
+        sourceFile.open(path);
+        std::stringstream sourceStream;
+        // read file's buffer contents into streams
+        sourceStream << sourceFile.rdbuf();
+        // close file handlers
+        sourceFile.close();
+        // convert stream into string
+        sourceCode = sourceStream.str();
+    }
+    catch (std::ifstream::failure& e)
+    {
+        SPDLOG_ERROR("ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ: {} FILEPATH: {}", e.what(), path);
+    }
+
+    return sourceCode;
 }

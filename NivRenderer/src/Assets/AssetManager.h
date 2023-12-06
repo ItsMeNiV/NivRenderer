@@ -35,10 +35,10 @@ public:
 
     void Reset();
 
-    //TODO: Check where Load methods are wrongfully used
     ShaderAsset* LoadShader(const std::string& path, ShaderType shaderType);
     ShaderAsset* GetShader(uint32_t id);
     ShaderAsset* GetShader(const std::string& path);
+    ShaderAsset* AddCustomShader(const std::string& source);
     MeshAsset* LoadMesh(const std::string& path);
     MeshAsset* GetMesh(uint32_t id);
     MeshAsset* GetMesh(const std::string& path);
@@ -71,6 +71,7 @@ private:
         aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices |
         aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_SortByPType | aiProcess_RemoveRedundantMaterials |
         aiProcess_FixInfacingNormals;
+    static constexpr const char* CUSTOM_SHADER_TEMPLATE_PATH = "assets/shaders/customshader_template.glsl";
 
     static inline std::unordered_map<std::string, std::string> s_DefaultTexturesMap = {{"default", "assets/textures/default.png"}, {"white", "assets/textures/default_white.png"}, {"black", "assets/textures/default_black.png"}};
 
@@ -79,4 +80,5 @@ private:
     void processNode(const aiNode* node, const aiScene* scene, std::vector<SubModel>& subModels, const std::string& path);
     MeshAsset* processMesh(aiMesh* mesh, const aiScene* scene, const std::string& path);
     void processMaterials(const aiScene* scene, SubModel& subModel, const std::string& path, const uint32_t materialIndex);
+    static std::string readFile(const char* path);
 };
