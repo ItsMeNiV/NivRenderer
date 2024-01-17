@@ -8,6 +8,7 @@ struct SceneSettings
 {
     bool visualizeLights;
     bool animateDirectionalLight;
+    bool performanceTest;
     glm::ivec2 renderResolution;
     glm::ivec2 tempRenderResolution;
     glm::ivec2 shadowmapResolution;

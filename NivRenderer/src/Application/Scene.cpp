@@ -10,6 +10,7 @@ Scene::Scene() :
 {
     m_SceneSettings.visualizeLights = false;
     m_SceneSettings.animateDirectionalLight = false;
+    m_SceneSettings.performanceTest = false;
     m_SceneSettings.renderResolution = {1920, 1080};
     m_SceneSettings.tempRenderResolution = {1920, 1080};
     m_SceneSettings.shadowmapResolution = {1024, 1024};

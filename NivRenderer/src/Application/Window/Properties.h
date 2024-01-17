@@ -67,6 +67,7 @@ inline void BuildProperties(const int32_t& selectedSceneObject, Scene* scene)
     {
         ImGui::Checkbox("Visualize Point Lights", &scene->GetSceneSettings().visualizeLights);
         ImGui::Checkbox("Animate Directional Light", &scene->GetSceneSettings().animateDirectionalLight);
+        ImGui::Checkbox("Performance Test", &scene->GetSceneSettings().performanceTest);
         int msaaSamples = scene->GetSceneSettings().sampleCount;
         if (ImGui::InputInt("MSAA Sample Count", &msaaSamples))
         {

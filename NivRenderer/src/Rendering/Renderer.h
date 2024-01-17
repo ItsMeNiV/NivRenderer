@@ -10,7 +10,7 @@ public:
 	Renderer(Window* window);
 	~Renderer();
 
-	void PrepareFrame() const;
+	void PrepareFrame();
 	void RenderScene() const;
 
 	Scene* GetScene() const { return m_Scene; }
@@ -21,10 +21,12 @@ public:
 	RenderPipeline* GetActivePipeline() const { return m_ActiveRenderPipeline.get(); }
 
 	void AnimateDirectionalLight() const;
+    void UpdatePerformancetestPointLights();
 
 private:
 	Window* m_ActiveWindow;
     Scene* m_Scene;
 	Scope<RenderPipeline> m_ActiveRenderPipeline;
 	Scope<ProxyManager> m_ProxyManager;
+    std::unordered_map<uint32_t, float> m_PerformancetestPointLightSpeedMap;
 };

@@ -13,7 +13,7 @@ Renderer::~Renderer()
 {
 }
 
-void Renderer::PrepareFrame() const
+void Renderer::PrepareFrame()
 {
     PROFILE_FUNCTION()
     const auto cam = ECSRegistry::GetInstance().GetComponent<CameraComponent>(m_Scene->GetActiveCameraId())->cameraPtr;
@@ -31,6 +31,8 @@ void Renderer::PrepareFrame() const
 
     if (m_Scene->GetSceneSettings().animateDirectionalLight)
         AnimateDirectionalLight();
+    if (m_Scene->GetSceneSettings().performanceTest)
+        UpdatePerformancetestPointLights();
 
     m_ProxyManager->UpdateProxies(m_Scene);
 }
@@ -64,5 +66,29 @@ void Renderer::AnimateDirectionalLight() const
         const double time = m_ActiveWindow->GetWindowRuntime();
         dLightComponent->direction = glm::normalize(glm::vec3(-(1 + sin(time) * 3), -3, -(1 + cos(time) * 3)));
         dLightComponent->dirtyFlag = true;
+    }
+}
+
+void Renderer::UpdatePerformancetestPointLights()
+{
+    if (m_PerformancetestPointLightSpeedMap.empty())
+    {
+        for (uint16_t i = 0; i < 10; i++)
+        {
+            uint32_t lightId = m_Scene->AddPointLight();
+            const float speed = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+            m_PerformancetestPointLightSpeedMap[lightId] = (speed / 10.0f) + 0.025;
+            const auto lightComponent = ECSRegistry::GetInstance().GetComponent<PointLightComponent>(lightId);
+            lightComponent->position = {(rand() % 20) - 10.0f, -5.0f, (rand() % 20) - 10.0f};
+        }
+    }
+
+    for (const auto& light : m_PerformancetestPointLightSpeedMap)
+    {
+        const auto lightComponent = ECSRegistry::GetInstance().GetComponent<PointLightComponent>(light.first);
+        lightComponent->position.y += light.second;
+        lightComponent->dirtyFlag = true;
+        if (lightComponent->position.y >= 10.0f)
+            lightComponent->position = {(rand() % 20) - 10.0f, -5.0f, (rand() % 20) - 10.0f};
     }
 }
